@@ -74,13 +74,13 @@ export const footer: Footer = {
       links: [
         {
           name: "GitHub",
-          link: "https://github.com/braydentw",
+          link: "https://github.com/dev-harrisonw",
           icon: "/static/icons/github-f.svg",
           leavesWebsite: true,
         },
         {
           name: "LinkedIn",
-          link: "https://www.linkedin.com/in/braydentw/",
+          link: "https://www.linkedin.com/in/harrison-w-1413b41b7/",
           icon: "/static/icons/linkedin-f.svg",
           leavesWebsite: true,
         },
@@ -98,7 +98,7 @@ export const footer: Footer = {
         },
         {
           name: "Email",
-          link: "mailto:contact@braydentw.io",
+          link: "mailto:me@harrisonwarburton.com",
           icon: "/static/icons/mail-f.svg",
           leavesWebsite: true,
         },
@@ -106,8 +106,8 @@ export const footer: Footer = {
     },
   ],
   support: {
-    buymeacoffee: "braydenw",
-    paypal: "braydentw",
+    buymeacoffee: "harrisonw",
+    paypal: "harrisonw",
     message: "I appreciate your support very much! 💙",
   },
 };
