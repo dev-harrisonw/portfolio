@@ -31,11 +31,11 @@ module.exports = {
         "fun-gray-darker": "#2a2a2c",
         "fun-gray-dark": "#1F1F20",
         "fun-gray-darkest": "#141414",
-        "fun-pink": "#00c7ff",
-        "fun-pink-darker": "#000f2e",
-        "fun-pink-darkest": "#000c24",
-        "fun-pink-dark": "#192742",
-        "fun-pink-light": "#009ac5",
+        "fun-pink": "#3BB143",
+        "fun-pink-darker": "#0B6623",
+        "fun-pink-darkest": "#043927",
+        "fun-pink-dark": "#19421e",
+        "fun-pink-light": "#00c503",
       },
       rotate: {
         '360': '360deg'
