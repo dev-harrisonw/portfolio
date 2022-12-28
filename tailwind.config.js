@@ -26,7 +26,7 @@ module.exports = {
       colors: {
         bg: "#333333",
         "fun-gray-light": "#b2bbcf",
-        "fun-gray": "#7b89a8",
+        "fun-gray": "#DADBDD",
         "fun-gray-medium": "#767c85",
         "fun-gray-darker": "#2a2a2c",
         "fun-gray-dark": "#1F1F20",
