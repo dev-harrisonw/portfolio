@@ -4,12 +4,12 @@ import { Project } from "types";
 const projects: Project[] = [
   {
     id: 0,
-    title: "Learn.TheYEI",
-    desc: "All the resources you will need to get a boost into economics.",
-    img: "/static/projects/yei-learn.png",
-    link: "https://learn.theyei.org/",
-    github: "https://github.com/braydentw/learn.theyei",
-    tags: ["React", "NextJS", "TailwindCSS", "CSS", "Firebase"],
+    title: "London Comedy Lunch",
+    desc: "An event landing page for the famous LCL, where attendees can get more information.",
+    img: "/static/projects/lcl.png",
+    link: "https://www.londoncomedylunch.com",
+    github: "https://github.com/dev-harrisonw/LCL",
+    tags: ["HTML", "CSS", "JavaScript", "JQuery", "Bootstrap"],
   },
   {
     id: 1,
