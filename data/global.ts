@@ -85,18 +85,6 @@ export const footer: Footer = {
           leavesWebsite: true,
         },
         {
-          name: "Dribbble",
-          link: "https://dribbble.com/braydentw",
-          icon: "/static/icons/dribbble-f.svg",
-          leavesWebsite: true,
-        },
-        {
-          name: "IndieHackers",
-          link: "https://indiehackers.com/braydentw",
-          icon: "/static/icons/indiehackers-f.svg",
-          leavesWebsite: true,
-        },
-        {
           name: "Email",
           link: "mailto:me@harrisonwarburton.com",
           icon: "/static/icons/mail-f.svg",

@@ -46,16 +46,16 @@ function Page({ currentPage, meta: { title, desc }, children }: PageProps) {
         <meta property="og:description" content={desc} />
         <meta
           property="og:image"
-          content="https://braydentw.io/static/misc/og.png"
+          content="https://harrisonwarburton.com/static/misc/og.png"
         />
 
         <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content="https://braydentw.io/" />
+        <meta property="twitter:url" content="https://harrisonwarburton.com/" />
         <meta property="twitter:title" content={pageTitle} />
         <meta property="twitter:description" content={desc} />
         <meta
           property="twitter:image"
-          content="https://braydentw.io/static/misc/og.png"
+          content="https://harrisonwarburton.com/static/misc/og.png"
         ></meta>
         <script
           async

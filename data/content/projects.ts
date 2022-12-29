@@ -13,11 +13,11 @@ const projects: Project[] = [
   },
   {
     id: 1,
-    title: "BuildFaster",
-    desc: "Beautiful HTML templates ready-made for your next landing page.",
-    img: "/static/projects/buildfaster.png",
-    link: "https://buildfaster.co/",
-    tags: ["HTML", "CSS", "Javascript", "Gumroad"],
+    title: "Athol Paints",
+    desc: "A stunning catalogue website for a paint manufacturer.",
+    img: "/static/projects/athol.png",
+    link: "https://www.atholpaints.co.uk/",
+    tags: ["HTML", "CSS", "Javascript", "Bootstrap"],
   },
   {
     id: 2,
