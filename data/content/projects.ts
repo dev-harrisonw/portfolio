@@ -24,8 +24,7 @@ const projects: Project[] = [
     title: "AI Chatbot (v1.0)",
     desc: "A Python web application which can be trained to answer FAQs.",
     img: "/static/projects/ai-chatbot.png",
-    link: "https://react-emoji-search.braydentw.vercel.app/",
-    github: "https://github.com/braydentw/react-emoji-search",
+    github: "https://github.com/dev-harrisonw/Holiday-Chat-Agent",
     tags: ["Python", "Flask", "AI"],
   },
   // {
