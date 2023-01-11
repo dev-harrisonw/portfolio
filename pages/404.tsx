@@ -20,7 +20,7 @@ function Page404() {
           </p>
           <a>
           <Link href="/">
-              <span className="w-full sm:w-auto flex-shrink border border-fun-pink-light text-base px-4 py-1 rounded-xl text-fun-pink-light bg-fun-pink-darkerer hover:bg-fun-pink hover:text-white transition-colors cursor-pointer">
+              <br/><span className="w-full sm:w-auto flex-shrink border border-fun-pink-light text-base px-4 py-1 rounded-xl text-fun-pink-light bg-fun-pink-darkerer hover:bg-fun-pink hover:text-white transition-colors cursor-pointer">
                 Return Home
               </span>
             </Link>
