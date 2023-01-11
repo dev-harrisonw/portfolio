@@ -17,12 +17,8 @@ function Page404() {
           <h1 className="text-7xl text-white font-monospace font-bold opacity-100">{`{ error: ${num404} }`}</h1>
           <p className="text-fun-gray text-xl mt-8 flex items-center">
           Well, this is awkward. You've encountered a glitch in the matrix. But don't blame yourself, it's not your fault Neo, the code is just buggy.&nbsp;&nbsp;
-            <a><Link href="/">
-              <span className="w-full sm:w-auto flex-shrink border border-fun-pink-light text-base px-4 py-1 rounded-xl text-fun-pink-light bg-fun-pink-darkerer hover:bg-fun-pink hover:text-white transition-colors cursor-pointer">
-                Return Home
-              </span>
-            </Link></a>
           </p>
+          <a href="https://www.harrisonwarburton.com/" class="cursor-pointer font-bold whitespace-nowrap mt-6 px-8 py-3 text-white border-2 rounded-full border-white bg-bg hover:bg-fun-pink hover:border-fun-pink transition-colors">Return Home</a>
         </div>
       )}
     </>
