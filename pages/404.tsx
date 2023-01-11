@@ -18,7 +18,7 @@ function Page404() {
           <p className="text-fun-gray text-xl mt-8 flex items-center">
           Well, this is awkward. You've encountered a glitch in the matrix. But don't blame yourself, it's not your fault Neo, the code is just buggy.&nbsp;&nbsp;
             <Link href="/">
-              <br></br><span className="w-full sm:w-auto flex-shrink border border-fun-pink-light text-base px-4 py-1 rounded-xl text-fun-pink-light bg-fun-pink-darkerer hover:bg-fun-pink hover:text-white transition-colors cursor-pointer">
+              <span className="w-full sm:w-auto flex-shrink border border-fun-pink-light text-base px-4 py-1 rounded-xl text-fun-pink-light bg-fun-pink-darkerer hover:bg-fun-pink hover:text-white transition-colors cursor-pointer">
                 Return Home
               </span>
             </Link>
