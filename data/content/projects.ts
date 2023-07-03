@@ -4,15 +4,6 @@ import { Project } from "types";
 const projects: Project[] = [
   {
     id: 0,
-    title: "London Comedy Lunch",
-    desc: "An event landing page for the famous LCL, where attendees can get more information.",
-    img: "/static/projects/lcl.png",
-    link: "https://www.londoncomedylunch.com",
-    github: "https://github.com/dev-harrisonw/LCL",
-    tags: ["HTML", "CSS", "JavaScript", "JQuery", "Bootstrap"],
-  },
-  {
-    id: 1,
     title: "Athol Paints",
     desc: "A stunning catalogue website for a paint manufacturer.",
     img: "/static/projects/athol.png",
@@ -20,7 +11,7 @@ const projects: Project[] = [
     tags: ["HTML", "CSS", "Javascript", "Bootstrap"],
   },
   {
-    id: 2,
+    id: 1,
     title: "AI Chatbot (v1.0)",
     desc: "A Python web application which can be trained to answer FAQs.",
     img: "/static/projects/ai-chatbot.png",
