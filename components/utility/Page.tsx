@@ -39,6 +39,8 @@ function Page({ currentPage, meta: { title, desc }, children }: PageProps) {
         <link rel="manifest" href="/static/favicon/site.webmanifest" />
         <meta name="title" content={pageTitle} />
         <meta name="description" content={desc} />
+        <meta name="keywords" content="Harrison Warburton, Development, Website Development, App Development, Software Development, Software" />
+        <meta name="author" content="Harrison Warburton" />
 
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.harrisonwarburton.com" />
