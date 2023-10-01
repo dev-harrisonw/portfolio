@@ -18,6 +18,15 @@ const projects: Project[] = [
     github: "https://github.com/dev-harrisonw/Holiday-Chat-Agent",
     tags: ["Python", "Flask", "AI"],
   },
+  {
+    id: 2,
+    title: "London Comedy Lunch",
+    desc: "An event landing page for the famous LCL, where attendees can get more information.",
+    img: "/static/projects/lcl.png",
+    link: "https://www.londoncomedylunch.com",
+    github: "https://github.com/dev-harrisonw/LCL",
+    tags: ["HTML", "CSS", "JavaScript", "JQuery", "Bootstrap"],
+  },
   // {
   //   id: 3,
   //   title: "BitcoinTemp",
