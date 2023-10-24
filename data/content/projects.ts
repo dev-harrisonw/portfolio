@@ -4,6 +4,22 @@ import { Project } from "types";
 const projects: Project[] = [
   {
     id: 0,
+    title: "Manchester Golf Club",
+    desc: "An intuitive booking system designed for club members to pick a slot.",
+    img: "/static/projects/mangc.jpg",
+    link: "https://rangebooking.mangc.co.uk/",
+    tags: ["HTML", "CSS", "Javascript", "Python", "Django"],
+  },
+  {
+    id: 1,
+    title: "MPJ Recruitment",
+    desc: "A robust ATS system, which allows candidates to apply for available jobs.",
+    img: "/static/projects/mpj.jpg",
+    link: "https://www.mpjrecruitment.co.uk/",
+    tags: ["HTML", "CSS", "Javascript", "Wordpress", "AI"],
+  },
+  {
+    id: 2,
     title: "Athol Paints",
     desc: "A stunning catalogue website for a paint manufacturer.",
     img: "/static/projects/athol.png",
@@ -11,7 +27,7 @@ const projects: Project[] = [
     tags: ["HTML", "CSS", "Javascript", "Bootstrap"],
   },
   {
-    id: 1,
+    id: 3,
     title: "AI Chatbot (v1.0)",
     desc: "A Python web application which can be trained to answer FAQs.",
     img: "/static/projects/ai-chatbot.png",
@@ -19,7 +35,7 @@ const projects: Project[] = [
     tags: ["Python", "Flask", "AI"],
   },
   {
-    id: 2,
+    id: 4,
     title: "London Comedy Lunch",
     desc: "An event landing page for the famous LCL, where attendees can get more information.",
     img: "/static/projects/lcl.png",
