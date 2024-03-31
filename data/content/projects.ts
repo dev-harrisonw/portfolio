@@ -4,6 +4,22 @@ import { Project } from "types";
 const projects: Project[] = [
   {
     id: 0,
+    title: "KeyGeni Group",
+    desc: "Developed a professional and budget-conscious WordPress site for KeyGeni Group.",
+    img: "/static/projects/kg.jpg",
+    link: "https://www.keygeni.com/",
+    tags: ["HTML", "CSS", "Javascript", "Wordpress",],
+  },
+  {
+    id: 1,
+    title: "The Surveying Experts",
+    desc: "Delivered a streamlined WordPress website, highlighting their extensive surveying services.",
+    img: "/static/projects/tse.jpg",
+    link: "https://www.thesurveyingexperts.com",
+    tags: ["HTML", "CSS", "Javascript", "Wordpress"],
+  },
+  {
+    id: 2,
     title: "Manchester Golf Club",
     desc: "An intuitive booking system designed for club members to pick a slot.",
     img: "/static/projects/mangc.jpg",
@@ -11,7 +27,7 @@ const projects: Project[] = [
     tags: ["HTML", "CSS", "Javascript", "Python", "Django"],
   },
   {
-    id: 1,
+    id: 3,
     title: "MPJ Recruitment",
     desc: "A robust ATS system, which allows candidates to apply for available jobs.",
     img: "/static/projects/mpj.jpg",
@@ -19,7 +35,7 @@ const projects: Project[] = [
     tags: ["HTML", "CSS", "Javascript", "Wordpress", "AI"],
   },
   {
-    id: 2,
+    id: 4,
     title: "Athol Paints",
     desc: "A stunning catalogue website for a paint manufacturer.",
     img: "/static/projects/athol.png",
@@ -27,7 +43,7 @@ const projects: Project[] = [
     tags: ["HTML", "CSS", "Javascript", "Bootstrap"],
   },
   {
-    id: 3,
+    id: 5,
     title: "AI Chatbot (v1.0)",
     desc: "A Python web application which can be trained to answer FAQs.",
     img: "/static/projects/ai-chatbot.png",
@@ -35,7 +51,7 @@ const projects: Project[] = [
     tags: ["Python", "Flask", "AI"],
   },
   {
-    id: 4,
+    id: 6,
     title: "London Comedy Lunch",
     desc: "An event landing page for the famous LCL, where attendees can get more information.",
     img: "/static/projects/lcl.png",
