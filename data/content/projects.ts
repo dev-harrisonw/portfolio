@@ -59,6 +59,14 @@ const projects: Project[] = [
     github: "https://github.com/dev-harrisonw/LCL",
     tags: ["HTML", "CSS", "JavaScript", "JQuery", "Bootstrap"],
   },
+  {
+    id: 7,
+    title: "The Garm Plug",
+    desc: "A clothing reseller website we're building.",
+    img: "/static/projects/garm-plug.png",
+    link: "https://www.thegarmplug.com/",
+    tags: ["Wordpress", "PHP", "Tailwind", "Javascript",],
+  },
   // {
   //   id: 3,
   //   title: "BitcoinTemp",
