@@ -65,7 +65,7 @@ const projects: Project[] = [
     desc: "A clothing reseller website we're building.",
     img: "/static/projects/garm-plug.png",
     link: "https://www.thegarmplug.com/",
-    tags: ["Wordpress", "PHP", "Tailwind", "Javascript",],
+    tags: ["Wordpress", "PHP", "Tailwind", "Javascript"],
   },
   // {
   //   id: 3,
