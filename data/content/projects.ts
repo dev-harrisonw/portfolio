@@ -4,120 +4,77 @@ import { Project } from "types";
 const projects: Project[] = [
   {
     id: 0,
-    title: "KeyGeni Group",
-    desc: "Developed a professional and budget-conscious WordPress site for KeyGeni Group.",
-    img: "/static/projects/kg.jpg",
-    link: "https://www.keygeni.com/",
-    tags: ["HTML", "CSS", "Javascript", "Wordpress",],
+    title: "The Garm Plug",
+    desc: "An all-in-one platform for sourcing, repairing, and reselling clothing.",
+    img: "/static/projects/thegarmplug.jpg",
+    link: "https://www.thegarmplug.com/",
+    tags: ["WordPress", "PHP", "Tailwind", "JavaScript"],
   },
   {
     id: 1,
-    title: "The Surveying Experts",
-    desc: "Delivered a streamlined WordPress website, highlighting their extensive surveying services.",
-    img: "/static/projects/tse.jpg",
-    link: "https://www.thesurveyingexperts.com",
-    tags: ["HTML", "CSS", "Javascript", "Wordpress"],
+    title: "KeyGeni Group",
+    desc: "A professional, budget-conscious WordPress website built for a growing business.",
+    img: "/static/projects/kg.jpg",
+    link: "https://www.keygeni.com/",
+    tags: ["HTML", "CSS", "JavaScript", "WordPress"],
   },
   {
     id: 2,
-    title: "Manchester Golf Club",
-    desc: "An intuitive booking system designed for club members to pick a slot.",
-    img: "/static/projects/mangc.jpg",
-    link: "https://rangebooking.mangc.co.uk/",
-    tags: ["HTML", "CSS", "Javascript", "Python", "Django"],
+    title: "The Surveying Experts",
+    desc: "A streamlined WordPress site showcasing a full range of surveying services.",
+    img: "/static/projects/tse.jpg",
+    link: "https://www.thesurveyingexperts.com",
+    tags: ["HTML", "CSS", "JavaScript", "WordPress"],
   },
   {
     id: 3,
-    title: "MPJ Recruitment",
-    desc: "A robust ATS system, which allows candidates to apply for available jobs.",
-    img: "/static/projects/mpj.jpg",
-    link: "https://www.mpjrecruitment.co.uk/",
-    tags: ["HTML", "CSS", "Javascript", "Wordpress", "AI"],
+    title: "Manchester Golf Club",
+    desc: "A custom booking system allowing members to easily reserve time slots.",
+    img: "/static/projects/mangc.jpg",
+    link: "https://rangebooking.mangc.co.uk/",
+    tags: ["HTML", "CSS", "JavaScript", "Python", "Django"],
   },
   {
     id: 4,
-    title: "Athol Paints",
-    desc: "A stunning catalogue website for a paint manufacturer.",
-    img: "/static/projects/athol.png",
-    link: "https://www.atholpaints.co.uk/",
-    tags: ["HTML", "CSS", "Javascript", "Bootstrap"],
+    title: "MPJ Recruitment",
+    desc: "A robust ATS platform enabling candidates to browse and apply for jobs efficiently.",
+    img: "/static/projects/mpj.jpg",
+    link: "https://www.mpjrecruitment.co.uk/",
+    tags: ["HTML", "CSS", "JavaScript", "WordPress", "AI"],
   },
   {
     id: 5,
+    title: "Athol Paints",
+    desc: "A clean, catalogue-style website built for a paint manufacturer.",
+    img: "/static/projects/athol.png",
+    link: "https://www.atholpaints.co.uk/",
+    tags: ["HTML", "CSS", "JavaScript", "Bootstrap"],
+  },
+  {
+    id: 6,
     title: "AI Chatbot (v1.0)",
-    desc: "A Python web application which can be trained to answer FAQs.",
+    desc: "A Python web application trained to handle FAQs and automate responses.",
     img: "/static/projects/ai-chatbot.png",
     github: "https://github.com/dev-harrisonw/Holiday-Chat-Agent",
     tags: ["Python", "Flask", "AI"],
   },
   {
-    id: 6,
+    id: 7,
     title: "London Comedy Lunch",
-    desc: "An event landing page for the famous LCL, where attendees can get more information.",
+    desc: "An event landing page providing key information and booking details for attendees.",
     img: "/static/projects/lcl.png",
     link: "https://www.londoncomedylunch.com",
     github: "https://github.com/dev-harrisonw/LCL",
-    tags: ["HTML", "CSS", "JavaScript", "JQuery", "Bootstrap"],
+    tags: ["HTML", "CSS", "JavaScript", "jQuery", "Bootstrap"],
   },
-  {
-    id: 7,
-    title: "The Garm Plug",
-    desc: "A clothing reseller website we're building.",
-    img: "/static/projects/garm-plug.png",
-    link: "https://www.thegarmplug.com/",
-    tags: ["Wordpress", "PHP", "Tailwind", "Javascript"],
-  },
-  // {
-  //   id: 3,
-  //   title: "BitcoinTemp",
-  //   desc: "A fun way to check the price of bitcoin! Cloudy days, sunny days, and Bitcoin Storms!",
-  //   img: "/static/projects/bitcointemp.png",
-  //   link: "https://bitcointemp.com",
-  //   tags: ["React", "NextJS", "SCSS", "API"],
-  // },
-  // {
-  //   id: 4,
-  //   title: "Create HTML Boilerplate",
-  //   desc: "Generate a vanilla HTML boilerplate in a flash!",
-  //   img: "/static/projects/create-html-boilerplate.png",
-  //   github: "https://github.com/BraydenTW/create-html-boilerplate",
-  //   tags: ["Node", "Javascript", "NPM", "HTML"],
-  // },
-  // {
-  //   id: 5,
-  //   title: "8 Ball in your CLI",
-  //   desc: "An 8 ball simulation in your CLI built with Rust!",
-  //   img: "/static/projects/8ball-rust.png",
-  //   github: "https://github.com/BraydenTW/8ball-rust",
-  //   tags: ["Rust", "CLI", "Game"],
-  // },
-  // {
-  //   id: 6,
-  //   title: "DontLeaveMe 😭",
-  //   desc: "Beg for users to stay on your website.",
-  //   img: "/static/projects/dontleaveme.png",
-  //   link: "https://github.com/BraydenTW/dontleaveme/",
-  //   tags: ["Javascript", "NPM"],
-  // },
-  // {
-  //   id: 7,
-  //   title: "Madlibs",
-  //   desc: "A simple version of Madlibs built for the web!",
-  //   img: "/static/projects/madlibs.png",
-  //   link: "https://fillemin.netlify.app/",
-  //   github: "https://github.com/braydentw/madlibs",
-  //   tags: ["HTML", "CSS", "Javascript"],
-  // },
 ];
 
-export const allTags = []
+export const allTags = [];
 
 projects.forEach((project) => {
-  project.tags.forEach((tag) => !allTags.includes(tag) && allTags.push(tag))
+  project.tags.forEach((tag) => !allTags.includes(tag) && allTags.push(tag));
 });
 
-export const allKebabTags = allTags.map(tag => (
-  kebabCase(tag)
-))
+export const allKebabTags = allTags.map((tag) => kebabCase(tag));
 
-export default projects
+export default projects;
