@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 function CTA() {
   return (
@@ -8,13 +9,23 @@ function CTA() {
         <h2 className="text-4xl md:text-5xl font-bold mb-10">
           Interested in Working Together?
         </h2>
-        <a
-          href="mailto:me@harrisonwarburton.com"
-          className="cursor-pointer font-bold whitespace-nowrap 
-        mt-6 px-8 py-3 text-white border-2 rounded-full border-white bg-bg hover:bg-fun-pink hover:border-fun-pink transition-colors"
-        >
-          Get in Touch
-        </a>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link href="/hire">
+            <a
+              className="cursor-pointer font-bold whitespace-nowrap 
+            px-8 py-3 text-white border-2 rounded-full border-fun-pink bg-fun-pink hover:opacity-90 transition-opacity"
+            >
+              Start a project
+            </a>
+          </Link>
+          <a
+            href="mailto:me@harrisonwarburton.com"
+            className="cursor-pointer font-bold whitespace-nowrap 
+          px-8 py-3 text-white border-2 rounded-full border-white bg-bg hover:bg-fun-pink hover:border-fun-pink transition-colors"
+          >
+            Email me
+          </a>
+        </div>
       </div>
 
       <img

@@ -27,18 +27,14 @@ export const routes: Route[] = [
     title: "Home",
     path: "/",
   },
-  // {
-  //   title: "Blog",
-  //   path: "/blog",
-  // },
   {
     title: "Projects",
     path: "/projects",
   },
-  // {
-  //   title: "Designs",
-  //   path: "/designs",
-  // },
+  {
+    title: "Hire",
+    path: "/hire",
+  },
 ];
 
 
@@ -62,11 +58,11 @@ export const footer: Footer = {
           link: "/projects",
           leavesWebsite: false,
         },
-        // {
-        //   name: "Designs",
-        //   link: "/designs",
-        //   leavesWebsite: false,
-        // },
+        {
+          name: "Hire",
+          link: "/hire",
+          leavesWebsite: false,
+        },
       ],
     },
     {

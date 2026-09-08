@@ -9,6 +9,14 @@ type Testimonial = {
   job: string
 };
 
+export const site = {
+  availableForWork: true,
+  about:
+    "Junior web developer based in the North West of the UK. I build WordPress sites, custom web apps, and product-minded interfaces—currently shipping work at Don't Panic Events.",
+  location: "Rawtenstall / Manchester, UK",
+  focus: "Web development, WordPress, and product UI",
+  githubUsername: "dev-harrisonw",
+};
 
 export const skills: Skill[] = [
   {

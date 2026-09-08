@@ -1,5 +1,7 @@
 import React from "react";
+import Link from "next/link";
 import { Link as ScrollLink } from "react-scroll";
+import { site } from "@/data/content/home";
 
 function Hero() {
   return (
@@ -8,6 +10,12 @@ function Hero() {
         className="relative heroElem w-full pt-20 pb-40 m-auto flex justify-center text-center flex-col items-center z-1"
         style={{ maxWidth: "1200px" }}
       >
+        {site.availableForWork && (
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-fun-pink/50 bg-fun-pink-darkerer px-3 py-1 text-xs font-medium text-fun-pink">
+            <span className="h-1.5 w-1.5 rounded-full bg-fun-pink animate-pulse" />
+            Available for work
+          </div>
+        )}
         <p className="text-xl mb-5">Hi, I'm Harrison.</p>
         <h1 className="heroTitle inline-block max-w-2xl lg:max-w-4xl  w-auto relative text-5xl md:text-6xl lg:text-7xl tracking-tighter mb-10 font-bold heroShinyBg">
           I enjoy <span className="heroShiny1 text-fun-pink">exploring</span> and{" "}
@@ -58,18 +66,28 @@ function Hero() {
             src="/static/doodles/hero/code.svg"
           />
         </h1>
-        <ScrollLink
-          activeClass="active"
-          to="learnmore"
-          spy={true}
-          offset={-30}
-          smooth={true}
-          duration={500}
-        >
-          <div className="cursor-pointer font-bold whitespace-nowrap px-10 py-4 text-fun-white border-2 text-xl rounded-full border-fun-white bg-bg hover:bg-fun-pink hover:text-white hover:border-fun-pink transition-colors">
-            Tell me more
-          </div>
-        </ScrollLink>
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <ScrollLink
+            activeClass="active"
+            to="learnmore"
+            spy={true}
+            offset={-30}
+            smooth={true}
+            duration={500}
+          >
+            <div className="cursor-pointer font-bold whitespace-nowrap px-10 py-4 text-fun-white border-2 text-xl rounded-full border-fun-white bg-bg hover:bg-fun-pink hover:text-white hover:border-fun-pink transition-colors">
+              Tell me more
+            </div>
+          </ScrollLink>
+          <Link href="/hire">
+            <a className="cursor-pointer font-bold whitespace-nowrap px-10 py-4 text-fun-pink border-2 text-xl rounded-full border-fun-pink bg-bg hover:bg-fun-pink hover:text-white transition-colors">
+              Start a project
+            </a>
+          </Link>
+        </div>
+        <p className="mt-4 text-xs text-fun-gray">
+          Tip: press <kbd className="rounded border border-fun-gray px-1.5 py-0.5 font-monospace">⌘K</kbd> to jump anywhere
+        </p>
       </div>
     </>
   );
