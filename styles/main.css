@@ -306,3 +306,20 @@ pre {
 .sqD {
   @apply absolute z-[-10];
 }
+
+/* Route progress */
+#nprogress .bar {
+  background: #3bb143 !important;
+  height: 3px !important;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #3bb143, 0 0 5px #3bb143 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroElem,
+  .heroElem .sqD:not(.squiggle-hero-pop1) {
+    animation: none !important;
+  }
+}
