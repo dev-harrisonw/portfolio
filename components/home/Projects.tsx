@@ -3,28 +3,33 @@ import React from "react";
 import SectionTitle from "../global/SectionTitle";
 import { getFeaturedProjects } from "@/data/content/projects";
 import ProjectCard from "../projects/ProjectCard";
+import { MotionItem, MotionSection } from "../utility/Motion";
 
 function Projects() {
   const featured = getFeaturedProjects();
 
   return (
-    <div className="flex flex-col text-left justify-between pt-8 relative">
-      <div id="learnmore">
-        <SectionTitle title="Here are a few of my favorite projects." />
-      </div>
+    <MotionSection className="flex flex-col text-left justify-between pt-8 relative">
+      <MotionItem>
+        <div id="learnmore">
+          <SectionTitle title="Here are a few of my favorite projects." />
+        </div>
+      </MotionItem>
       <div className="grid grid-cols-1 gap-12 md:gap-5 md:grid-cols-3 items-start">
         {featured.map((item) => {
           return <ProjectCard key={item.id} project={item} />;
         })}
       </div>
-      <div className="relative w-full mt-2">
-        <Link href="/projects">
-          <div className="mt-8 max-w-sm md:max-w-2xl border border-fun-pink mx-auto text-center w-full whitespace-nowrap px-8 py-3 rounded-full text-fun-pink bg-fun-pink-darkerer hover:bg-fun-pink hover:text-white transition-colors cursor-pointer">
-            View All
-          </div>
-        </Link>
-      </div>
-    </div>
+      <MotionItem>
+        <div className="relative w-full mt-2">
+          <Link href="/projects">
+            <div className="mt-8 max-w-sm md:max-w-2xl border border-fun-pink mx-auto text-center w-full whitespace-nowrap px-8 py-3 rounded-full text-fun-pink bg-fun-pink-darkerer hover:bg-fun-pink hover:text-white transition-colors cursor-pointer">
+              View All
+            </div>
+          </Link>
+        </div>
+      </MotionItem>
+    </MotionSection>
   );
 }
 

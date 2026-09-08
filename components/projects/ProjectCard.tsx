@@ -4,12 +4,15 @@ import { kebabCase } from "@/utils/utils";
 import Link from "next/link";
 import { Project } from "types";
 import ProjectImage from "./ProjectImage";
+import { motion, useReducedMotion } from "framer-motion";
+import { fadeUp } from "@/utils/motion";
 
 function ProjectCard({ project }: { project: Project }) {
   const isDeprecated = project.status === "deprecated";
   const href = `/projects/${project.slug}`;
+  const reduce = useReducedMotion();
 
-  return (
+  const card = (
     <div className="max-w-sm mx-auto flex flex-col projects-center md:projects-start md:justify-center">
       <Link href={href}>
         <a
@@ -71,6 +74,19 @@ function ProjectCard({ project }: { project: Project }) {
         </ul>
       </div>
     </div>
+  );
+
+  if (reduce) return card;
+
+  return (
+    <motion.div
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, amount: 0.2 }}
+    >
+      {card}
+    </motion.div>
   );
 }
 
