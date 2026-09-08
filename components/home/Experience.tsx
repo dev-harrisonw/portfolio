@@ -47,7 +47,7 @@ function Experience() {
             .toUpperCase();
 
           return (
-            <li key={item.company} className="ml-6 md:ml-8">
+            <li key={item.company} className="relative ml-6 md:ml-8">
               <span className="absolute -left-3 md:-left-3.5 flex items-center justify-center w-6 h-6 md:w-7 md:h-7 rounded-full border border-fun-pink bg-bg text-[10px] font-bold text-fun-pink">
                 {item.logo ? (
                   <img src={item.logo} alt="" className="w-full h-full rounded-full object-cover" />
