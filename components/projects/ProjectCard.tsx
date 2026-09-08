@@ -3,6 +3,7 @@ import Image from "next/image";
 import { kebabCase } from "@/utils/utils";
 import Link from "next/link";
 import { Project } from "types";
+import ProjectImage from "./ProjectImage";
 
 function ProjectCard({ project }: { project: Project }) {
   const isDeprecated = project.status === "deprecated";
@@ -21,7 +22,7 @@ function ProjectCard({ project }: { project: Project }) {
               Handed over
             </span>
           )}
-          <img className="w-full rounded-md" src={project.img} alt={project.title} />
+          <ProjectImage project={project} />
         </a>
       </Link>
       <div className="w-full mt-5">

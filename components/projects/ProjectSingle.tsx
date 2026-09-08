@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Project } from "types";
 import { kebabCase } from "@/utils/utils";
+import ProjectImage from "./ProjectImage";
 
 function ProjectSingle({ project }: { project: Project }) {
   const isDeprecated = project.status === "deprecated";
@@ -16,11 +17,7 @@ function ProjectSingle({ project }: { project: Project }) {
       </Link>
 
       <div className="relative rounded-xl border border-fun-gray p-2 mb-8">
-        <img
-          className="w-full rounded-md"
-          src={project.img}
-          alt={project.title}
-        />
+        <ProjectImage project={project} />
       </div>
 
       <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
