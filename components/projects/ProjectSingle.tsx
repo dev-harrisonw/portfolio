@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Project } from "types";
 import { kebabCase } from "@/utils/utils";
 import ProjectImage from "./ProjectImage";
+import RepoCodeBrowser from "./RepoCodeBrowser";
 
 function ProjectSingle({ project }: { project: Project }) {
   const isDeprecated = project.status === "deprecated";
@@ -95,6 +96,10 @@ function ProjectSingle({ project }: { project: Project }) {
           </li>
         ))}
       </ul>
+
+      {project.githubRepo && (
+        <RepoCodeBrowser repo={project.githubRepo} githubUrl={project.github} />
+      )}
     </article>
   );
 }
