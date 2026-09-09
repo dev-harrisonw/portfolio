@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  excerpt     String    @default("")
+  body        String    @default("")
+  coverImage  String?
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  authorId    String?
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  email     String
+  service   String?
+  timeline  String?
+  budget    String?
+  details   String?
+  summary   String?
+  createdAt DateTime @default(now())
+}
