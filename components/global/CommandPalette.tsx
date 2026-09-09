@@ -15,6 +15,8 @@ const commands: Command[] = [
   { id: "experience", label: "Experience", href: "/#experience", hint: "Work history" },
   { id: "skills", label: "Skills", href: "/#skills", hint: "Toolbelt" },
   { id: "blog", label: "Blog", href: "/blog", hint: "Writing" },
+  { id: "admin", label: "Admin", href: "/admin", hint: "CMS" },
+  { id: "shop", label: "Shop", href: "/shop", hint: "Coming soon" },
 ];
 
 function CommandPalette() {
