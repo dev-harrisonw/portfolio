@@ -5,7 +5,7 @@ import Image from "next/image";
 
 function Footer() {
   return (
-    <footer className="flex flex-col w-screen px-5 py-10 border-t border-fun-pink-darker z-5 bg-bg">
+    <footer className="flex flex-col w-full px-5 py-10 border-t border-fun-pink-darker z-5 bg-bg">
       <div className="w-full max-w-4xl m-auto grid grid-cols-2 sm:grid-cols-3 justify-between items-start">
         {footer.columns.map((item, index) => {
           return (
@@ -83,7 +83,7 @@ function Footer() {
         </div>
       </div>
       <div className="max-w-4xl w-full m-auto mt-8 pt-8 sm:mt-4 sm:pt-4 text-center text-fun-gray border-t border-fun-pink-dark">
-        <p className="flex flex-col items-center justify-center ">
+        <div className="flex flex-col items-center justify-center">
           <div className="inline-flex items-center uppercase text-xs font-bold tracking-widest">
             Made with{" "}
             <div className="space-x-2 inline-flex items-center -mt-1 ml-3">
@@ -92,6 +92,7 @@ function Footer() {
                   src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg"
                   width="26"
                   title="React"
+                  alt=""
                 />
                 <span className="sr-only">React</span>
               </span>
@@ -101,14 +102,16 @@ function Footer() {
                   width="40"
                   className="invert"
                   title="NextJS"
+                  alt=""
                 />
                 <span className="sr-only">NextJS</span>
               </span>
               <span>
                 <img
-                  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg"
+                  src="/static/icons/tailwindcss.svg"
                   width="26"
                   title="TailwindCSS"
+                  alt=""
                 />
                 <span className="sr-only">TailwindCSS</span>
               </span>
@@ -124,7 +127,7 @@ function Footer() {
             </a>
             . All rights reserved.
           </div>
-        </p>
+        </div>
       </div>
       <div className="mt-8 text-center sm:text-right sm:-mt-12">
         <a
