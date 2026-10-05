@@ -1,5 +1,6 @@
 import type { GetServerSidePropsContext } from "next";
-import { getAuth, clerkClient } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
+import { getClerkUser, isAdminUser } from "@/lib/access";
 
 export async function requireAdminPage(ctx: GetServerSidePropsContext) {
   const { userId } = getAuth(ctx.req);
@@ -15,21 +16,8 @@ export async function requireAdminPage(ctx: GetServerSidePropsContext) {
   }
 
   try {
-    const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-    const role = (user.publicMetadata as { role?: string } | undefined)?.role;
-    const emails =
-      process.env.ADMIN_EMAILS?.split(",")
-        .map((e) => e.trim().toLowerCase())
-        .filter(Boolean) || [];
-    const userEmails = user.emailAddresses.map((e) =>
-      e.emailAddress.toLowerCase()
-    );
-    const isAdmin =
-      role === "admin" ||
-      emails.some((email) => userEmails.includes(email));
-
-    if (!isAdmin) {
+    const user = await getClerkUser(userId);
+    if (!isAdminUser(user)) {
       return {
         redirect: {
           destination: "/?error=forbidden",
