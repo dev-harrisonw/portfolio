@@ -17,7 +17,8 @@ export async function requireAdmin(req: NextApiRequest) {
   }
 
   try {
-    const user = await clerkClient.users.getUser(userId);
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
     const role = (user.publicMetadata as { role?: string } | undefined)?.role;
     if (role === "admin") {
       return { ok: true as const, userId };

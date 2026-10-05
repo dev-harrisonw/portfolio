@@ -1,4 +1,9 @@
 import { SignUp } from "@clerk/nextjs";
+import type { GetServerSideProps } from "next";
+
+export const getServerSideProps: GetServerSideProps = async () => ({
+  props: {},
+});
 
 export default function SignUpPage() {
   return (

@@ -56,8 +56,8 @@ export default function BlogIndex({ posts }: { posts: PostCard[] }) {
         {posts.length === 0 ? (
           <div className="rounded-xl border border-fun-gray p-6 text-fun-gray">
             No posts yet — check back soon, or{" "}
-            <Link href="/hire">
-              <a className="text-fun-pink hover:underline">start a project</a>
+            <Link href="/hire" className="text-fun-pink hover:underline">
+              start a project
             </Link>
             .
           </div>
@@ -65,10 +65,12 @@ export default function BlogIndex({ posts }: { posts: PostCard[] }) {
           <ul className="space-y-6">
             {posts.map((post) => (
               <li key={post.id}>
-                <Link href={`/blog/${post.slug}`}>
-                  <a className="text-xl font-bold hover:text-fun-pink transition-colors">
-                    {post.title}
-                  </a>
+                <Link
+                  href={`/blog/${post.slug}`}
+                  className="text-xl font-bold hover:text-fun-pink transition-colors">
+
+                  {post.title}
+
                 </Link>
                 {post.publishedAt && (
                   <p className="text-xs text-fun-gray mt-1">

@@ -22,5 +22,9 @@ export default function App({ Component, pageProps }: AppProps) {
     return tree;
   }
 
-  return <ClerkProvider {...pageProps}>{tree}</ClerkProvider>;
+  return (
+    <ClerkProvider publishableKey={publishableKey} {...pageProps}>
+      {tree}
+    </ClerkProvider>
+  );
 }

@@ -34,8 +34,8 @@ export default function HirePage() {
             me@harrisonwarburton.com
           </a>
           {" · "}
-          <Link href="/projects">
-            <a className="text-fun-pink hover:underline">See projects</a>
+          <Link href="/projects" className="text-fun-pink hover:underline">
+            See projects
           </Link>
         </p>
       </div>

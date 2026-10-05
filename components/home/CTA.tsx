@@ -10,13 +10,13 @@ function CTA() {
           Interested in Working Together?
         </h2>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link href="/hire">
-            <a
-              className="cursor-pointer font-bold whitespace-nowrap 
-            px-8 py-3 text-white border-2 rounded-full border-fun-pink bg-fun-pink hover:opacity-90 transition-opacity"
-            >
+          <Link
+            href="/hire"
+            className="cursor-pointer font-bold whitespace-nowrap 
+          px-8 py-3 text-white border-2 rounded-full border-fun-pink bg-fun-pink hover:opacity-90 transition-opacity">
+            
               Start a project
-            </a>
+            
           </Link>
           <a
             href="mailto:me@harrisonwarburton.com"

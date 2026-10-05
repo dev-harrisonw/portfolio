@@ -63,8 +63,8 @@ export default function BlogPostPage({ post }: { post: PostView }) {
       }}
     >
       <article className="max-w-2xl mx-auto px-5 py-16">
-        <Link href="/blog">
-          <a className="text-sm text-fun-gray hover:text-fun-pink">← Blog</a>
+        <Link href="/blog" className="text-sm text-fun-gray hover:text-fun-pink">
+          ← Blog
         </Link>
         <h1 className="text-4xl font-bold mt-4 mb-3">{post.title}</h1>
         {post.publishedAt && (

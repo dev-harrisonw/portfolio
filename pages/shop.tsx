@@ -20,10 +20,12 @@ export default function ShopPage() {
           This is reserved for downloadable files, courses, and other digital
           products via Stripe. Nothing for sale yet.
         </p>
-        <Link href="/hire">
-          <a className="rounded-full bg-fun-pink px-6 py-3 font-bold text-white inline-block">
+        <Link
+          href="/hire"
+          className="rounded-full bg-fun-pink px-6 py-3 font-bold text-white inline-block">
+          
             Need something custom instead?
-          </a>
+          
         </Link>
       </div>
     </Page>

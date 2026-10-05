@@ -17,26 +17,32 @@ export default function AdminHome() {
         <UserButton afterSignOutUrl="/" />
       </div>
       <div className="grid gap-3">
-        <Link href="/admin/posts">
-          <a className="block rounded-xl border border-fun-gray p-4 hover:border-fun-pink transition-colors">
-            <span className="font-bold">Posts</span>
-            <p className="text-sm text-fun-gray mt-1">
-              Create and publish blog articles
-            </p>
-          </a>
+        <Link
+          href="/admin/posts"
+          className="block rounded-xl border border-fun-gray p-4 hover:border-fun-pink transition-colors">
+
+          <span className="font-bold">Posts</span>
+          <p className="text-sm text-fun-gray mt-1">
+            Create and publish blog articles
+          </p>
+
         </Link>
-        <Link href="/admin/leads">
-          <a className="block rounded-xl border border-fun-gray p-4 hover:border-fun-pink transition-colors">
-            <span className="font-bold">Leads</span>
-            <p className="text-sm text-fun-gray mt-1">
-              Hire enquiries from the guided assistant
-            </p>
-          </a>
+        <Link
+          href="/admin/leads"
+          className="block rounded-xl border border-fun-gray p-4 hover:border-fun-pink transition-colors">
+
+          <span className="font-bold">Leads</span>
+          <p className="text-sm text-fun-gray mt-1">
+            Hire enquiries from the guided assistant
+          </p>
+
         </Link>
-        <Link href="/">
-          <a className="text-sm text-fun-pink hover:underline mt-4 inline-block">
+        <Link
+          href="/"
+          className="text-sm text-fun-pink hover:underline mt-4 inline-block">
+          
             ← Back to site
-          </a>
+          
         </Link>
       </div>
     </div>

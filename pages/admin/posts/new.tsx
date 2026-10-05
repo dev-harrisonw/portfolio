@@ -39,8 +39,8 @@ export default function NewPostPage() {
     <div className="min-h-screen bg-bg text-white px-5 py-10 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <Link href="/admin/posts">
-            <a className="text-sm text-fun-gray hover:text-fun-pink">← Posts</a>
+          <Link href="/admin/posts" className="text-sm text-fun-gray hover:text-fun-pink">
+            ← Posts
           </Link>
           <h1 className="text-3xl font-bold mt-2">New post</h1>
         </div>

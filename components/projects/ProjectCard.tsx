@@ -14,26 +14,26 @@ function ProjectCard({ project }: { project: Project }) {
 
   const card = (
     <div className="max-w-sm mx-auto flex flex-col projects-center md:projects-start md:justify-center">
-      <Link href={href}>
-        <a
-          className={`w-full relative rounded-xl border-fun-gray border p-2 transition hover:-translate-y-2 hover:opacity-75 hover:border-fun-pink will-change-projectCard ${
-            isDeprecated ? "opacity-80" : ""
-          }`}
-        >
-          {isDeprecated && (
-            <span className="absolute top-4 left-4 z-10 text-[10px] uppercase tracking-wide rounded-lg bg-black/70 py-1 px-2 text-fun-gray border border-fun-gray">
-              Handed over
-            </span>
-          )}
-          <ProjectImage project={project} />
-        </a>
+      <Link
+        href={href}
+        className={`w-full relative rounded-xl border-fun-gray border p-2 transition hover:-translate-y-2 hover:opacity-75 hover:border-fun-pink will-change-projectCard ${
+          isDeprecated ? "opacity-80" : ""
+        }`}>
+
+        {isDeprecated && (
+          <span className="absolute top-4 left-4 z-10 text-[10px] uppercase tracking-wide rounded-lg bg-black/70 py-1 px-2 text-fun-gray border border-fun-gray">
+            Handed over
+          </span>
+        )}
+        <ProjectImage project={project} />
+
       </Link>
       <div className="w-full mt-5">
         <div className="flex projects-center justify-between">
           <Link href={href}>
-            <a>
-              <h3 className="text-lg font-bold">{project.title}</h3>
-            </a>
+
+            <h3 className="text-lg font-bold">{project.title}</h3>
+
           </Link>
           <div className="space-x-2">
             {project.link && (

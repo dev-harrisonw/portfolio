@@ -15,7 +15,8 @@ export async function requireAdminPage(ctx: GetServerSidePropsContext) {
   }
 
   try {
-    const user = await clerkClient.users.getUser(userId);
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
     const role = (user.publicMetadata as { role?: string } | undefined)?.role;
     const emails =
       process.env.ADMIN_EMAILS?.split(",")

@@ -1,4 +1,9 @@
 import { SignIn } from "@clerk/nextjs";
+import type { GetServerSideProps } from "next";
+
+export const getServerSideProps: GetServerSideProps = async () => ({
+  props: {},
+});
 
 export default function SignInPage() {
   return (

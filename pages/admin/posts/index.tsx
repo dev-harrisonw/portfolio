@@ -43,16 +43,18 @@ export default function AdminPosts() {
     <div className="min-h-screen bg-bg text-white px-5 py-10 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <Link href="/admin">
-            <a className="text-sm text-fun-gray hover:text-fun-pink">← Admin</a>
+          <Link href="/admin" className="text-sm text-fun-gray hover:text-fun-pink">
+            ← Admin
           </Link>
           <h1 className="text-3xl font-bold mt-2">Posts</h1>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/admin/posts/new">
-            <a className="rounded-full bg-fun-pink px-4 py-2 text-sm font-bold">
+          <Link
+            href="/admin/posts/new"
+            className="rounded-full bg-fun-pink px-4 py-2 text-sm font-bold">
+            
               New post
-            </a>
+            
           </Link>
           <UserButton afterSignOutUrl="/" />
         </div>
@@ -73,8 +75,10 @@ export default function AdminPosts() {
               </p>
             </div>
             <div className="flex gap-2 text-sm">
-              <Link href={`/admin/posts/${post.id}`}>
-                <a className="text-fun-pink hover:underline">Edit</a>
+              <Link
+                href={`/admin/posts/${post.id}`}
+                className="text-fun-pink hover:underline">
+                Edit
               </Link>
               <button
                 type="button"

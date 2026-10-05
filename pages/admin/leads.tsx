@@ -36,8 +36,8 @@ export default function AdminLeads() {
     <div className="min-h-screen bg-bg text-white px-5 py-10 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <Link href="/admin">
-            <a className="text-sm text-fun-gray hover:text-fun-pink">← Admin</a>
+          <Link href="/admin" className="text-sm text-fun-gray hover:text-fun-pink">
+            ← Admin
           </Link>
           <h1 className="text-3xl font-bold mt-2">Leads</h1>
         </div>

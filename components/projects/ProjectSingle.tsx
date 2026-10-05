@@ -11,10 +11,12 @@ function ProjectSingle({ project }: { project: Project }) {
 
   return (
     <article className="w-full max-w-3xl mx-auto px-5 md:px-0 py-10">
-      <Link href="/projects">
-        <a className="inline-flex items-center text-sm text-fun-gray hover:text-fun-pink transition-colors mb-8">
+      <Link
+        href="/projects"
+        className="inline-flex items-center text-sm text-fun-gray hover:text-fun-pink transition-colors mb-8">
+        
           ← Back to projects
-        </a>
+        
       </Link>
 
       <div className="relative rounded-xl border border-fun-gray p-2 mb-8">
@@ -88,10 +90,12 @@ function ProjectSingle({ project }: { project: Project }) {
       <ul className="flex flex-wrap items-center -ml-2 list-none">
         {project.tags.map((tag) => (
           <li key={tag}>
-            <Link href={`/projects/tag/${kebabCase(tag)}`}>
-              <a className="m-1 inline-block rounded-lg text-sm bg-fun-pink-dark py-1 px-2 cursor-pointer hover:opacity-75">
-                {tag}
-              </a>
+            <Link
+              href={`/projects/tag/${kebabCase(tag)}`}
+              className="m-1 inline-block rounded-lg text-sm bg-fun-pink-dark py-1 px-2 cursor-pointer hover:opacity-75">
+
+              {tag}
+
             </Link>
           </li>
         ))}
