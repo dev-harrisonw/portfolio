@@ -60,6 +60,27 @@ export function listEntries({ from, to, clientId }: { from: Date; to: Date; clie
   });
 }
 
+/** Active clients → active projects → open tasks, for the task picker. */
+export function getPickerTree() {
+  return prisma.client.findMany({
+    where: { archived: false },
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      projects: {
+        where: { status: "ACTIVE" },
+        orderBy: { name: "asc" },
+        select: {
+          id: true,
+          name: true,
+          tasks: { where: { status: { not: "DONE" } }, orderBy: { createdAt: "desc" }, select: { id: true, title: true, status: true } },
+        },
+      },
+    },
+  });
+}
+
 /** Monday 00:00 UTC of the week containing `ref`. */
 export function startOfWeek(ref: Date) {
   const d = new Date(Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth(), ref.getUTCDate()));

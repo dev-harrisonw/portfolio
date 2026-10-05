@@ -28,7 +28,19 @@ export type UsageEntry = {
 };
 
 export type ClientUsage = {
-  client: { id: string; name: string; currency: string; hourlyRate: number; retainerAmount: number | null; periodStartDay: number };
+  client: {
+    id: string;
+    name: string;
+    billingEmail: string;
+    currency: string;
+    hourlyRate: number;
+    monthlyHours: number | null;
+    retainerAmount: number | null;
+    periodStartDay: number;
+    roundingMinutes: number;
+    vatRateBps: number;
+  };
+  projects: { id: string; name: string; hourlyRate: number | null; monthlyHours: number | null }[];
   period: { start: string; end: string; days: { total: number; elapsed: number; left: number }; isCurrent: boolean };
   totals: { minutes: number; billableMinutes: number; nonBillableMinutes: number };
   allowances: AllowanceUsage[];
@@ -117,11 +129,16 @@ export async function getClientUsage(clientId: string, period?: BillingPeriod, n
     client: {
       id: client.id,
       name: client.name,
+      billingEmail: client.billingEmail,
       currency: client.currency,
       hourlyRate: client.hourlyRate,
+      monthlyHours: client.monthlyHours,
       retainerAmount: client.retainerAmount,
       periodStartDay: client.periodStartDay,
+      roundingMinutes: client.roundingMinutes,
+      vatRateBps: client.vatRateBps,
     },
+    projects: client.projects.map((pr) => ({ id: pr.id, name: pr.name, hourlyRate: pr.hourlyRate, monthlyHours: pr.monthlyHours })),
     period: { start: p.start.toISOString(), end: p.end.toISOString(), days: periodDays(p, paceNow), isCurrent },
     totals: { minutes: total, billableMinutes: billable, nonBillableMinutes: total - billable },
     allowances: [buildAllowance(null), ...[...ownAllowance].map((id) => buildAllowance(id))],

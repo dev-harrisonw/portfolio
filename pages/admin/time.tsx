@@ -1,11 +1,10 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { GetServerSideProps } from "next";
-import prisma from "@/lib/prisma";
 import { requireAdminPage } from "@/lib/requireAdminPage";
 import { api } from "@/lib/fetcher";
 import { formatMinutes, parseDuration } from "@/lib/billing";
-import { getRunningEntry, startOfWeek } from "@/lib/time";
+import { getPickerTree, getRunningEntry, startOfWeek } from "@/lib/time";
 import AdminShell from "@/components/admin/AdminShell";
 import { Button, Card, Input, Select } from "@/components/admin/Form";
 import RunningTimer, { type RunningEntry } from "@/components/admin/time/RunningTimer";
@@ -19,26 +18,7 @@ type View = "week" | "month";
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const auth = await requireAdminPage(ctx);
   if ("redirect" in auth) return auth;
-  const [clients, running] = await Promise.all([
-    prisma.client.findMany({
-      where: { archived: false },
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        projects: {
-          where: { status: "ACTIVE" },
-          orderBy: { name: "asc" },
-          select: {
-            id: true,
-            name: true,
-            tasks: { where: { status: { not: "DONE" } }, orderBy: { createdAt: "desc" }, select: { id: true, title: true, status: true } },
-          },
-        },
-      },
-    }),
-    getRunningEntry(),
-  ]);
+  const [clients, running] = await Promise.all([getPickerTree(), getRunningEntry()]);
   return { props: JSON.parse(JSON.stringify({ clients, running })) };
 };
 
