@@ -46,6 +46,27 @@ enum ProjectStatus {
   ARCHIVED
 }
 
+/// TIME = hours (retainer allowance or pay-as-you-go). FIXED = fixed-price build shown as progress.
+enum ProjectBillingType {
+  TIME
+  FIXED
+}
+
+enum PaymentTerms {
+  FIFTY_FIFTY
+  UPFRONT
+  ON_COMPLETION
+  FORTY_THIRTY_THIRTY
+  CUSTOM
+}
+
+enum StageStatus {
+  PENDING
+  DUE
+  INVOICED
+  PAID
+}
+
 enum TaskStatus {
   TODO
   IN_PROGRESS
@@ -106,12 +127,20 @@ model Project {
   monthlyHours     Int?
   rolloverPolicy   RolloverPolicy?
   rolloverCapHours Int?
+  billingType      ProjectBillingType @default(TIME)
+  /// FIXED only: agreed price, payment terms, dates, and an optional manual progress % (0–100).
+  fixedPrice       Int?
+  paymentTerms     PaymentTerms?
+  startDate        DateTime?
+  dueDate          DateTime?
+  progressOverride Int?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
   client  Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
   tasks   Task[]
   carries AllowanceCarry[]
+  stages  PaymentStage[]
 
   @@index([clientId])
 }
@@ -149,6 +178,23 @@ model TimeEntry {
   @@index([taskId])
   @@index([startedAt])
   @@index([endedAt])
+}
+
+/// A fixed-price payment stage (e.g. 50% deposit). Invoiced when marked reached.
+model PaymentStage {
+  id        String      @id @default(cuid())
+  projectId String
+  label     String
+  percent   Int
+  sortOrder Int         @default(0)
+  status    StageStatus @default(PENDING)
+  reachedAt DateTime?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
 }
 
 /// Unused hours carried into a period, snapshotted when the previous period closes.

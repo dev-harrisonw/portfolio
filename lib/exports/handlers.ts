@@ -6,17 +6,23 @@ import { priceUsage } from "@/lib/invoicing/calc";
 import { ENTRY_HEADER, exportFilename, toCsv, usageRows } from "@/lib/exports/csv";
 import { renderTimesheetPdf } from "@/lib/exports/TimesheetPdf";
 
-export async function usageFor(clientId: string, periodParam: unknown) {
+export async function usageFor(clientId: string, periodParam: unknown, audience: "admin" | "client" = "admin") {
   const client = await prisma.client.findUnique({ where: { id: clientId }, select: { periodStartDay: true } });
   if (!client) throw new HttpError(404, "Client not found");
-  const usage = await getClientUsage(clientId, periodFromParam(periodParam, client.periodStartDay));
+  const usage = await getClientUsage(clientId, periodFromParam(periodParam, client.periodStartDay), new Date(), { audience });
   if (!usage) throw new HttpError(404, "Client not found");
   return usage;
 }
 
 /** Shared by admin and portal routes; callers must have already authorised access to clientId. */
-export async function sendExport(res: NextApiResponse, clientId: string, periodParam: unknown, format: unknown) {
-  const usage = await usageFor(clientId, periodParam);
+export async function sendExport(
+  res: NextApiResponse,
+  clientId: string,
+  periodParam: unknown,
+  format: unknown,
+  audience: "admin" | "client" = "admin"
+) {
+  const usage = await usageFor(clientId, periodParam, audience);
   res.setHeader("Cache-Control", "private, no-store");
 
   if (format === "pdf") {

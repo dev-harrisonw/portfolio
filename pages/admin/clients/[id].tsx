@@ -25,7 +25,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       users: { orderBy: { createdAt: "asc" } },
       projects: {
         orderBy: [{ status: "asc" }, { name: "asc" }],
-        include: { tasks: { orderBy: [{ status: "asc" }, { createdAt: "desc" }] } },
+        include: {
+          tasks: { orderBy: [{ status: "asc" }, { createdAt: "desc" }] },
+          stages: { orderBy: { sortOrder: "asc" } },
+        },
       },
     },
   });

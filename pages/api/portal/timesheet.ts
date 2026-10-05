@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const access = await resolvePortalAccess(req, requested);
     if (access.status === "signed-out") return res.status(401).json({ error: "Unauthorized" });
     if (access.status === "no-access") return res.status(403).json({ error: "Forbidden" });
-    await sendExport(res, access.clientId, req.query.period, req.query.format);
+    await sendExport(res, access.clientId, req.query.period, req.query.format, "client");
   } catch (error) {
     sendError(res, error);
   }

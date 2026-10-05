@@ -65,7 +65,28 @@ function Timesheet({ usage, estimate }: { usage: ClientUsage; estimate: InvoiceD
           </View>
         </View>
 
-        <Text style={s.h2}>By project</Text>
+        {usage.builds.length > 0 && (
+          <>
+            <Text style={s.h2}>Project builds</Text>
+            {usage.builds.map((b) => (
+              <View key={b.id} wrap={false} style={{ marginBottom: 8 }}>
+                <View style={[s.row, { borderBottom: "none" }]}>
+                  <Text style={{ flex: 1, fontFamily: "Helvetica-Bold" }}>{b.name}</Text>
+                  <Text style={s.right}>{b.progress.percent}% complete</Text>
+                </View>
+                <View style={{ height: 5, backgroundColor: "#e5e7eb", borderRadius: 3 }}>
+                  <View style={{ height: 5, width: `${b.progress.percent}%`, backgroundColor: green, borderRadius: 3 }} />
+                </View>
+                <Text style={[s.muted, { marginTop: 3 }]}>
+                  {b.progress.total > 0 ? `${b.progress.done} of ${b.progress.total} tasks done` : ""}
+                  {b.dueDate ? ` · target ${fmtDate(b.dueDate)}` : ""}
+                </Text>
+              </View>
+            ))}
+          </>
+        )}
+
+        {usage.byProject.length > 0 && <Text style={s.h2}>By project</Text>}
         {usage.byProject.map((p) => (
           <View key={p.projectId} wrap={false} style={{ marginBottom: 6 }}>
             <View style={[s.row, { borderBottom: "none" }]}>

@@ -8,6 +8,7 @@ import { getClientUsage, periodFromParam, periodParam, type ClientUsage } from "
 import { priceUsage, projectionScale, type InvoiceDraft } from "@/lib/invoicing/calc";
 import PortalShell from "@/components/portal/PortalShell";
 import PortalDashboard from "@/components/portal/PortalDashboard";
+import BuildProgress from "@/components/portal/BuildProgress";
 import { AllowanceSummary, CompletedTasks, EntryLog, ProjectBreakdown } from "@/components/portal/HoursBreakdown";
 
 type Props = {
@@ -27,7 +28,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
 
   const now = new Date();
   const period = periodFromParam(ctx.query.period, client.periodStartDay, now);
-  const usage = await getClientUsage(access.clientId, period, now);
+  const usage = await getClientUsage(access.clientId, period, now, { audience: "client" });
   if (!usage) return { notFound: true };
 
   const periods = Array.from({ length: 12 }, (_, i) => shiftPeriod(client.periodStartDay, now, -i))
@@ -55,6 +56,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
 export default function PortalPage({ usage, estimate, projected, periods, adminPreview }: Props) {
   const router = useRouter();
   const current = periodParam(usage.period.start);
+  const hasTime = usage.client.monthlyHours != null || usage.projects.length > 0;
 
   return (
     <PortalShell clientName={usage.client.name} adminPreview={adminPreview}>
@@ -65,10 +67,10 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
 
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold">{usage.period.isCurrent ? "This period" : "Past period"}</h1>
+          <h1 className="text-3xl font-bold">{!hasTime ? "Your projects" : usage.period.isCurrent ? "This period" : "Past period"}</h1>
           <p className="text-fun-gray-light">
             {periods.find((p) => p.value === current)?.label}
-            {usage.period.isCurrent && ` · ${usage.period.days.left} days left`}
+            {hasTime && usage.period.isCurrent && ` · ${usage.period.days.left} days left`}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -102,30 +104,46 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
         </div>
       </div>
 
-      <PortalDashboard usage={usage} estimate={estimate} projected={projected} />
+      {hasTime && <PortalDashboard usage={usage} estimate={estimate} projected={projected} />}
 
-      {usage.allowances.length > 1 && (
+      {usage.builds.length > 0 && (
+        <section>
+          {hasTime && <h2 className="text-xl font-bold mb-4">Project builds</h2>}
+          <BuildProgress builds={usage.builds} currency={usage.client.currency} />
+        </section>
+      )}
+
+      {hasTime && usage.allowances.length > 1 && (
         <section className="mb-10">
           <h2 className="text-xl font-bold mb-4">Allowances</h2>
           <AllowanceSummary usage={usage} />
         </section>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-5 mb-10">
-        <section className="lg:col-span-3">
-          <h2 className="text-xl font-bold mb-4">Where the time went</h2>
-          <ProjectBreakdown usage={usage} />
-        </section>
-        <section className="lg:col-span-2">
-          <h2 className="text-xl font-bold mb-4">Work completed</h2>
+      {hasTime ? (
+        <>
+          <div className="grid gap-8 lg:grid-cols-5 mb-10">
+            <section className="lg:col-span-3">
+              <h2 className="text-xl font-bold mb-4">Where the time went</h2>
+              <ProjectBreakdown usage={usage} />
+            </section>
+            <section className="lg:col-span-2">
+              <h2 className="text-xl font-bold mb-4">Work completed</h2>
+              <CompletedTasks usage={usage} />
+            </section>
+          </div>
+
+          <section>
+            <h2 className="text-xl font-bold mb-4">Time log</h2>
+            <EntryLog usage={usage} />
+          </section>
+        </>
+      ) : (
+        <section>
+          <h2 className="text-xl font-bold mb-4">Work completed this period</h2>
           <CompletedTasks usage={usage} />
         </section>
-      </div>
-
-      <section>
-        <h2 className="text-xl font-bold mb-4">Time log</h2>
-        <EntryLog usage={usage} />
-      </section>
+      )}
     </PortalShell>
   );
 }

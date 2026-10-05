@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { computePace, getBillingPeriod, periodDays, resolveAllowance, type BillingPeriod } from "@/lib/billing";
+import { projectProgress, stageAmounts } from "@/lib/projects";
 
 export type AllowanceUsage = {
   scope: "client" | "project";
@@ -53,21 +54,63 @@ export type ClientUsage = {
   }[];
   completedTasks: { id: string; title: string; projectName: string; completedAt: string }[];
   entries: UsageEntry[];
+  builds: BuildProgress[];
 };
 
-/** Finished entries only; a running timer isn't counted until it stops. */
-export async function getClientUsage(clientId: string, period?: BillingPeriod, now: Date = new Date()): Promise<ClientUsage | null> {
-  const client = await prisma.client.findUnique({ where: { id: clientId }, include: { projects: true } });
-  if (!client) return null;
+export type BuildProgress = {
+  id: string;
+  name: string;
+  status: string;
+  progress: { percent: number; computed: number; done: number; total: number; isOverride: boolean };
+  startDate: string | null;
+  dueDate: string | null;
+  fixedPrice: number | null;
+  paymentTerms: string | null;
+  stages: { id: string; label: string; percent: number; amount: number; status: string; reachedAt: string | null }[];
+  upcomingTasks: { id: string; title: string; status: string }[];
+  /** Admin only: hours logged against the build, for profitability. Always 0 for clients. */
+  internalMinutes: number;
+};
+
+type UsageOptions = { audience?: "admin" | "client" };
+
+/**
+ * Finished entries only; a running timer isn't counted until it stops. Hours-based figures cover
+ * TIME projects; FIXED builds are reported as progress in `builds`.
+ */
+export async function getClientUsage(
+  clientId: string,
+  period?: BillingPeriod,
+  now: Date = new Date(),
+  { audience = "admin" }: UsageOptions = {}
+): Promise<ClientUsage | null> {
+  const found = await prisma.client.findUnique({
+    where: { id: clientId },
+    include: {
+      projects: {
+        include: {
+          tasks: { select: { id: true, title: true, status: true, createdAt: true }, orderBy: { createdAt: "asc" } },
+          stages: { orderBy: { sortOrder: "asc" } },
+        },
+      },
+    },
+  });
+  if (!found) return null;
+  const fixedProjects = found.projects.filter((pr) => pr.billingType === "FIXED");
+  const client = { ...found, projects: found.projects.filter((pr) => pr.billingType === "TIME") };
 
   const current = getBillingPeriod(client.periodStartDay, now);
   const p = period ?? current;
   const isCurrent = p.start.getTime() === current.start.getTime();
   const paceNow = isCurrent ? now : new Date(p.end.getTime() - 1);
 
-  const [entries, carries, completed] = await Promise.all([
+  const [entries, carries, completed, fixedMinutes] = await Promise.all([
     prisma.timeEntry.findMany({
-      where: { task: { project: { clientId } }, startedAt: { gte: p.start, lt: p.end }, endedAt: { not: null } },
+      where: {
+        task: { project: { clientId, billingType: "TIME" } },
+        startedAt: { gte: p.start, lt: p.end },
+        endedAt: { not: null },
+      },
       orderBy: { startedAt: "asc" },
       include: { task: { include: { project: true } } },
     }),
@@ -79,7 +122,47 @@ export async function getClientUsage(clientId: string, period?: BillingPeriod, n
       orderBy: { completedAt: "desc" },
       include: { project: { select: { name: true } } },
     }),
+    audience === "admin" && fixedProjects.length
+      ? prisma.timeEntry.groupBy({
+          by: ["taskId"],
+          where: { task: { projectId: { in: fixedProjects.map((pr) => pr.id) } }, endedAt: { not: null } },
+          _sum: { durationMinutes: true },
+        })
+      : Promise.resolve([]),
   ]);
+
+  const taskProject = new Map(fixedProjects.flatMap((pr) => pr.tasks.map((t) => [t.id, pr.id] as const)));
+  const minutesByBuild = new Map<string, number>();
+  for (const row of fixedMinutes) {
+    const pid = taskProject.get(row.taskId);
+    if (pid) minutesByBuild.set(pid, (minutesByBuild.get(pid) ?? 0) + (row._sum.durationMinutes ?? 0));
+  }
+
+  const builds: BuildProgress[] = fixedProjects
+    .filter((pr) => pr.status !== "ARCHIVED")
+    .map((pr) => {
+      const amounts = stageAmounts(pr.fixedPrice ?? 0, pr.stages);
+      return {
+        id: pr.id,
+        name: pr.name,
+        status: pr.status,
+        progress: projectProgress(pr.tasks, pr.progressOverride),
+        startDate: pr.startDate?.toISOString() ?? null,
+        dueDate: pr.dueDate?.toISOString() ?? null,
+        fixedPrice: pr.fixedPrice,
+        paymentTerms: pr.paymentTerms,
+        stages: pr.stages.map((s, i) => ({
+          id: s.id,
+          label: s.label,
+          percent: s.percent,
+          amount: amounts[i],
+          status: s.status,
+          reachedAt: s.reachedAt?.toISOString() ?? null,
+        })),
+        upcomingTasks: pr.tasks.filter((t) => t.status !== "DONE").slice(0, 6).map((t) => ({ id: t.id, title: t.title, status: t.status })),
+        internalMinutes: audience === "admin" ? minutesByBuild.get(pr.id) ?? 0 : 0,
+      };
+    });
 
   const ownAllowance = new Set(client.projects.filter((pr) => pr.monthlyHours != null).map((pr) => pr.id));
 
@@ -160,6 +243,7 @@ export async function getClientUsage(clientId: string, period?: BillingPeriod, n
       projectId: e.task.projectId,
       projectName: e.task.project.name,
     })),
+    builds,
   };
 }
 

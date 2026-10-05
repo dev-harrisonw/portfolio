@@ -30,7 +30,27 @@ export const projectSchema = z.object({
   monthlyHours: z.number().int().min(0).nullable().optional(),
   rolloverPolicy: rollover.nullable().optional(),
   rolloverCapHours: z.number().int().min(0).nullable().optional(),
+  billingType: z.enum(["TIME", "FIXED"]).default("TIME"),
+  fixedPrice: optionalMinor,
+  startDate: z.coerce.date().nullable().optional(),
+  dueDate: z.coerce.date().nullable().optional(),
+  progressOverride: z.number().int().min(0).max(100).nullable().optional(),
 });
+
+export const paymentTermsSchema = z
+  .object({
+    terms: z.enum(["FIFTY_FIFTY", "UPFRONT", "ON_COMPLETION", "FORTY_THIRTY_THIRTY", "CUSTOM"]),
+    stages: z
+      .array(z.object({ label: z.string().trim().min(1, "Each stage needs a name"), percent: z.number().int().min(1).max(100) }))
+      .optional(),
+  })
+  .refine((v) => v.terms !== "CUSTOM" || (v.stages?.length ?? 0) > 0, "Add at least one stage")
+  .refine(
+    (v) => v.terms !== "CUSTOM" || v.stages?.reduce((s, x) => s + x.percent, 0) === 100,
+    "Custom stages must add up to 100%"
+  );
+
+export const stageUpdateSchema = z.object({ status: z.enum(["PENDING", "DUE"]) });
 
 export const projectUpdateSchema = projectSchema.omit({ clientId: true }).partial();
 

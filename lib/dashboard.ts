@@ -15,6 +15,8 @@ export type ClientCard = {
   billableMinutes: number;
   soFar: number;
   projected: number;
+  hasTime: boolean;
+  builds: ClientUsage["builds"];
 };
 
 const DAY_MS = 86400000;
@@ -35,6 +37,8 @@ export async function getAdminDashboard(now: Date = new Date()) {
     billableMinutes: u.totals.billableMinutes,
     soFar: priceUsage(u).subtotal,
     projected: priceUsage(u, { scale: projectionScale(u) }).subtotal,
+    hasTime: u.client.monthlyHours != null || u.projects.length > 0,
+    builds: u.builds,
   }));
 
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
