@@ -31,3 +31,138 @@ model Lead {
   summary   String?
   createdAt DateTime @default(now())
 }
+
+// ─── Time tracking (Sprint 6). Money is stored in minor units (pence). ───
+
+enum RolloverPolicy {
+  EXPIRE
+  ROLLOVER
+  ROLLOVER_CAPPED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+model Client {
+  id               String         @id @default(cuid())
+  name             String
+  billingEmail     String
+  currency         String         @default("GBP")
+  hourlyRate       Int
+  /// Retainer allowance per period; null = pay-as-you-go.
+  monthlyHours     Int?
+  /// Fixed retainer fee per period; null = bill allowance hours at hourlyRate.
+  retainerAmount   Int?
+  /// Day of month the billing period starts (1–28).
+  periodStartDay   Int            @default(1)
+  rolloverPolicy   RolloverPolicy @default(EXPIRE)
+  rolloverCapHours Int?
+  /// Round each entry up to this many minutes when invoicing (0 = exact).
+  roundingMinutes  Int            @default(0)
+  /// Basis points, e.g. 2000 = 20%. 0 = not VAT-registered.
+  vatRateBps       Int            @default(0)
+  reviewBeforeSend Boolean        @default(false)
+  stripeCustomerId String?
+  archived         Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  users    ClientUser[]
+  projects Project[]
+  carries  AllowanceCarry[]
+}
+
+model ClientUser {
+  id          String   @id @default(cuid())
+  clientId    String
+  email       String
+  /// Null until the invited user signs up and is linked.
+  clerkUserId String?  @unique
+  createdAt   DateTime @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, email])
+  @@index([email])
+}
+
+model Project {
+  id               String          @id @default(cuid())
+  clientId         String
+  name             String
+  status           ProjectStatus   @default(ACTIVE)
+  /// Overrides the client's hourly rate when set.
+  hourlyRate       Int?
+  /// A project-level allowance; when set, rollover settings below override the client's.
+  monthlyHours     Int?
+  rolloverPolicy   RolloverPolicy?
+  rolloverCapHours Int?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  client  Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+  carries AllowanceCarry[]
+
+  @@index([clientId])
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  projectId   String
+  title       String
+  status      TaskStatus @default(TODO)
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  entries TimeEntry[]
+
+  @@index([projectId])
+  @@index([completedAt])
+}
+
+model TimeEntry {
+  id              String    @id @default(cuid())
+  taskId          String
+  startedAt       DateTime
+  /// Null while the timer is running. Only one running entry is allowed (enforced in lib/time).
+  endedAt         DateTime?
+  durationMinutes Int       @default(0)
+  note            String    @default("")
+  billable        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Restrict)
+
+  @@index([taskId])
+  @@index([startedAt])
+  @@index([endedAt])
+}
+
+/// Unused hours carried into a period, snapshotted when the previous period closes.
+model AllowanceCarry {
+  id             String   @id @default(cuid())
+  clientId       String?
+  projectId      String?
+  periodStart    DateTime
+  carriedMinutes Int
+  createdAt      DateTime @default(now())
+
+  client  Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, periodStart])
+  @@unique([projectId, periodStart])
+}
