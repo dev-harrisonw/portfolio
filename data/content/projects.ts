@@ -116,7 +116,7 @@ const projects: Project[] = [
   },
 ];
 
-export const allTags = [];
+export const allTags: string[] = [];
 
 projects.forEach((project) => {
   project.tags.forEach((tag) => !allTags.includes(tag) && allTags.push(tag));

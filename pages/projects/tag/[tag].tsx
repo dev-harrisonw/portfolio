@@ -12,7 +12,7 @@ import More from "components/projects/More";
 import Link from "next/link";
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const allTags = [];
+  const allTags: string[] = [];
   projects.forEach((project) =>
     project.tags.forEach((tag) => {
       allTags.push(tag);

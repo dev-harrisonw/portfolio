@@ -43,3 +43,4 @@ prisma/dev.db-journal
 
 # Contentlayer
 .contentlayer
+tsconfig.tsbuildinfo
