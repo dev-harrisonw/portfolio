@@ -16,7 +16,7 @@ function ProjectCard({ project }: { project: Project }) {
     <div className="max-w-sm mx-auto flex flex-col projects-center md:projects-start md:justify-center">
       <Link
         href={href}
-        className={`w-full relative rounded-xl border-fun-gray border p-2 transition hover:-translate-y-2 hover:opacity-75 hover:border-fun-pink will-change-projectCard ${
+        className={`group w-full relative rounded-xl border-fun-gray border p-2 transition hover:-translate-y-1 hover:border-fun-pink will-change-projectCard ${
           isDeprecated ? "opacity-80" : ""
         }`}>
 

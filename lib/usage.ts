@@ -13,6 +13,7 @@ export type AllowanceUsage = {
   remainingMinutes: number | null;
   overageMinutes: number;
   rolloverPolicy: string;
+  rolloverCapHours: number | null;
   pace: { status: string; projectedMinutes: number; runOutDate: string | null };
 };
 
@@ -186,6 +187,7 @@ export async function getClientUsage(
       remainingMinutes: available != null ? Math.max(0, available - used) : null,
       overageMinutes: available != null ? Math.max(0, used - available) : 0,
       rolloverPolicy: resolved.rolloverPolicy,
+      rolloverCapHours: resolved.rolloverCapHours,
       pace: { ...pace, runOutDate: pace.runOutDate?.toISOString() ?? null },
     };
   };

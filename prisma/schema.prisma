@@ -100,6 +100,7 @@ model Client {
   users    ClientUser[]
   projects Project[]
   carries  AllowanceCarry[]
+  invoices Invoice[]
 }
 
 model ClientUser {
@@ -141,6 +142,7 @@ model Project {
   tasks   Task[]
   carries AllowanceCarry[]
   stages  PaymentStage[]
+  invoices Invoice[]
 
   @@index([clientId])
 }
@@ -170,14 +172,17 @@ model TimeEntry {
   durationMinutes Int       @default(0)
   note            String    @default("")
   billable        Boolean   @default(true)
+  invoiceId       String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  task Task @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  task    Task     @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  invoice Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
 
   @@index([taskId])
   @@index([startedAt])
   @@index([endedAt])
+  @@index([invoiceId])
 }
 
 /// A fixed-price payment stage (e.g. 50% deposit). Invoiced when marked reached.
@@ -189,10 +194,12 @@ model PaymentStage {
   sortOrder Int         @default(0)
   status    StageStatus @default(PENDING)
   reachedAt DateTime?
+  invoiceId String?     @unique
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  invoice Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
 
   @@index([projectId])
 }
@@ -211,4 +218,65 @@ model AllowanceCarry {
 
   @@unique([clientId, periodStart])
   @@unique([projectId, periodStart])
+}
+
+enum InvoiceKind {
+  PERIOD
+  STAGE
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  VOID
+}
+
+model Invoice {
+  id                      String        @id @default(cuid())
+  clientId                String
+  number                  String        @unique
+  kind                    InvoiceKind
+  status                  InvoiceStatus @default(DRAFT)
+  /// PERIOD invoices: the billing window. STAGE invoices leave these null.
+  periodStart             DateTime?
+  periodEnd               DateTime?
+  projectId               String?
+  currency                String
+  subtotal                Int
+  vatRateBps              Int
+  vat                     Int
+  total                   Int
+  dueAt                   DateTime?
+  sentAt                  DateTime?
+  paidAt                  DateTime?
+  stripeCheckoutSessionId String?       @unique
+  checkoutUrl             String?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  client  Client        @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  project Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  lines   InvoiceLine[]
+  entries TimeEntry[]
+  stages  PaymentStage[]
+
+  @@index([clientId])
+  @@index([status])
+  @@index([periodStart])
+}
+
+model InvoiceLine {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  projectId   String?
+  description String
+  minutes     Int     @default(0)
+  rate        Int     @default(0)
+  amount      Int
+  sortOrder   Int     @default(0)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
 }

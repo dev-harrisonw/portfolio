@@ -23,7 +23,14 @@ export type ProjectRow = {
   stages: StageRow[];
   tasks: TaskRow[];
 };
-export type StageRow = { id: string; label: string; percent: number; status: "PENDING" | "DUE" | "INVOICED" | "PAID"; reachedAt: string | null };
+export type StageRow = {
+  id: string;
+  label: string;
+  percent: number;
+  status: "PENDING" | "DUE" | "INVOICED" | "PAID";
+  reachedAt: string | null;
+  invoiceId: string | null;
+};
 type PaymentTermsKey = keyof typeof PAYMENT_TERMS;
 
 const dateInput = (iso: string | null) => (iso ? iso.slice(0, 10) : "");

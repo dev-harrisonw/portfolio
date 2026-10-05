@@ -2,14 +2,37 @@ import { clerkClient } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { adminRoute, HttpError, parseBody, queryId } from "@/lib/api";
 import { inviteSchema } from "@/lib/validation/time";
+import { siteUrl } from "@/lib/site";
 
-function siteUrl() {
-  return process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "http://localhost:3000";
+async function clerkUserIdFor(email: string) {
+  try {
+    const clerk = await clerkClient();
+    const existing = await clerk.users.getUserList({ emailAddress: [email], limit: 1 });
+    return existing.data[0]?.id ?? null;
+  } catch (error) {
+    console.error("Clerk user lookup failed", error);
+    return null;
+  }
+}
+
+async function sendClerkInvite(email: string) {
+  try {
+    const clerk = await clerkClient();
+    await clerk.invitations.createInvitation({
+      emailAddress: email,
+      redirectUrl: `${siteUrl()}/sign-up?redirect_url=/portal`,
+      ignoreExisting: true,
+    });
+    return true;
+  } catch (error) {
+    console.error("Clerk invitation failed", error);
+    return false;
+  }
 }
 
 /**
- * Invite a portal login for a client. If a Clerk user with that email already exists it is linked
- * immediately; otherwise a Clerk invitation is sent and the Clerk webhook links it on sign-up.
+ * Grant portal access for a client. Existing Clerk accounts are linked immediately; otherwise a
+ * Clerk invitation email is sent and the row is claimed on first verified sign-in.
  */
 export default adminRoute({
   POST: async (req, res) => {
@@ -19,10 +42,12 @@ export default adminRoute({
     const owner = await prisma.client.findUnique({ where: { id: clientId }, select: { id: true } });
     if (!owner) throw new HttpError(404, "Client not found");
 
-    const clerk = await clerkClient();
-    const existing = await clerk.users.getUserList({ emailAddress: [email], limit: 1 });
-    const clerkUserId = existing.data[0]?.id ?? null;
+    const existing = await prisma.clientUser.findUnique({ where: { clientId_email: { clientId, email } } });
+    if (existing?.clerkUserId) {
+      return res.status(200).json({ user: existing, invited: false, linked: true, already: true });
+    }
 
+    const clerkUserId = await clerkUserIdFor(email);
     if (clerkUserId) {
       const linked = await prisma.clientUser.findUnique({ where: { clerkUserId } });
       if (linked && linked.clientId !== clientId) {
@@ -36,21 +61,12 @@ export default adminRoute({
       update: { clerkUserId },
     });
 
-    let invited = false;
-    if (!clerkUserId) {
-      try {
-        await clerk.invitations.createInvitation({
-          emailAddress: email,
-          redirectUrl: `${siteUrl()}/sign-up?redirect_url=/portal`,
-          ignoreExisting: true,
-        });
-        invited = true;
-      } catch (error) {
-        console.error("Clerk invitation failed", error);
-      }
+    if (clerkUserId) {
+      return res.status(existing ? 200 : 201).json({ user, invited: false, linked: true, already: false });
     }
 
-    res.status(201).json({ user, invited, linked: Boolean(clerkUserId) });
+    const invited = await sendClerkInvite(email);
+    res.status(existing ? 200 : 201).json({ user, invited, linked: false, already: false });
   },
   DELETE: async (req, res) => {
     const clientId = queryId(req);

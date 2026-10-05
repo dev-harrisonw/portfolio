@@ -1,11 +1,13 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import type { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
 import { requirePortalPage } from "@/lib/access";
-import { shiftPeriod } from "@/lib/billing";
+import { formatMoney, shiftPeriod } from "@/lib/billing";
 import { getClientUsage, periodFromParam, periodParam, type ClientUsage } from "@/lib/usage";
 import { priceUsage, projectionScale, type InvoiceDraft } from "@/lib/invoicing/calc";
+import { api } from "@/lib/fetcher";
 import PortalShell from "@/components/portal/PortalShell";
 import PortalDashboard from "@/components/portal/PortalDashboard";
 import BuildProgress from "@/components/portal/BuildProgress";
@@ -17,6 +19,15 @@ type Props = {
   projected: InvoiceDraft;
   periods: { value: string; label: string }[];
   adminPreview: { clients: { id: string; name: string }[]; currentId: string } | null;
+  invoices: {
+    id: string;
+    number: string;
+    status: string;
+    total: number;
+    kind: string;
+    createdAt: string;
+    checkoutUrl: string | null;
+  }[];
 };
 
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
@@ -50,13 +61,27 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const estimate = priceUsage(usage);
   const projected = priceUsage(usage, { scale: projectionScale(usage) });
 
-  return { props: { usage, estimate, projected, periods, adminPreview } };
+  const invoices = (
+    await prisma.invoice.findMany({
+      where: {
+        clientId: access.clientId,
+        status: access.isAdmin ? { not: "VOID" } : { in: ["SENT", "PAID"] },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 6,
+      select: { id: true, number: true, status: true, total: true, kind: true, createdAt: true, checkoutUrl: true },
+    })
+  ).map((inv) => ({ ...inv, createdAt: inv.createdAt.toISOString() }));
+
+  return { props: { usage, estimate, projected, periods, adminPreview, invoices } };
 };
 
-export default function PortalPage({ usage, estimate, projected, periods, adminPreview }: Props) {
+export default function PortalPage({ usage, estimate, projected, periods, adminPreview, invoices }: Props) {
   const router = useRouter();
   const current = periodParam(usage.period.start);
   const hasTime = usage.client.monthlyHours != null || usage.projects.length > 0;
+  const paidId = typeof router.query.paid === "string" ? router.query.paid : null;
+  const paidInvoice = paidId ? invoices.find((inv) => inv.id === paidId) : null;
 
   return (
     <PortalShell clientName={usage.client.name} adminPreview={adminPreview}>
@@ -64,6 +89,17 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
         <title>{usage.client.name} · Client portal</title>
         <meta name="robots" content="noindex" />
       </Head>
+
+      {paidInvoice && (
+        <div className="mb-6 rounded-2xl border border-fun-pink/40 bg-fun-pink-darkest px-4 py-3 text-sm">
+          Payment received for <span className="font-bold">{paidInvoice.number}</span>. Thank you.
+        </div>
+      )}
+      {paidId && !paidInvoice && (
+        <div className="mb-6 rounded-2xl border border-fun-pink/40 bg-fun-pink-darkest px-4 py-3 text-sm">
+          Payment received. If the invoice still shows as sent, refresh in a moment.
+        </div>
+      )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between mb-6 sm:mb-8">
         <div className="min-w-0">
@@ -133,7 +169,7 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
             </section>
           </div>
 
-          <section>
+          <section className="mt-10">
             <h2 className="text-xl font-bold mb-4">Time log</h2>
             <EntryLog usage={usage} />
           </section>
@@ -144,6 +180,73 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
           <CompletedTasks usage={usage} />
         </section>
       )}
+
+      {invoices.length > 0 && (
+        <section className="mt-10">
+          <h2 className="text-xl font-bold mb-4">Invoices</h2>
+          <ul className="rounded-2xl border border-fun-gray-darker divide-y divide-fun-gray-darker">
+            {invoices.map((inv) => (
+              <li key={inv.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">
+                <span>
+                  <span className="font-bold">{inv.number}</span>
+                  <span className="text-fun-gray-medium"> · {inv.kind === "STAGE" ? "Project payment" : "Period"}</span>
+                </span>
+                <span className="flex items-center gap-3 shrink-0">
+                  <span className="font-monospace">{formatMoney(inv.total, usage.client.currency)}</span>
+                  <span className="text-xs uppercase tracking-wider text-fun-gray-medium">{inv.status.toLowerCase()}</span>
+                  {inv.status === "SENT" && (
+                    <PayButton
+                      invoiceId={inv.id}
+                      clientId={adminPreview?.currentId}
+                    />
+                  )}
+                  {(inv.status === "SENT" || inv.status === "PAID") && (
+                    <a
+                      href={`/api/portal/invoices/${inv.id}?${new URLSearchParams({
+                        format: "pdf",
+                        ...(adminPreview ? { client: adminPreview.currentId } : {}),
+                      })}`}
+                      className="text-fun-pink hover:underline"
+                    >
+                      PDF
+                    </a>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </PortalShell>
+  );
+}
+
+function PayButton({ invoiceId, clientId }: { invoiceId: string; clientId?: string }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <span className="inline-flex flex-col items-end">
+      <button
+        type="button"
+        disabled={busy}
+        className="rounded-full bg-fun-pink px-3 py-1.5 text-xs font-bold text-white hover:bg-fun-pink-light disabled:opacity-40 min-h-[44px] sm:min-h-0"
+        onClick={async () => {
+          setBusy(true);
+          setError(null);
+          try {
+            const qs = clientId ? `?client=${encodeURIComponent(clientId)}` : "";
+            const { url } = await api<{ url: string }>(`/api/portal/invoices/${invoiceId}/pay${qs}`);
+            window.location.href = url;
+          } catch (e) {
+            setError((e as Error).message);
+            setBusy(false);
+          }
+        }}
+      >
+        {busy ? "Opening…" : "Pay"}
+      </button>
+      {error && <span className="mt-1 text-[11px] text-red-400 max-w-[12rem] text-right">{error}</span>}
+    </span>
   );
 }

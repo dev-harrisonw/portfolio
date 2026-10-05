@@ -4708,6 +4708,11 @@ popmotion@11.0.3:
     style-value-types "5.0.0"
     tslib "^2.1.0"
 
+postal-mime@2.7.6:
+  version "2.7.6"
+  resolved "https://registry.yarnpkg.com/postal-mime/-/postal-mime-2.7.6.tgz#e8528e77ddeea51ab0a4d14f0a5216e0fd3a2c34"
+  integrity sha512-UUlyE2KlxmvwMGq060onF/VWU3zD6dVW31FwokQ5v26jWd35fbs2MoTFzh+jXnPwAyV2MULMKXcBInGOl5TO6Q==
+
 postcss-import@^14.1.0:
   version "14.1.0"
   resolved "https://registry.yarnpkg.com/postcss-import/-/postcss-import-14.1.0.tgz#a7333ffe32f0b8795303ee9e40215dac922781f0"
@@ -5281,6 +5286,14 @@ require-main-filename@^2.0.0:
   resolved "https://registry.yarnpkg.com/require-main-filename/-/require-main-filename-2.0.0.tgz#d0b329ecc7cc0f61649f62215be69af54aa8989b"
   integrity sha512-NKN5kMDylKuldxYLSUfrbo5Tuzh4hd+2E8NPPX02mZtn1VuREQToYe/ZdlJy+J3uCpfaiGF05e7B8W0iXbQHmg==
 
+resend@^6.32.0:
+  version "6.32.0"
+  resolved "https://registry.yarnpkg.com/resend/-/resend-6.32.0.tgz#ba1d6cb35a4690751bb0a43524af3043d89a7c8d"
+  integrity sha512-bZZUeKlpKINFT+zGG2iIzfDewkyEHRaE7Xk1haseVz3Gfw6ekkizN6KdKgZSMjt5ywE8vMwr3wTdenlF8P475Q==
+  dependencies:
+    postal-mime "2.7.6"
+    standardwebhooks "1.1.1"
+
 resolve-alpn@^1.0.0:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/resolve-alpn/-/resolve-alpn-1.2.1.tgz#b7adbdac3546aaaec20b45e7d8265927072726f9"
@@ -5547,7 +5560,7 @@ sprintf-js@~1.0.2:
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=
 
-standardwebhooks@^1.0.0:
+standardwebhooks@1.1.1, standardwebhooks@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/standardwebhooks/-/standardwebhooks-1.1.1.tgz#25b98fa2bbe4edad7b42778135c923563e3d5e2f"
   integrity sha512-bCbX9ZEyFkWPsRz7Bl3NuQUJohmwGSev/yhr7vhaGPlc4AfIrspIRa6cPTBuI1ItmrTDJ4d/S2hCsfe4+vQGnQ==
@@ -5651,6 +5664,11 @@ strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
   integrity sha1-PFMZQukIwml8DsNEhYwobHygpgo=
+
+stripe@^23.0.0:
+  version "23.0.0"
+  resolved "https://registry.yarnpkg.com/stripe/-/stripe-23.0.0.tgz#4730d07671871986e6e5b31e018668e9743676da"
+  integrity sha512-MDE2A5ZVVluYURORaZEVghSmnLJc3w6aHAlZSxDQMsOjOb3V0O6ro/CiaeFlJS4N7uIVmsg98ocRsPmUK6YfyA==
 
 style-to-object@0.3.0, style-to-object@^0.3.0:
   version "0.3.0"

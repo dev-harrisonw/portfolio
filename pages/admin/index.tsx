@@ -88,6 +88,34 @@ export default function AdminDashboardPage({ data }: Props) {
         </MotionItem>
       </MotionSection>
 
+      {data.nudges.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-xl font-bold mb-4">Needs a nudge</h2>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {data.nudges.map((n) => (
+              <li key={n.id}>
+                <Link
+                  href={n.href}
+                  className="flex items-start justify-between gap-3 rounded-2xl border border-fun-gray-darker px-4 py-3 hover:border-fun-pink transition-colors h-full"
+                >
+                  <span className="min-w-0">
+                    <span
+                      className={`inline-block rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider ${
+                        n.tone === "red" ? "bg-red-500/15 text-red-300" : "bg-yellow-500/15 text-yellow-300"
+                      }`}
+                    >
+                      {n.label}
+                    </span>
+                    <p className="font-bold mt-1 truncate">{n.title}</p>
+                    <p className="text-xs text-fun-gray-medium mt-0.5">{n.detail}</p>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section className="mt-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Clients this period</h2>

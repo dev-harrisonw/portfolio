@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/lib/fetcher";
 import { formatMoney } from "@/lib/billing";
@@ -142,12 +143,17 @@ export default function PaymentStages({ projectId, price, currency, terms, stage
               </span>
               {price != null && <span className="font-monospace">{formatMoney(amounts[i], currency)}</span>}
               <span className={`w-20 text-right text-xs ${statusTone[s.status]}`}>{s.status.toLowerCase()}</span>
+              {s.invoiceId && (
+                <Link href={`/admin/invoices/${s.invoiceId}`} className="text-xs text-fun-pink hover:underline">
+                  Invoice
+                </Link>
+              )}
               {s.status === "PENDING" && (
                 <Button variant="ghost" className="px-3 py-1 text-xs" onClick={() => setStage(s.id, "DUE")} disabled={price == null}>
                   Mark reached
                 </Button>
               )}
-              {s.status === "DUE" && (
+              {(s.status === "DUE" || s.status === "INVOICED") && (
                 <button type="button" className="text-xs text-fun-gray-medium hover:text-white" onClick={() => setStage(s.id, "PENDING")}>
                   Undo
                 </button>

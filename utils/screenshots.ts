@@ -9,10 +9,19 @@ export const shouldUseLiveScreenshot = (project: Project) => {
   return project.liveScreenshot === true || project.liveScreenshot === undefined;
 };
 
-export const getMicrolinkScreenshotUrl = (url: string) =>
-  `https://api.microlink.io/?url=${encodeURIComponent(
-    url
-  )}&screenshot=true&meta=false&embed=screenshot.url`;
+export const getMicrolinkScreenshotUrl = (url: string, force = false) => {
+  const params = new URLSearchParams({
+    url,
+    screenshot: "true",
+    meta: "false",
+    embed: "screenshot.url",
+    "screenshot.fullPage": "true",
+    waitUntil: "networkidle2",
+    waitForTimeout: "4000",
+  });
+  if (force) params.set("force", "true");
+  return `https://api.microlink.io/?${params.toString()}`;
+};
 
 export const getProjectScreenshot = (project: Project) => {
   if (shouldUseLiveScreenshot(project) && project.link) {

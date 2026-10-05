@@ -2,6 +2,8 @@ import prisma from "@/lib/prisma";
 import { getClientUsage, type ClientUsage } from "@/lib/usage";
 import { priceUsage, projectionScale } from "@/lib/invoicing/calc";
 import { entryInclude, getPickerTree, getRunningEntry } from "@/lib/time";
+import { formatMoney, formatMinutes } from "@/lib/billing";
+import { portalStatus } from "@/lib/clients";
 
 export type ClientCard = {
   id: string;
@@ -17,6 +19,15 @@ export type ClientCard = {
   projected: number;
   hasTime: boolean;
   builds: ClientUsage["builds"];
+};
+
+export type DashboardNudge = {
+  id: string;
+  tone: "red" | "yellow";
+  label: string;
+  title: string;
+  href: string;
+  detail: string;
 };
 
 const DAY_MS = 86400000;
@@ -76,6 +87,113 @@ export async function getAdminDashboard(now: Date = new Date()) {
 
   const names = new Map(usages.map((u) => [u.client.id, u.client.name]));
 
+  const [openInvoices, portalClients] = await Promise.all([
+    prisma.invoice.findMany({
+      where: { status: { in: ["DRAFT", "SENT"] } },
+      orderBy: { createdAt: "desc" },
+      take: 40,
+      select: {
+        id: true,
+        number: true,
+        status: true,
+        total: true,
+        currency: true,
+        dueAt: true,
+        client: { select: { id: true, name: true } },
+      },
+    }),
+    prisma.client.findMany({
+      where: { archived: false },
+      select: { id: true, name: true, users: { select: { clerkUserId: true } } },
+    }),
+  ]);
+
+  const nowMs = now.getTime();
+  const nudges: DashboardNudge[] = [];
+
+  for (const inv of openInvoices) {
+    const overdue = inv.status === "SENT" && inv.dueAt && new Date(inv.dueAt).getTime() < nowMs;
+    if (overdue) {
+      nudges.push({
+        id: `overdue-${inv.id}`,
+        tone: "red",
+        label: "Overdue",
+        title: `${inv.client.name} · ${inv.number}`,
+        href: `/admin/invoices/${inv.id}`,
+        detail: `${formatMoney(inv.total, inv.currency)} unpaid`,
+      });
+    } else if (inv.status === "SENT") {
+      nudges.push({
+        id: `unpaid-${inv.id}`,
+        tone: "yellow",
+        label: "Awaiting payment",
+        title: `${inv.client.name} · ${inv.number}`,
+        href: `/admin/invoices/${inv.id}`,
+        detail: formatMoney(inv.total, inv.currency),
+      });
+    } else {
+      nudges.push({
+        id: `draft-${inv.id}`,
+        tone: "yellow",
+        label: "Ready to send",
+        title: `${inv.client.name} · ${inv.number}`,
+        href: `/admin/invoices/${inv.id}`,
+        detail: formatMoney(inv.total, inv.currency),
+      });
+    }
+  }
+
+  for (const card of cards) {
+    if (card.allowance.overageMinutes > 0) {
+      nudges.push({
+        id: `over-${card.id}`,
+        tone: "red",
+        label: "Over allowance",
+        title: card.name,
+        href: `/admin/clients/${card.id}`,
+        detail: `${formatMinutes(card.allowance.overageMinutes)} over this period`,
+      });
+    } else if (card.allowance.pace.status === "over") {
+      nudges.push({
+        id: `pace-${card.id}`,
+        tone: "yellow",
+        label: "On track to overage",
+        title: card.name,
+        href: `/admin/clients/${card.id}`,
+        detail: "Usage is pacing above the retainer",
+      });
+    }
+    for (const b of card.builds) {
+      const due = b.stages.filter((st) => st.status === "DUE").length;
+      if (due > 0) {
+        nudges.push({
+          id: `stage-${b.id}`,
+          tone: "yellow",
+          label: "Stage due",
+          title: `${card.name} · ${b.name}`,
+          href: `/admin/clients/${card.id}`,
+          detail: `${due} payment stage${due > 1 ? "s" : ""} ready to invoice`,
+        });
+      }
+    }
+  }
+
+  for (const c of portalClients) {
+    if (portalStatus(c.users) === "none") {
+      nudges.push({
+        id: `portal-${c.id}`,
+        tone: "yellow",
+        label: "No portal access",
+        title: c.name,
+        href: `/admin/clients/${c.id}`,
+        detail: "Invite them so they can see hours and pay invoices",
+      });
+    }
+  }
+
+  const rank = { Overdue: 0, "Over allowance": 1, "Awaiting payment": 2, "Stage due": 3, "On track to overage": 4, "Ready to send": 5, "No portal access": 6 };
+  nudges.sort((a, b) => (rank[a.label as keyof typeof rank] ?? 9) - (rank[b.label as keyof typeof rank] ?? 9));
+
   return {
     totals: {
       billableMinutes: usages.reduce((s, u) => s + u.totals.billableMinutes, 0),
@@ -93,6 +211,7 @@ export async function getAdminDashboard(now: Date = new Date()) {
     running,
     pickerTree,
     monthLabel: monthStart.toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" }),
+    nudges: nudges.slice(0, 8),
   };
 }
 

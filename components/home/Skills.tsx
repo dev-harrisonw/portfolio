@@ -33,7 +33,7 @@ function Skills() {
               key={index}
               className="w-10 mx-auto flex items-center flex-col justify-center"
             >
-              <img src={item.icon} style={item.style} />
+              <img src={item.icon} style={item.style} width={40} height={40} alt="" />
               <p className="text-xs text-fun-gray font-bold mt-3 opacity-80">
                 {item.title}
               </p>

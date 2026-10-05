@@ -10,83 +10,91 @@ export type ExperienceRole = {
 
 export type ExperienceItem = {
   company: string;
+  website?: string;
+  logo?: string;
+  logoFit?: "cover" | "contain";
+  logoBg?: string;
   employmentType?: string;
   location?: string;
   workMode?: string;
-  logo?: string;
   roles: ExperienceRole[];
 };
 
 const experience: ExperienceItem[] = [
   {
     company: "Don't Panic Events",
+    website: "https://dontpanicprojects.com",
+    logo: "/static/companies/dontpanic.jpg",
+    logoFit: "cover",
     employmentType: "Full-time",
-    location: "Rawtenstall, England, United Kingdom",
+    location: "Rawtenstall",
     workMode: "Hybrid",
     roles: [
       {
         title: "Junior Web Developer",
         startDate: "2026-03",
         endDate: null,
-        employmentType: "Full-time",
-        location: "Rawtenstall, England, United Kingdom",
-        workMode: "Hybrid",
       },
     ],
   },
   {
     company: "href agency",
+    website: "https://hrefagency.co.uk",
+    logo: "/static/companies/href.png",
+    logoFit: "contain",
+    logoBg: "bg-black",
     employmentType: "Full-time",
-    location: "Altrincham, England, United Kingdom",
+    location: "Altrincham",
     workMode: "Hybrid",
     roles: [
       {
         title: "Junior Web Developer",
         startDate: "2025-12",
         endDate: "2026-02",
-        employmentType: "Full-time",
-        location: "Altrincham, England, United Kingdom",
-        workMode: "Hybrid",
-        skills: ["Cascading Style Sheets (CSS)", "Tailwind CSS"],
+        skills: ["CSS", "Tailwind"],
       },
     ],
   },
   {
     company: "GigaStudios",
+    website: "https://www.gigastudios.co.uk",
+    logo: "/static/companies/giga.png",
+    logoFit: "contain",
+    logoBg: "bg-black",
     employmentType: "Full-time",
-    location: "Manchester Area, United Kingdom",
+    location: "Manchester",
     workMode: "Remote",
     roles: [
       {
         title: "Director",
         startDate: "2023-01",
         endDate: "2025-12",
-        employmentType: "Full-time",
-        location: "Manchester Area, United Kingdom",
-        workMode: "Remote",
-        skills: ["Cascading Style Sheets (CSS)", "IT Infrastructure Management"],
+        skills: ["CSS", "Infrastructure"],
       },
     ],
   },
   {
     company: "Inconnection",
+    website: "https://inconnection.com",
+    logo: "/static/companies/inconnection.png",
+    logoFit: "cover",
+    logoBg: "bg-white",
     employmentType: "Apprenticeship",
-    location: "Manchester Area, United Kingdom",
+    location: "Manchester",
     workMode: "Hybrid",
     roles: [
       {
         title: "DevOps Engineer",
         startDate: "2022-08",
         endDate: "2023-07",
-        location: "Manchester Area, United Kingdom",
-        skills: ["Cascading Style Sheets (CSS)", "IT Infrastructure Management"],
+        skills: ["Infrastructure", "CSS"],
       },
       {
         title: "Software Engineer",
         startDate: "2021-04",
         endDate: "2022-08",
-        location: "Manchester, England, United Kingdom",
-        skills: ["Cascading Style Sheets (CSS)", "IT Infrastructure Management"],
+        location: "Manchester",
+        skills: ["CSS", "Infrastructure"],
       },
     ],
   },
