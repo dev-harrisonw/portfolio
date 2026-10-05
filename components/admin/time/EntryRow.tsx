@@ -86,7 +86,7 @@ export default function EntryRow({ entry, onChange }: { entry: EntryRowData; onC
         </p>
       </div>
       {!entry.billable && <span className="text-xs rounded-full bg-fun-gray-darker px-2 py-0.5 text-fun-gray-light">Non-billable</span>}
-      <span className={`font-mono tabular-nums text-sm ${running ? "text-fun-pink" : ""}`}>
+      <span className={`font-monospace tabular-nums text-sm ${running ? "text-fun-pink" : ""}`}>
         {running ? "running" : formatMinutes(entry.durationMinutes)}
       </span>
     </li>

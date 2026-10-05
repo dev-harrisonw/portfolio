@@ -59,7 +59,7 @@ export function ProjectBreakdown({ usage }: { usage: ClientUsage }) {
           <li key={project.projectId}>
             <div className="flex items-center justify-between">
               <p className="font-bold">{project.name}</p>
-              <p className="font-mono text-sm">{formatMinutes(project.minutes)}</p>
+              <p className="font-monospace text-sm">{formatMinutes(project.minutes)}</p>
             </div>
             <div className="mt-2 h-1.5 rounded-full bg-fun-gray-darker overflow-hidden">
               <div className="h-full bg-fun-pink" style={{ width: `${Math.round((project.minutes / usage.totals.minutes) * 100)}%` }} />
@@ -71,7 +71,7 @@ export function ProjectBreakdown({ usage }: { usage: ClientUsage }) {
                     {task.status === "DONE" && <span className="text-fun-pink mr-1">✓</span>}
                     {task.title}
                   </span>
-                  <span className="font-mono text-xs">{formatMinutes(task.minutes)}</span>
+                  <span className="font-monospace text-xs">{formatMinutes(task.minutes)}</span>
                 </li>
               ))}
             </ul>
@@ -126,7 +126,7 @@ export function EntryLog({ usage }: { usage: ClientUsage }) {
                 <span className="text-fun-gray-medium"> · {e.projectName}</span>
                 {e.note && <span className="block text-fun-gray-light">{e.note}</span>}
               </td>
-              <td className="py-2 text-right font-mono whitespace-nowrap">
+              <td className="py-2 text-right font-monospace whitespace-nowrap">
                 {formatMinutes(e.durationMinutes)}
                 {!e.billable && <span className="block text-xs text-fun-gray-medium font-sans">not billed</span>}
               </td>

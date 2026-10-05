@@ -49,10 +49,10 @@ export default function ClientUsageCard({ card }: { card: ClientCard }) {
 
       <div className="mt-4 flex justify-between border-t border-fun-gray-darker pt-3 text-xs">
         <span className="text-fun-gray-medium">
-          So far <span className="text-white font-mono">{formatMoney(card.soFar, card.currency)}</span>
+          So far <span className="text-white font-monospace">{formatMoney(card.soFar, card.currency)}</span>
         </span>
         <span className="text-fun-gray-medium">
-          Projected <span className="text-white font-mono">{formatMoney(card.projected, card.currency)}</span>
+          Projected <span className="text-white font-monospace">{formatMoney(card.projected, card.currency)}</span>
         </span>
       </div>
     </Link>

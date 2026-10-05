@@ -88,7 +88,7 @@ export default function RunningTimer({ clients, running, defaultClientId, onChan
             </p>
           </div>
           <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="What are you working on?" className="flex-1 min-w-[12rem]" />
-          <span className="font-mono text-2xl tabular-nums">{elapsed}</span>
+          <span className="font-monospace text-2xl tabular-nums">{elapsed}</span>
           <Button onClick={stop} disabled={busy} className="bg-red-500 hover:bg-red-400">
             Stop
           </Button>

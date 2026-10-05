@@ -26,7 +26,7 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
   return (
     <Card>
       <p className="text-xs uppercase tracking-wider text-fun-gray-light">{label}</p>
-      <p className="text-2xl font-bold mt-1 font-mono">{value}</p>
+      <p className="text-2xl font-bold mt-1 font-monospace">{value}</p>
       {sub && <p className="text-xs text-fun-gray-medium mt-1">{sub}</p>}
     </Card>
   );
@@ -139,7 +139,7 @@ export default function AdminDashboardPage({ data }: Props) {
                 <li key={c.id}>
                   <div className="flex justify-between text-sm">
                     <span className="truncate">{c.name}</span>
-                    <span className="font-mono text-xs">{formatMinutes(c.minutes)}</span>
+                    <span className="font-monospace text-xs">{formatMinutes(c.minutes)}</span>
                   </div>
                   <div className="mt-1 h-1.5 rounded-full bg-fun-gray-darker">
                     <div className="h-full rounded-full bg-fun-pink" style={{ width: `${(c.minutes / maxClient) * 100}%` }} />
@@ -173,7 +173,7 @@ export default function AdminDashboardPage({ data }: Props) {
                     <span className="text-fun-gray-medium"> · {e.task.project.client.name}</span>
                     {e.note && <span className="text-fun-gray-light"> — {e.note}</span>}
                   </span>
-                  <span className="font-mono text-xs">{formatMinutes(e.durationMinutes)}</span>
+                  <span className="font-monospace text-xs">{formatMinutes(e.durationMinutes)}</span>
                 </li>
               ))}
             </ul>

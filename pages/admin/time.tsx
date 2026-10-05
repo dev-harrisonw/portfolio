@@ -145,11 +145,11 @@ export default function TimePage({ clients: initialClients, running: initialRunn
         <div className="ml-auto flex items-center gap-4 text-sm">
           <span>
             <span className="text-fun-gray-medium">Total </span>
-            <span className="font-mono">{formatMinutes(total)}</span>
+            <span className="font-monospace">{formatMinutes(total)}</span>
           </span>
           <span>
             <span className="text-fun-gray-medium">Billable </span>
-            <span className="font-mono text-fun-pink">{formatMinutes(billable)}</span>
+            <span className="font-monospace text-fun-pink">{formatMinutes(billable)}</span>
           </span>
           <Button variant="ghost" onClick={() => setShowManual((v) => !v)}>
             {showManual ? "Close" : "Add entry"}
@@ -182,7 +182,7 @@ export default function TimePage({ clients: initialClients, running: initialRunn
             <Card key={key}>
               <div className="flex items-center justify-between border-b border-fun-gray-darker pb-2">
                 <p className="font-bold">{dayLabel(key)}</p>
-                <p className="font-mono text-sm text-fun-gray-light">
+                <p className="font-monospace text-sm text-fun-gray-light">
                   {formatMinutes(list.filter((e) => e.endedAt).reduce((s, e) => s + e.durationMinutes, 0))}
                 </p>
               </div>
