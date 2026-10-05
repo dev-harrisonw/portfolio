@@ -71,6 +71,20 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
             {usage.period.isCurrent && ` · ${usage.period.days.left} days left`}
           </p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+        {(["csv", "pdf"] as const).map((format) => (
+          <a
+            key={format}
+            href={`/api/portal/timesheet?${new URLSearchParams({
+              period: current,
+              format,
+              ...(adminPreview ? { client: adminPreview.currentId } : {}),
+            })}`}
+            className="rounded-lg border border-fun-gray-darker px-3 py-2 text-sm hover:border-fun-pink"
+          >
+            {format === "pdf" ? "Timesheet PDF" : "CSV"}
+          </a>
+        ))}
         <select
           aria-label="Billing period"
           className="rounded-lg bg-black/20 border border-fun-gray-darker px-3 py-2 text-sm"
@@ -85,6 +99,7 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
             </option>
           ))}
         </select>
+        </div>
       </div>
 
       <PortalDashboard usage={usage} estimate={estimate} projected={projected} />

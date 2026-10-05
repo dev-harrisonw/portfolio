@@ -39,6 +39,7 @@ export default function ClientDetailPage({ client }: { client: ClientDetail }) {
   const [projectName, setProjectName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
+  const [exportMonth, setExportMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [error, setError] = useState<string | null>(null);
 
   const run = async (fn: () => Promise<unknown>) => {
@@ -140,6 +141,32 @@ export default function ClientDetailPage({ client }: { client: ClientDetail }) {
               Invite
             </Button>
           </form>
+        </Card>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="text-xl font-bold mb-4">Exports</h2>
+        <Card className="flex flex-wrap items-center gap-3">
+          <input
+            type="month"
+            value={exportMonth}
+            max={new Date().toISOString().slice(0, 7)}
+            onChange={(e) => setExportMonth(e.target.value)}
+            className="rounded-lg bg-black/20 border border-fun-gray-darker px-3 py-2 text-sm"
+            aria-label="Period starting in"
+          />
+          {(["csv", "pdf"] as const).map((format) => (
+            <a
+              key={format}
+              href={`/api/admin/exports/timesheet?clientId=${client.id}&period=${exportMonth}&format=${format}`}
+              className="rounded-full border border-fun-gray-darker px-4 py-2 text-sm hover:border-fun-pink"
+            >
+              {format === "pdf" ? "Timesheet PDF" : "Entries CSV"}
+            </a>
+          ))}
+          <Link href={`/portal?client=${client.id}`} className="ml-auto text-sm text-fun-pink hover:underline">
+            Preview their portal →
+          </Link>
         </Card>
       </section>
 

@@ -95,7 +95,18 @@ export default function TimePage({ clients: initialClients, running: initialRunn
       : range.from.toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
 
   return (
-    <AdminShell title="Time" wide>
+    <AdminShell
+      title="Time"
+      wide
+      actions={
+        <a
+          href={`/api/admin/exports/all?period=${range.from.toISOString().slice(0, 7)}`}
+          className="rounded-full border border-fun-gray-darker px-4 py-2 text-sm hover:border-fun-pink"
+        >
+          Export all clients (CSV)
+        </a>
+      }
+    >
       <RunningTimer
         clients={clients}
         running={running}
