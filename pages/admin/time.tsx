@@ -3,8 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { GetServerSideProps } from "next";
 import { requireAdminPage } from "@/lib/requireAdminPage";
 import { api } from "@/lib/fetcher";
-import { formatMinutes, parseDuration } from "@/lib/billing";
-import { getPickerTree, getRunningEntry, startOfWeek } from "@/lib/time";
+import { formatMinutes, parseDuration, startOfWeek } from "@/lib/billing";
 import AdminShell from "@/components/admin/AdminShell";
 import { Button, Card, Input, Select } from "@/components/admin/Form";
 import RunningTimer, { type RunningEntry } from "@/components/admin/time/RunningTimer";
@@ -18,6 +17,7 @@ type View = "week" | "month";
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const auth = await requireAdminPage(ctx);
   if ("redirect" in auth) return auth;
+  const { getPickerTree, getRunningEntry } = await import("@/lib/time");
   const [clients, running] = await Promise.all([getPickerTree(), getRunningEntry()]);
   return { props: JSON.parse(JSON.stringify({ clients, running })) };
 };

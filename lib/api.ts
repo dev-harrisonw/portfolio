@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ZodError, type ZodSchema } from "zod";
 import { requireAdmin } from "@/lib/auth";
+import { HttpError } from "@/lib/http";
+
+export { HttpError };
 
 type Handler = (req: NextApiRequest, res: NextApiResponse, ctx: { userId: string }) => unknown | Promise<unknown>;
 type MethodHandlers = Partial<Record<"GET" | "POST" | "PUT" | "PATCH" | "DELETE", Handler>>;
@@ -23,12 +26,6 @@ export function adminRoute(handlers: MethodHandlers) {
       sendError(res, error);
     }
   };
-}
-
-export class HttpError extends Error {
-  constructor(public status: number, message: string) {
-    super(message);
-  }
 }
 
 export function sendError(res: NextApiResponse, error: unknown) {

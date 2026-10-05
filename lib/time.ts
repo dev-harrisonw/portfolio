@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { HttpError } from "@/lib/api";
+import { HttpError } from "@/lib/http";
 
 const MINUTE_MS = 60_000;
 
@@ -81,10 +81,3 @@ export function getPickerTree() {
   });
 }
 
-/** Monday 00:00 UTC of the week containing `ref`. */
-export function startOfWeek(ref: Date) {
-  const d = new Date(Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth(), ref.getUTCDate()));
-  const offset = (d.getUTCDay() + 6) % 7;
-  d.setUTCDate(d.getUTCDate() - offset);
-  return d;
-}

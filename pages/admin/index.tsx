@@ -5,7 +5,7 @@ import type { GetServerSideProps } from "next";
 import { requireAdminPage } from "@/lib/requireAdminPage";
 import { api } from "@/lib/fetcher";
 import { formatMinutes, formatMoney } from "@/lib/billing";
-import { getAdminDashboard, type AdminDashboard } from "@/lib/dashboard";
+import type { AdminDashboard } from "@/lib/dashboard";
 import AdminShell from "@/components/admin/AdminShell";
 import { Card } from "@/components/admin/Form";
 import RunningTimer, { type RunningEntry } from "@/components/admin/time/RunningTimer";
@@ -18,6 +18,7 @@ type Props = { data: AdminDashboard };
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const auth = await requireAdminPage(ctx);
   if ("redirect" in auth) return auth;
+  const { getAdminDashboard } = await import("@/lib/dashboard");
   const data = await getAdminDashboard();
   return { props: { data: JSON.parse(JSON.stringify(data)) } };
 };

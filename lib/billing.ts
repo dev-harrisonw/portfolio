@@ -102,6 +102,14 @@ export function roundMinutes(minutes: number, step: number) {
   return Math.ceil(minutes / step) * step;
 }
 
+/** Monday 00:00 UTC of the week containing `ref`. Safe to import from client pages. */
+export function startOfWeek(ref: Date) {
+  const d = new Date(Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth(), ref.getUTCDate()));
+  const offset = (d.getUTCDay() + 6) % 7;
+  d.setUTCDate(d.getUTCDate() - offset);
+  return d;
+}
+
 export function formatMinutes(minutes: number) {
   const sign = minutes < 0 ? "-" : "";
   const abs = Math.abs(Math.round(minutes));
