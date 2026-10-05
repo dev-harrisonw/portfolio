@@ -5,11 +5,15 @@ import prisma from "@/lib/prisma";
 import { requirePortalPage } from "@/lib/access";
 import { shiftPeriod } from "@/lib/billing";
 import { getClientUsage, periodFromParam, periodParam, type ClientUsage } from "@/lib/usage";
+import { priceUsage, projectionScale, type InvoiceDraft } from "@/lib/invoicing/calc";
 import PortalShell from "@/components/portal/PortalShell";
+import PortalDashboard from "@/components/portal/PortalDashboard";
 import { AllowanceSummary, CompletedTasks, EntryLog, ProjectBreakdown } from "@/components/portal/HoursBreakdown";
 
 type Props = {
   usage: ClientUsage;
+  estimate: InvoiceDraft;
+  projected: InvoiceDraft;
   periods: { value: string; label: string }[];
   adminPreview: { clients: { id: string; name: string }[]; currentId: string } | null;
 };
@@ -42,10 +46,13 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
       }
     : null;
 
-  return { props: { usage, periods, adminPreview } };
+  const estimate = priceUsage(usage);
+  const projected = priceUsage(usage, { scale: projectionScale(usage) });
+
+  return { props: { usage, estimate, projected, periods, adminPreview } };
 };
 
-export default function PortalPage({ usage, periods, adminPreview }: Props) {
+export default function PortalPage({ usage, estimate, projected, periods, adminPreview }: Props) {
   const router = useRouter();
   const current = periodParam(usage.period.start);
 
@@ -80,9 +87,14 @@ export default function PortalPage({ usage, periods, adminPreview }: Props) {
         </select>
       </div>
 
-      <section className="mb-10">
-        <AllowanceSummary usage={usage} />
-      </section>
+      <PortalDashboard usage={usage} estimate={estimate} projected={projected} />
+
+      {usage.allowances.length > 1 && (
+        <section className="mb-10">
+          <h2 className="text-xl font-bold mb-4">Allowances</h2>
+          <AllowanceSummary usage={usage} />
+        </section>
+      )}
 
       <div className="grid gap-8 lg:grid-cols-5 mb-10">
         <section className="lg:col-span-3">
