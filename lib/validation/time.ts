@@ -42,6 +42,31 @@ export const taskSchema = z.object({
 
 export const taskUpdateSchema = taskSchema.omit({ projectId: true }).partial();
 
+export const timerStartSchema = z.object({
+  taskId: z.string().min(1, "Pick a task"),
+  note: z.string().max(2000).default(""),
+});
+
+export const timerStopSchema = z.object({
+  note: z.string().max(2000).optional(),
+});
+
+export const entrySchema = z.object({
+  taskId: z.string().min(1, "Pick a task"),
+  startedAt: z.coerce.date(),
+  durationMinutes: z.number().int().min(1, "Duration must be at least a minute").max(24 * 60),
+  note: z.string().max(2000).default(""),
+  billable: z.boolean().default(true),
+});
+
+export const entryUpdateSchema = entrySchema.partial();
+
+export const rangeSchema = z.object({
+  from: z.coerce.date(),
+  to: z.coerce.date(),
+  clientId: z.string().optional(),
+});
+
 export const inviteSchema = z.object({
   email: z.string().trim().toLowerCase().email("A valid email is required"),
 });

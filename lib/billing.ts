@@ -110,6 +110,20 @@ export function formatMinutes(minutes: number) {
   return `${sign}${h}h ${m.toString().padStart(2, "0")}m`;
 }
 
+/** Accepts "1:30", "1h 30m", "1.5h", "90m", or a bare number of minutes. */
+export function parseDuration(input: string): number | null {
+  const s = input.trim().toLowerCase();
+  if (!s) return null;
+  const clock = s.match(/^(\d+):([0-5]?\d)$/);
+  if (clock) return parseInt(clock[1], 10) * 60 + parseInt(clock[2], 10);
+  const parts = s.match(/^(?:(\d+(?:\.\d+)?)\s*h)?\s*(?:(\d+)\s*m)?$/);
+  if (parts && (parts[1] || parts[2])) {
+    return Math.round(parseFloat(parts[1] ?? "0") * 60) + parseInt(parts[2] ?? "0", 10);
+  }
+  if (/^\d+$/.test(s)) return parseInt(s, 10);
+  return null;
+}
+
 export function formatMoney(minor: number, currency = "GBP") {
   return new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(minor / 100);
 }
