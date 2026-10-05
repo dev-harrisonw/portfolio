@@ -65,15 +65,15 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
         <meta name="robots" content="noindex" />
       </Head>
 
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">{!hasTime ? "Your projects" : usage.period.isCurrent ? "This period" : "Past period"}</h1>
-          <p className="text-fun-gray-light">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between mb-6 sm:mb-8">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold">{!hasTime ? "Your projects" : usage.period.isCurrent ? "This period" : "Past period"}</h1>
+          <p className="text-sm sm:text-base text-fun-gray-light mt-1">
             {periods.find((p) => p.value === current)?.label}
             {hasTime && usage.period.isCurrent && ` · ${usage.period.days.left} days left`}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
         {(["csv", "pdf"] as const).map((format) => (
           <a
             key={format}
@@ -82,14 +82,14 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
               format,
               ...(adminPreview ? { client: adminPreview.currentId } : {}),
             })}`}
-            className="rounded-lg border border-fun-gray-darker px-3 py-2 text-sm hover:border-fun-pink"
+            className="rounded-lg border border-fun-gray-darker px-3 py-2.5 sm:py-2 text-sm text-center min-h-[44px] sm:min-h-0 flex items-center justify-center hover:border-fun-pink"
           >
             {format === "pdf" ? "Timesheet PDF" : "CSV"}
           </a>
         ))}
         <select
           aria-label="Billing period"
-          className="rounded-lg bg-black/20 border border-fun-gray-darker px-3 py-2 text-sm"
+          className="col-span-2 sm:col-auto rounded-lg bg-black/20 border border-fun-gray-darker px-3 py-2.5 sm:py-2 text-base sm:text-sm min-h-[44px] sm:min-h-0"
           value={current}
           onChange={(e) =>
             router.push({ pathname: "/portal", query: { ...router.query, period: e.target.value } })

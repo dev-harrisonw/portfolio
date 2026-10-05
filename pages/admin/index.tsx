@@ -24,10 +24,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <Card>
-      <p className="text-xs uppercase tracking-wider text-fun-gray-light">{label}</p>
-      <p className="text-2xl font-bold mt-1 font-monospace">{value}</p>
-      {sub && <p className="text-xs text-fun-gray-medium mt-1">{sub}</p>}
+    <Card className="min-w-0 h-full">
+      <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-gray-light leading-tight">{label}</p>
+      <p className="text-lg sm:text-2xl font-bold mt-1 font-monospace tabular-nums leading-tight break-all">{value}</p>
+      {sub && <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-1 leading-snug">{sub}</p>}
     </Card>
   );
 }
@@ -73,7 +73,7 @@ export default function AdminDashboardPage({ data }: Props) {
         </div>
       )}
 
-      <MotionSection className="mt-8 grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <MotionSection className="mt-6 sm:mt-8 grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         <MotionItem>
           <Stat label="Billable this period" value={formatMinutes(data.totals.billableMinutes)} sub={`${formatMinutes(data.totals.nonBillableMinutes)} non-billable`} />
         </MotionItem>
@@ -112,8 +112,8 @@ export default function AdminDashboardPage({ data }: Props) {
 
       <div className="mt-10 grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold">Hours per day · {data.monthLabel}</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+            <h2 className="font-bold text-sm sm:text-base">Hours per day · {data.monthLabel}</h2>
             <span className="flex gap-3 text-xs text-fun-gray-medium">
               <span><span className="inline-block h-2 w-2 rounded-sm bg-fun-pink mr-1" />Billable</span>
               <span><span className="inline-block h-2 w-2 rounded-sm bg-fun-gray-medium/50 mr-1" />Non-billable</span>
@@ -164,16 +164,16 @@ export default function AdminDashboardPage({ data }: Props) {
           ) : (
             <ul className="divide-y divide-fun-gray-darker">
               {data.recent.map((e) => (
-                <li key={e.id} className="flex items-center gap-4 py-2 text-sm">
-                  <span className="w-20 shrink-0 text-xs text-fun-gray-medium">
+                <li key={e.id} className="flex items-start sm:items-center gap-3 sm:gap-4 py-2.5 text-sm">
+                  <span className="w-12 sm:w-20 shrink-0 text-xs text-fun-gray-medium pt-0.5 sm:pt-0">
                     {new Date(e.startedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                   </span>
-                  <span className="flex-1 truncate">
+                  <span className="flex-1 min-w-0">
                     <span className="font-bold">{e.task.title}</span>
                     <span className="text-fun-gray-medium"> · {e.task.project.client.name}</span>
-                    {e.note && <span className="text-fun-gray-light"> — {e.note}</span>}
+                    {e.note && <span className="block sm:inline text-fun-gray-light"> — {e.note}</span>}
                   </span>
-                  <span className="font-monospace text-xs">{formatMinutes(e.durationMinutes)}</span>
+                  <span className="font-monospace text-xs shrink-0">{formatMinutes(e.durationMinutes)}</span>
                 </li>
               ))}
             </ul>

@@ -1,7 +1,7 @@
 import { formatMinutes } from "@/lib/billing";
 import type { ClientUsage } from "@/lib/usage";
 
-const card = "rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-5";
+const card = "rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-4 sm:p-5";
 const fmtDate = (iso: string, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" }) =>
   new Date(iso).toLocaleDateString("en-GB", { ...opts, timeZone: "UTC" });
 
@@ -107,8 +107,25 @@ export function CompletedTasks({ usage }: { usage: ClientUsage }) {
 
 export function EntryLog({ usage }: { usage: ClientUsage }) {
   if (usage.entries.length === 0) return null;
+  const rows = [...usage.entries].reverse();
   return (
-    <div className={`${card} overflow-x-auto`}>
+    <div className={card}>
+      <ul className="sm:hidden divide-y divide-fun-gray-darker">
+        {rows.map((e) => (
+          <li key={e.id} className="py-3">
+            <div className="flex justify-between gap-3 text-sm">
+              <span className="font-bold min-w-0 truncate">{e.taskTitle}</span>
+              <span className="font-monospace shrink-0">{formatMinutes(e.durationMinutes)}</span>
+            </div>
+            <p className="text-xs text-fun-gray-medium mt-0.5">
+              {fmtDate(e.startedAt, { weekday: "short", day: "numeric", month: "short" })} · {e.projectName}
+              {!e.billable && " · not billed"}
+            </p>
+            {e.note && <p className="text-xs text-fun-gray-light mt-1">{e.note}</p>}
+          </li>
+        ))}
+      </ul>
+      <div className="hidden sm:block overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="text-left text-xs uppercase tracking-wider text-fun-gray-medium">
           <tr>
@@ -118,7 +135,7 @@ export function EntryLog({ usage }: { usage: ClientUsage }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-fun-gray-darker">
-          {[...usage.entries].reverse().map((e) => (
+          {rows.map((e) => (
             <tr key={e.id}>
               <td className="py-2 pr-4 whitespace-nowrap text-fun-gray-light">{fmtDate(e.startedAt, { weekday: "short", day: "numeric", month: "short" })}</td>
               <td className="py-2 pr-4">
@@ -134,6 +151,7 @@ export function EntryLog({ usage }: { usage: ClientUsage }) {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

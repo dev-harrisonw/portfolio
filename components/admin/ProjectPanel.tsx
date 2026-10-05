@@ -232,11 +232,11 @@ export default function ProjectPanel({ project, currency, onChange }: { project:
             >
               {statusLabel[task.status]}
             </button>
-            <span className={task.status === "DONE" ? "text-fun-gray-medium line-through" : ""}>{task.title}</span>
+            <span className={task.status === "DONE" ? "text-fun-gray-medium line-through min-w-0 truncate" : "min-w-0 truncate"}>{task.title}</span>
             <button
               type="button"
               onClick={() => run(() => api(`/api/admin/tasks/${task.id}`, { method: "DELETE" }))}
-              className="ml-auto text-xs text-fun-gray-medium opacity-0 group-hover:opacity-100 hover:text-red-300"
+              className="ml-auto text-xs text-fun-gray-medium hover:text-red-300 shrink-0 sm:opacity-0 sm:group-hover:opacity-100"
             >
               Remove
             </button>

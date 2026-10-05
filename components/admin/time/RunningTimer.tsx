@@ -45,7 +45,12 @@ export default function RunningTimer({ clients, running, defaultClientId, onChan
   }, [running?.id, running?.note]);
 
   useEffect(() => {
-    document.title = running ? `${elapsed} · ${running.task.title}` : "Time · Admin";
+    if (!running) return;
+    const previous = document.title;
+    document.title = `${elapsed} · ${running.task.title}`;
+    return () => {
+      document.title = previous;
+    };
   }, [elapsed, running]);
 
   const act = async (fn: () => Promise<RunningEntry>) => {
@@ -76,29 +81,33 @@ export default function RunningTimer({ clients, running, defaultClientId, onChan
   return (
     <Card className={running ? "border-fun-pink/60 shadow-[0_0_40px_-12px_rgba(59,177,67,0.5)]" : ""}>
       {running ? (
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="relative flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fun-pink opacity-60" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-fun-pink" />
-          </span>
-          <div className="min-w-0">
-            <p className="font-bold truncate">{running.task.title}</p>
-            <p className="text-xs text-fun-gray-medium">
-              {running.task.project.client.name} · {running.task.project.name}
-            </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <span className="relative flex h-3 w-3 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fun-pink opacity-60" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-fun-pink" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold truncate">{running.task.title}</p>
+              <p className="text-xs text-fun-gray-medium truncate">
+                {running.task.project.client.name} · {running.task.project.name}
+              </p>
+            </div>
+            <span className="font-monospace text-xl sm:text-2xl tabular-nums shrink-0">{elapsed}</span>
           </div>
-          <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="What are you working on?" className="flex-1 min-w-[12rem]" />
-          <span className="font-monospace text-2xl tabular-nums">{elapsed}</span>
-          <Button onClick={stop} disabled={busy} className="bg-red-500 hover:bg-red-400">
-            Stop
-          </Button>
+          <div className="flex gap-2">
+            <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="What are you working on?" className="flex-1 min-w-0" />
+            <Button onClick={stop} disabled={busy} className="bg-red-500 hover:bg-red-400 shrink-0">
+              Stop
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
           <TaskPicker clients={clients} value={taskId} onChange={setTaskId} defaultClientId={defaultClientId} onTaskCreated={onTaskCreated} />
           <div className="flex gap-2">
-            <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="What are you working on?" />
-            <Button onClick={start} disabled={busy || !taskId}>
+            <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="What are you working on?" className="min-w-0" />
+            <Button onClick={start} disabled={busy || !taskId} className="shrink-0">
               Start
             </Button>
           </div>

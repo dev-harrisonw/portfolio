@@ -6,7 +6,7 @@ import BarChart from "@/components/dashboard/BarChart";
 import { paceText, paceTone } from "@/components/dashboard/pace";
 import { MotionItem, MotionSection } from "@/components/utility/Motion";
 
-const card = "rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-5";
+const card = "rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-4 sm:p-5";
 const DAY_MS = 86400000;
 
 function weeklyBars(usage: ClientUsage) {
@@ -38,51 +38,61 @@ export default function PortalDashboard({ usage, estimate, projected }: Props) {
   const currency = usage.client.currency;
 
   return (
-    <MotionSection className="grid gap-4 lg:grid-cols-3 mb-10">
-      <MotionItem className={`${card} flex flex-col items-center justify-center lg:row-span-2`}>
+    <MotionSection className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-8 sm:mb-10">
+      <MotionItem className={`${card} col-span-2 lg:col-span-1 lg:row-span-2 flex flex-row lg:flex-col items-center gap-4 sm:gap-5`}>
         <HoursRing used={main.usedMinutes} available={main.availableMinutes} />
-        <p className={`mt-4 rounded-full px-3 py-1 text-xs text-center ${tone}`}>{paceText(main, "client")}</p>
-        {main.carriedInMinutes > 0 && (
-          <p className="text-xs text-fun-gray-medium mt-2">Includes {formatMinutes(main.carriedInMinutes)} rolled over</p>
-        )}
+        <div className="min-w-0 flex-1 lg:flex-none text-left lg:text-center">
+          <p className={`rounded-full px-3 py-1 text-xs inline-block max-w-full ${tone}`}>{paceText(main, "client")}</p>
+          {main.carriedInMinutes > 0 && (
+            <p className="text-xs text-fun-gray-medium mt-2">Includes {formatMinutes(main.carriedInMinutes)} rolled over</p>
+          )}
+        </div>
       </MotionItem>
 
       <MotionItem className={card}>
-        <p className="text-xs uppercase tracking-wider text-fun-gray-light">Billing period</p>
+        <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-gray-light">Billing period</p>
         {usage.period.isCurrent ? (
           <>
-            <p className="text-3xl font-bold mt-1">
+            <p className="text-2xl sm:text-3xl font-bold mt-1 tabular-nums leading-tight">
               {usage.period.days.left}
-              <span className="text-base font-normal text-fun-gray-medium"> days left</span>
+              <span className="text-sm sm:text-base font-normal text-fun-gray-medium"> days left</span>
             </p>
-            <div className="mt-3 h-1.5 rounded-full bg-fun-gray-darker">
+            <div className="mt-3 h-1.5 rounded-full bg-fun-gray-darker overflow-hidden">
               <div className="h-full rounded-full bg-fun-gray-light" style={{ width: `${(usage.period.days.elapsed / usage.period.days.total) * 100}%` }} />
             </div>
           </>
         ) : (
-          <p className="text-3xl font-bold mt-1">Closed</p>
+          <p className="text-2xl sm:text-3xl font-bold mt-1">Closed</p>
         )}
-        <p className="text-xs text-fun-gray-medium mt-2">
+        <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-2 leading-snug">
           {new Date(usage.period.start).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} –{" "}
           {new Date(new Date(usage.period.end).getTime() - DAY_MS).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
         </p>
       </MotionItem>
 
       <MotionItem className={card}>
-        <p className="text-xs uppercase tracking-wider text-fun-gray-light">{usage.period.isCurrent ? "Estimated invoice" : "Invoice amount"}</p>
-        <p className="text-3xl font-bold mt-1 font-monospace">{formatMoney(estimate.total, currency)}</p>
+        <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-gray-light">
+          {usage.period.isCurrent ? "Estimated invoice" : "Invoice amount"}
+        </p>
+        <p className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 font-monospace leading-tight break-all">
+          {formatMoney(estimate.total, currency)}
+        </p>
         {usage.period.isCurrent && projected.total !== estimate.total && (
-          <p className="text-xs text-fun-gray-medium mt-2">About {formatMoney(projected.total, currency)} by period end at the current pace</p>
+          <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-2 leading-snug">
+            About {formatMoney(projected.total, currency)} by period end at the current pace
+          </p>
         )}
-        {estimate.vat > 0 && <p className="text-xs text-fun-gray-medium mt-1">Includes VAT {formatMoney(estimate.vat, currency)}</p>}
+        {estimate.vat > 0 && (
+          <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-1">Includes VAT {formatMoney(estimate.vat, currency)}</p>
+        )}
       </MotionItem>
 
-      <MotionItem className={`${card} lg:col-span-2`}>
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs uppercase tracking-wider text-fun-gray-light">Hours per week</p>
-          <p className="text-xs text-fun-gray-medium">{formatMinutes(usage.totals.billableMinutes)} billable</p>
+      <MotionItem className={`${card} col-span-2`}>
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-gray-light">Hours per week</p>
+          <p className="text-[11px] sm:text-xs text-fun-gray-medium shrink-0">{formatMinutes(usage.totals.billableMinutes)} billable</p>
         </div>
-        <BarChart bars={weeklyBars(usage)} height={110} />
+        <BarChart bars={weeklyBars(usage)} height={96} />
       </MotionItem>
     </MotionSection>
   );

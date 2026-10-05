@@ -118,33 +118,36 @@ export default function TimePage({ clients: initialClients, running: initialRunn
         }}
       />
 
-      <div className="mt-8 flex flex-wrap items-center gap-3">
+      <div className="mt-6 sm:mt-8 flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <div className="flex rounded-full border border-fun-gray-darker p-1 text-sm">
           {(["week", "month"] as View[]).map((v) => (
             <button
               key={v}
               type="button"
               onClick={() => setView(v)}
-              className={`rounded-full px-3 py-1 capitalize ${view === v ? "bg-fun-pink-dark" : "text-fun-gray-light"}`}
+              className={`rounded-full px-3 py-1.5 capitalize min-h-[36px] ${view === v ? "bg-fun-pink-dark" : "text-fun-gray-light"}`}
             >
               {v}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 min-w-0 flex-1 sm:flex-none">
           <Button variant="ghost" onClick={() => setAnchor((a) => shiftAnchor(view, a, -1))} aria-label="Previous">
             ←
           </Button>
-          <span className="w-48 text-center text-sm font-bold">{rangeLabel}</span>
+          <span className="min-w-0 flex-1 sm:w-48 text-center text-sm font-bold truncate">{rangeLabel}</span>
           <Button variant="ghost" onClick={() => setAnchor((a) => shiftAnchor(view, a, 1))} aria-label="Next">
             →
           </Button>
         </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <Select
           aria-label="Filter by client"
           value={clientFilter}
           onChange={(e) => router.replace({ query: e.target.value ? { client: e.target.value } : {} }, undefined, { shallow: true })}
-          className="w-auto"
+          className="w-full sm:w-auto"
         >
           <option value="">All clients</option>
           {clients.map((c) => (
@@ -153,7 +156,7 @@ export default function TimePage({ clients: initialClients, running: initialRunn
             </option>
           ))}
         </Select>
-        <div className="ml-auto flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-3 sm:gap-4 text-sm sm:ml-auto">
           <span>
             <span className="text-fun-gray-medium">Total </span>
             <span className="font-monospace">{formatMinutes(total)}</span>
@@ -165,6 +168,7 @@ export default function TimePage({ clients: initialClients, running: initialRunn
           <Button variant="ghost" onClick={() => setShowManual((v) => !v)}>
             {showManual ? "Close" : "Add entry"}
           </Button>
+        </div>
         </div>
       </div>
 
@@ -246,16 +250,16 @@ function ManualEntry({
   return (
     <Card className="mt-4 space-y-3">
       <TaskPicker clients={clients} value={taskId} onChange={setTaskId} defaultClientId={defaultClientId} onTaskCreated={onTaskCreated} />
-      <div className="flex flex-wrap gap-2">
-        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-40" aria-label="Date" />
-        <Input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="w-32" aria-label="Start time" />
-        <Input value={duration} onChange={(e) => setDuration(e.target.value)} className="w-28" aria-label="Duration" placeholder="1:30" />
-        <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note" className="flex-1 min-w-[12rem]" />
-        <label className="flex items-center gap-2 text-sm text-fun-gray-light">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="col-span-1" aria-label="Date" />
+        <Input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="col-span-1" aria-label="Start time" />
+        <Input value={duration} onChange={(e) => setDuration(e.target.value)} className="col-span-1" aria-label="Duration" placeholder="1:30" />
+        <label className="flex items-center gap-2 text-sm text-fun-gray-light col-span-1">
           <input type="checkbox" checked={billable} onChange={(e) => setBillable(e.target.checked)} />
           Billable
         </label>
-        <Button onClick={save} disabled={!taskId}>
+        <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note" className="col-span-2 sm:col-span-3 min-w-0" />
+        <Button onClick={save} disabled={!taskId} className="col-span-2 sm:col-span-1">
           Save entry
         </Button>
       </div>

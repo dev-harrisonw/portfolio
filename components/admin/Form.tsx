@@ -1,7 +1,7 @@
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
 
 export const inputClass =
-  "w-full rounded-lg bg-black/20 border border-fun-gray-darker px-3 py-2 text-sm outline-none focus:border-fun-pink disabled:opacity-50";
+  "w-full rounded-lg bg-black/20 border border-fun-gray-darker px-3 py-2.5 sm:py-2 text-base sm:text-sm outline-none focus:border-fun-pink disabled:opacity-50 min-h-[44px] sm:min-h-0";
 
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
@@ -35,13 +35,13 @@ export function Button({
     <button
       type="button"
       {...props}
-      className={`rounded-full px-4 py-2 text-sm font-bold transition-colors disabled:opacity-40 ${styles} ${className}`}
+      className={`rounded-full px-4 py-2.5 sm:py-2 text-sm font-bold transition-colors disabled:opacity-40 min-h-[44px] sm:min-h-0 touch-manipulation ${styles} ${className}`}
     />
   );
 }
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-5 ${className}`}>{children}</div>;
+  return <div className={`rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-4 sm:p-5 ${className}`}>{children}</div>;
 }
 
 /** Pounds string ⇄ pence integer for money inputs. */
