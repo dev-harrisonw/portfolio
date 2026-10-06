@@ -127,6 +127,7 @@ const projects: Project[] = [
     tags: ["WordPress", "PHP", "Tailwind", "JavaScript"],
     status: "active",
     featured: true,
+    liveScreenshot: false,
     year: 2026,
   },
   {
@@ -248,10 +249,10 @@ export const getSortedProjects = (list: Project[] = projects) =>
     if (Boolean(a.featured) !== Boolean(b.featured)) {
       return a.featured ? -1 : 1;
     }
-    return (b.year || 0) - (a.year || 0) || a.id - b.id;
+    return (b.year || 0) - (a.year || 0) || b.id - a.id;
   });
 
 export const getFeaturedProjects = () =>
-  projects.filter((project) => project.featured);
+  getSortedProjects().filter((project) => project.featured);
 
 export default projects;
