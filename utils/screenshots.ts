@@ -9,23 +9,23 @@ export const shouldUseLiveScreenshot = (project: Project) => {
   return project.liveScreenshot === true || project.liveScreenshot === undefined;
 };
 
+export const getCachedScreenshotUrl = (slug: string) =>
+  `/api/project-screenshot?slug=${encodeURIComponent(slug)}&v=pan2`;
+
+/** Fast viewport capture at a real desktop size. Used as a progressive enhancement over the static image. */
 export const getMicrolinkScreenshotUrl = (url: string, force = false) => {
   const params = new URLSearchParams({
     url,
     screenshot: "true",
+    "screenshot.fullPage": "true",
     meta: "false",
     embed: "screenshot.url",
-    "screenshot.fullPage": "true",
-    waitUntil: "networkidle2",
-    waitForTimeout: "4000",
+    waitUntil: "load",
+    "viewport.width": "1440",
+    "viewport.height": "900",
   });
   if (force) params.set("force", "true");
   return `https://api.microlink.io/?${params.toString()}`;
 };
 
-export const getProjectScreenshot = (project: Project) => {
-  if (shouldUseLiveScreenshot(project) && project.link) {
-    return getMicrolinkScreenshotUrl(project.link);
-  }
-  return project.img;
-};
+export const getProjectScreenshot = (project: Project) => project.img;

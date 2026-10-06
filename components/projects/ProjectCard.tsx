@@ -8,36 +8,26 @@ import { motion, useReducedMotion } from "framer-motion";
 import { fadeUp } from "@/utils/motion";
 
 function ProjectCard({ project }: { project: Project }) {
-  const isDeprecated = project.status === "deprecated";
   const href = `/projects/${project.slug}`;
   const reduce = useReducedMotion();
 
   const card = (
-    <div className="max-w-sm mx-auto flex flex-col projects-center md:projects-start md:justify-center">
+    <div className="max-w-sm mx-auto flex flex-col items-stretch md:justify-center">
       <Link
         href={href}
-        className={`group w-full relative rounded-xl border-fun-gray border p-2 transition hover:-translate-y-1 hover:border-fun-pink will-change-projectCard ${
-          isDeprecated ? "opacity-80" : ""
-        }`}>
+        className="group w-full relative rounded-xl border-fun-gray border p-2 transition hover:-translate-y-1 hover:border-fun-pink will-change-projectCard">
 
-        {isDeprecated && (
-          <span className="absolute top-4 left-4 z-10 text-[10px] uppercase tracking-wide rounded-lg bg-black/70 py-1 px-2 text-fun-gray border border-fun-gray">
-            Handed over
-          </span>
-        )}
         <ProjectImage project={project} />
 
       </Link>
       <div className="w-full mt-5">
-        <div className="flex projects-center justify-between">
-          <Link href={href}>
-
-            <h3 className="text-lg font-bold">{project.title}</h3>
-
+        <div className="flex items-center justify-between gap-3">
+          <Link href={href} className="min-w-0">
+            <h3 className="text-lg font-bold truncate">{project.title}</h3>
           </Link>
-          <div className="space-x-2">
+          <div className="flex items-center gap-2 shrink-0">
             {project.link && (
-              <a href={project.link} target="_blank" rel="noreferrer">
+              <a href={project.link} target="_blank" rel="noreferrer" className="inline-flex">
                 <Image
                   src="/static/icons/external-link.svg"
                   width={16}
@@ -47,7 +37,7 @@ function ProjectCard({ project }: { project: Project }) {
               </a>
             )}
             {project.github && (
-              <a href={project.github} target="_blank" rel="noreferrer">
+              <a href={project.github} target="_blank" rel="noreferrer" className="inline-flex">
                 <Image
                   src="/static/icons/github.svg"
                   width={16}

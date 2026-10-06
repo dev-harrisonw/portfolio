@@ -12,10 +12,11 @@ type Testimonial = {
 export const site = {
   availableForWork: true,
   about:
-    "Junior web developer based in the North West of the UK. I build WordPress sites, custom web apps, and product-minded interfaces—currently shipping work at Don't Panic Events.",
+    "I build WordPress sites, custom web apps, and product-minded interfaces from the North West of the UK—currently shipping work at Don't Panic Events.",
   location: "Rawtenstall / Manchester, UK",
   focus: "Web development, WordPress, and product UI",
   githubUsername: "dev-harrisonw",
+  githubUsernames: ["dev-harrisonw", "dp-harrison", "HarrisonW28"],
 };
 
 export const skills: Skill[] = [

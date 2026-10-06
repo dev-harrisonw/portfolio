@@ -3,6 +3,119 @@ import { Project } from "types";
 
 const projects: Project[] = [
   {
+    id: 8,
+    title: "WeSharp",
+    slug: "wesharp",
+    desc: "End-to-end knife sharpening ops: public booking, customer portal, and an admin console with live dashboards.",
+    overview:
+      "WeSharp is a doorstep knife-sharpening product I designed and built for Greater Manchester and Liverpool kitchens — restaurants, hotels, butchers, and home cooks. The public site handles coverage, pricing, and collection bookings; signed-in kitchens get a portal for orders, blades, invoices, and programmes; staff get a full ops console.\n\nThe stack is a Next.js 15 app (Clerk, TanStack Query, Recharts) talking to a Laravel 13 API with Stripe billing, knife tracking, route planning, CRM, and analytics. Dashboards cover customer overview, subscription allowances, workshop status, collections, finance, and an internal analytics/reporting suite (sales, routes, operations, cash, forecasts).",
+    img: "/static/projects/wesharp/cover.jpg",
+    link: "https://www.wesharp.co.uk/",
+    tags: ["Next.js", "Laravel", "TypeScript", "PHP", "Clerk", "Stripe", "Tailwind", "Recharts"],
+    status: "active",
+    featured: true,
+    year: 2026,
+    highlights: [
+      "Public booking flow with postcode coverage and a GBP price guide",
+      "Customer portal: dashboard, bookings, knife register, orders, invoices, subscriptions",
+      "Admin console: CRM, routes, work queue, finance, analytics, and executive reports",
+      "Route-manager shell for drivers, with stop-level workshop status",
+      "Stripe invoicing, VAT-ready PDFs, and programme allowance / overage",
+      "Recharts analytics: revenue, knives sharpened, bookings, and route value",
+    ],
+    dashboards: [
+      {
+        src: "/static/projects/wesharp/dashboard.png",
+        label: "Customer dashboard",
+        caption: "Signed-in kitchen portal — next collection, live orders, unpaid invoices, and knives on file.",
+      },
+      {
+        src: "/static/projects/wesharp/allowance.png",
+        label: "Your plan",
+        caption: "Active programme, renewal date, included collection visits, and knife allowance.",
+      },
+      {
+        src: "/static/projects/wesharp/tracking.png",
+        label: "Order tracking",
+        caption: "Workshop status, related booking, invoice, and milestone updates on a live order.",
+      },
+      {
+        src: "/static/projects/wesharp/knives.png",
+        label: "Knife register",
+        caption: "Every tagged blade with current workshop status across the account.",
+      },
+      {
+        src: "/static/projects/wesharp/collections.png",
+        label: "Collections",
+        caption: "Booked pickups with live status, service type, and links into each visit.",
+      },
+      {
+        src: "/static/projects/wesharp/invoices.png",
+        label: "Invoices",
+        caption: "Issued bills with totals, due dates, and payment status in GBP.",
+      },
+      {
+        src: "/static/projects/wesharp/admin-dashboard.png",
+        label: "Operations dashboard",
+        caption: "Staff console — attention queue, weekly bookings, blades sharpened, and revenue.",
+      },
+      {
+        src: "/static/projects/wesharp/admin-analytics.png",
+        label: "Analytics",
+        caption: "Internal KPIs for revenue, knives, outstanding balance, and new bookings.",
+      },
+    ],
+    gallery: [
+      {
+        src: "/static/projects/wesharp/book.png",
+        label: "Book a collection",
+        caption: "Multi-step public enquiry — no account required to start.",
+      },
+      {
+        src: "/static/projects/wesharp/pricing.png",
+        label: "Pricing calculator",
+        caption: "Guide rates in GBP for pay-as-you-go vs programmes.",
+      },
+      {
+        src: "/static/projects/wesharp/trade.png",
+        label: "Trade accounts",
+        caption: "Business portal walkthroughs for ops, finance, and head office.",
+      },
+      {
+        src: "/static/projects/wesharp/how.png",
+        label: "How it works",
+        caption: "Collect, sharpen, inspect, return — with portal updates.",
+      },
+      {
+        src: "/static/projects/wesharp/subscriptions.png",
+        label: "Programmes",
+        caption: "Rolling routes, knife allowances, and overage in plain language.",
+      },
+    ],
+    surfaces: [
+      {
+        name: "Public site",
+        detail: "Marketing, coverage, pricing, subscriptions, trade, and the collection booking flow.",
+      },
+      {
+        name: "Customer portal",
+        detail: "Dashboard, bookings, orders, knives, invoices, locations, notifications, and programmes.",
+      },
+      {
+        name: "Admin console",
+        detail: "CRM, bookings, routes, work queue, knives, invoices, payments, finance, users, and CMS.",
+      },
+      {
+        name: "Analytics",
+        detail: "Overview KPIs plus sales, operations, route profitability, cash position, billing, and forecasts.",
+      },
+      {
+        name: "Route manager",
+        detail: "Mobile-first today’s run, stop detail, and offline-aware field shell.",
+      },
+    ],
+  },
+  {
     id: 0,
     title: "The Garm Plug",
     slug: "the-garm-plug",
@@ -110,9 +223,12 @@ const projects: Project[] = [
     github: "https://github.com/dev-harrisonw/LCL",
     githubRepo: "dev-harrisonw/LCL",
     tags: ["HTML", "CSS", "JavaScript", "jQuery", "Bootstrap"],
-    status: "active",
-    featured: true,
+    status: "deprecated",
+    statusNote:
+      "I no longer manage this site. The live version may have changed since the original build.",
+    featured: false,
     year: 2022,
+    noindex: true,
   },
 ];
 
@@ -129,8 +245,10 @@ export const getProjectBySlug = (slug: string) =>
 
 export const getSortedProjects = (list: Project[] = projects) =>
   [...list].sort((a, b) => {
-    if (a.status === b.status) return a.id - b.id;
-    return a.status === "active" ? -1 : 1;
+    if (Boolean(a.featured) !== Boolean(b.featured)) {
+      return a.featured ? -1 : 1;
+    }
+    return (b.year || 0) - (a.year || 0) || a.id - b.id;
   });
 
 export const getFeaturedProjects = () =>

@@ -18,7 +18,7 @@ export default function Home() {
       }}
     >
       <Hero />
-      <div className="mt-20 space-y-32">
+      <div className="relative z-10 mt-28 md:mt-40 space-y-32 w-full min-w-0 text-left">
         <About />
         <Projects />
         <div id="experience">

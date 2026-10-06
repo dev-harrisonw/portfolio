@@ -1,66 +1,59 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Project } from "types";
-import {
-  getMicrolinkScreenshotUrl,
-  getProjectScreenshot,
-  shouldUseLiveScreenshot,
-} from "@/utils/screenshots";
+import { shouldUseLiveScreenshot } from "@/utils/screenshots";
 
-type ProjectImageProps = {
-  project: Project;
+type ShotFrameProps = {
+  src: string;
+  alt: string;
   className?: string;
+  /** Crop to 16:10 for hover-pan previews. Use auto for already-framed UI shots. */
+  aspect?: "16/10" | "auto";
+  onError?: () => void;
 };
 
-function ProjectImage({ project, className = "" }: ProjectImageProps) {
-  const live = shouldUseLiveScreenshot(project) && Boolean(project.link);
-  const [src, setSrc] = useState(() => getProjectScreenshot(project));
+export function ShotFrame({
+  src,
+  alt,
+  className = "",
+  aspect = "16/10",
+  onError,
+}: ShotFrameProps) {
   const [ready, setReady] = useState(false);
   const frameRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
-  const attempts = useRef(0);
 
-  const measure = useCallback(() => {
-    const frame = frameRef.current;
-    const img = imgRef.current;
-    if (!frame || !img) return;
-    const pan = Math.max(0, img.offsetHeight - frame.clientHeight);
-    frame.style.setProperty("--pan", `${pan}px`);
+  const markReady = useCallback(() => {
+    setReady(true);
+    const measure = () => {
+      const frame = frameRef.current;
+      const img = imgRef.current;
+      if (!frame || !img || !img.naturalWidth) return;
+      const renderedHeight =
+        (img.naturalHeight / img.naturalWidth) * frame.clientWidth;
+      const overflow = Math.max(0, renderedHeight - frame.clientHeight);
+      frame.style.setProperty("--pan", `${Math.round(overflow)}px`);
+    };
+    measure();
+    requestAnimationFrame(measure);
   }, []);
 
-  const reloadLive = useCallback(() => {
-    if (!live || !project.link || attempts.current >= 3) return;
-    attempts.current += 1;
+  useEffect(() => {
     setReady(false);
-    const next = getMicrolinkScreenshotUrl(project.link, attempts.current > 1);
-    setSrc("");
-    requestAnimationFrame(() => setSrc(next));
-  }, [live, project.link]);
-
-  useEffect(() => {
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [measure]);
-
-  useEffect(() => {
-    if (!src) return;
     const img = imgRef.current;
-    if (!img) return;
-    if (img.complete && img.naturalWidth > 0) {
-      setReady(true);
-      measure();
-      return;
-    }
-    if (img.complete && img.naturalWidth === 0) reloadLive();
-  }, [src, measure, reloadLive]);
+    if (img?.complete && img.naturalWidth > 0) markReady();
+  }, [src, markReady]);
 
   useEffect(() => {
-    if (ready) measure();
-  }, [ready, measure]);
+    window.addEventListener("resize", markReady);
+    return () => window.removeEventListener("resize", markReady);
+  }, [markReady]);
 
   return (
     <div
       ref={frameRef}
-      className={`project-shot relative aspect-[16/10] overflow-hidden rounded-md bg-fun-gray-darkest ${className}`}
+      className={`project-shot relative overflow-hidden rounded-md bg-fun-gray-darkest ${
+        aspect === "auto" ? "" : "aspect-[16/10]"
+      } ${className}`}
     >
       {!ready && (
         <div className="absolute inset-0 z-10 flex items-center justify-center">
@@ -70,26 +63,38 @@ function ProjectImage({ project, className = "" }: ProjectImageProps) {
       <img
         ref={imgRef}
         src={src}
-        alt={project.title}
+        alt={alt}
         className={`block h-auto w-full ${ready ? "opacity-100" : "opacity-0"}`}
-        onLoad={() => {
-          if (imgRef.current && imgRef.current.naturalWidth === 0) {
-            reloadLive();
-            return;
-          }
-          setReady(true);
-          requestAnimationFrame(measure);
-        }}
+        onLoad={markReady}
         onError={() => {
-          if (!src) return;
-          if (live) {
-            reloadLive();
-            return;
-          }
-          if (src !== project.img) setSrc(project.img);
+          markReady();
+          onError?.();
         }}
       />
     </div>
+  );
+}
+
+type ProjectImageProps = {
+  project: Project;
+  className?: string;
+};
+
+function ProjectImage({ project, className = "" }: ProjectImageProps) {
+  const live = shouldUseLiveScreenshot(project) && Boolean(project.link);
+  const seedSrc = live ? `/static/projects/live/${project.slug}.jpg?v=pan4` : project.img;
+  const [src, setSrc] = useState(seedSrc);
+
+  return (
+    <ShotFrame
+      src={src}
+      alt={project.title}
+      className={className}
+      onError={() => {
+        if (src !== seedSrc && src !== project.img) setSrc(seedSrc);
+        else if (src !== project.img) setSrc(project.img);
+      }}
+    />
   );
 }
 

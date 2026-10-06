@@ -243,7 +243,7 @@ function Experience() {
       <MotionItem>
         <SectionTitle title="Where I've been working." />
       </MotionItem>
-      <div className="grid grid-cols-1 gap-4 md:gap-5">
+      <div className="experience-grid grid grid-cols-1 gap-4 md:gap-5">
         {experience.map((item) => (
           <MotionItem key={item.company}>
             <ExperienceCard item={item} />

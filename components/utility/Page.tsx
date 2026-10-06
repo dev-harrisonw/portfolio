@@ -4,16 +4,15 @@ import MobileNavbar from "../global/MobileNavbar";
 import Navbar from "../global/Navbar";
 import React, { ReactChildren } from "react";
 
-function Page({ currentPage, meta: { title, desc }, children }: PageProps) {
+function Page({ currentPage, meta: { title, desc, noindex }, children }: PageProps) {
   const pageTitle = `${
     currentPage === "Home"
       ? "Harrison Warburton - Web Enthusiast, Designer and Builder"
       : `${currentPage} - HarrisonWarburton.com`
   }`;
-  console.log(currentPage);
   return (
     <div
-      className="w-full m-auto flex flex-col items-center justify-center min-h-screen opening-box-animate-paddin text-white overflow-hidden md:overflow-visible"
+      className="relative z-[1] w-full m-auto flex flex-col items-center justify-start min-h-screen opening-box-animate-paddin text-white overflow-x-visible overflow-y-visible"
       style={{ maxWidth: "1200px" }}
     >
       <Head>
@@ -39,6 +38,7 @@ function Page({ currentPage, meta: { title, desc }, children }: PageProps) {
         <link rel="manifest" href="/static/favicon/site.webmanifest" />
         <meta name="title" content={pageTitle} />
         <meta name="description" content={desc} />
+        {noindex && <meta name="robots" content="noindex" />}
         <meta name="keywords" content="Harrison Warburton, Development, Website Development, App Development, Software Development, Software" />
         <meta name="author" content="Harrison Warburton" />
 
@@ -92,12 +92,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe>`,
         }}
       ></noscript>
 
-      <main className="p-5 w-full flex-1 text-center">
+      <main className="p-5 w-full min-w-0 flex-1 text-center overflow-visible">
         <div className="hidden sm:block z-100">
           <Navbar currentPage={currentPage} />
         </div>
         <div className="-m-5 block sm:hidden z-100">
-          <MobileNavbar />
+          <MobileNavbar currentPage={currentPage} />
         </div>
         {children}
       </main>
@@ -113,6 +113,7 @@ type PageProps = {
   meta: {
     title?: string;
     desc: string;
+    noindex?: boolean;
   };
   children?: JSX.Element | JSX.Element[];
 };

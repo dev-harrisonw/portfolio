@@ -1,12 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Link from "next/link";
-import {routes} from "@/data/global";
+import { useRouter } from "next/router";
+import { routes } from "@/data/global";
 import useDelayedRender from "use-delayed-render";
-import { AccountButton } from "@/components/auth/AccountButton";
+import { MobileProfileCard } from "@/components/auth/AccountButton";
 
-export default function MobileNavbar() {
+export default function MobileNavbar({ currentPage }: { currentPage?: string }) {
+  const router = useRouter();
+  const headerRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [headerH, setHeaderH] = useState(88);
   const { mounted: isMenuMounted, rendered: isMenuRendered } = useDelayedRender(
     isMenuOpen,
     {
@@ -15,10 +19,23 @@ export default function MobileNavbar() {
     }
   );
 
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return undefined;
+    const update = () => setHeaderH(el.getBoundingClientRect().height);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  function closeMenu() {
+    setIsMenuOpen(false);
+    document.body.style.overflow = "";
+  }
+
   function toggleMenu() {
     if (isMenuOpen) {
-      setIsMenuOpen(false);
-      document.body.style.overflow = "";
+      closeMenu();
     } else {
       setIsMenuOpen(true);
       document.body.style.overflow = "hidden";
@@ -26,57 +43,77 @@ export default function MobileNavbar() {
   }
 
   useEffect(() => {
-    return function cleanup() {
+    const onRoute = () => closeMenu();
+    router.events.on("routeChangeStart", onRoute);
+    return () => {
+      router.events.off("routeChangeStart", onRoute);
       document.body.style.overflow = "";
     };
-  }, []);
+  }, [router.events]);
+
+  useEffect(() => {
+    if (!isMenuOpen) return undefined;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeMenu();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isMenuOpen]);
 
   return (
-    <nav>
+    <nav className="relative">
       <div
-        className={`w-full justify-between flex items-center ${isMenuRendered && 'bg-bg'} p-5`}
-        style={{ zIndex: 101 }}
+        ref={headerRef}
+        className="sticky top-0 z-[110] w-full flex items-center justify-between px-5 py-4 bg-bg/95 backdrop-blur-md"
       >
-        <li className="list-none font-bold text-lg">
-          <Link href="/">
-            <img
-              className="mr-3"
-              src="/static/logos/logo_full.svg"
-              width="160"
-            />
-          </Link>
-        </li>
-        <div className="flex items-center gap-3">
-          <AccountButton />
-          <button
-            className="burger visible md:hidden"
-            aria-label="Toggle menu"
-            type="button"
-            onClick={toggleMenu}
-          >
-            <MenuIcon data-hide={isMenuOpen} />
-            <CrossIcon data-hide={!isMenuOpen} />
-          </button>
-        </div>
+        <Link href="/" className="list-none font-bold text-lg" onClick={closeMenu}>
+          <img
+            className="site-logo"
+            src="/static/logos/logo_full.svg"
+            width="160"
+            alt="Harrison Warburton"
+          />
+        </Link>
+        <button
+          className="burger visible md:hidden"
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isMenuOpen}
+          type="button"
+          onClick={toggleMenu}
+        >
+          <MenuIcon data-hide={isMenuOpen} />
+          <CrossIcon data-hide={!isMenuOpen} />
+        </button>
       </div>
       {isMenuMounted && (
-        <ul
-          className={`menu flex flex-col absolute bg-bg
-            ${isMenuRendered && "menuRendered"}`}
+        <div
+          className={`menu flex flex-col bg-bg ${isMenuRendered ? "menuRendered" : ""}`}
+          style={{ top: headerH }}
         >
-          {routes.map((item, index) => {
-            return (
-              <li
-                className="border-b border-gray-900 text-gray-100 text-sm font-semibold"
-                style={{ transitionDelay: `${150 + index * 25}ms` }}
-              >
-                <Link href={item.path} className="flex w-auto pb-4">
-                  {item.title}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+          <MobileProfileCard onNavigate={closeMenu} />
+          <ul className="mt-6 flex flex-col">
+            {routes.map((item, index) => {
+              const active = currentPage === item.title;
+              return (
+                <li
+                  key={item.path}
+                  className="border-b border-gray-900 text-gray-100"
+                  style={{ transitionDelay: `${120 + index * 40}ms` }}
+                >
+                  <Link
+                    href={item.path}
+                    onClick={closeMenu}
+                    className={`flex w-full py-4 text-lg font-semibold ${
+                      active ? "text-fun-pink" : "text-white"
+                    }`}
+                  >
+                    {item.title}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
     </nav>
   );

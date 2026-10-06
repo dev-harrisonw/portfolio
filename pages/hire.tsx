@@ -17,11 +17,10 @@ export default function HirePage() {
             Hire
           </p>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            I&apos;ll help you ship the website.
+            Let&apos;s get your site live.
           </h1>
           <p className="text-fun-gray text-lg leading-relaxed">
-            Answer a few prompts and I&apos;ll turn it into a clear enquiry.
-            Streaming AI replies are next—this guided flow ships today.
+            Tell me what you need, when you need it, and a rough budget. I&apos;ll turn it into a clear brief and reply by email.
           </p>
         </div>
         <HireAssistant />

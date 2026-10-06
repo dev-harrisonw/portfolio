@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Link as ScrollLink } from "react-scroll";
 import { site } from "@/data/content/home";
+import DontPress from "./DontPress";
 
 function Hero() {
   return <>
@@ -21,7 +22,7 @@ function Hero() {
         <span className="heroShiny2 text-fun-pink">building</span> the
         web.
         <img
-          className="sqD squiggle-hero-html w-16 top-[-90px] right-[5%] sm:top-[-90px] sm:right-[170px]"
+          className="sqD squiggle-hero-html w-12 top-[-70px] right-[4%] sm:w-16 sm:top-[-90px] sm:right-[170px]"
           style={{ animationDelay: "0.1s" }}
           src="/static/doodles/hero/html.svg"
         />
@@ -31,12 +32,12 @@ function Hero() {
           src="/static/doodles/hero/nextjs.svg"
         />
         <img
-          className="sqD bottom-[-300px] -right-1/4 sm:right-[-20%] lg:bottom-[-310px] lg:right-[-120px] w-[400px]"
+          className="sqD bottom-[-180px] right-[-8px] w-[180px] sm:bottom-[-280px] sm:right-[-8%] sm:w-[280px] lg:bottom-[-300px] lg:right-[-40px] lg:w-[360px]"
           style={{ animationDelay: "0.3s" }}
           src="/static/doodles/hero/harrison.svg"
         />
         <img
-          className="sqD hidden sm:block bottom-[-340px] left-[-180px]"
+          className="sqD hidden sm:block bottom-[-340px] left-[-120px]"
           style={{ animationDelay: "0.4s" }}
           src="/static/doodles/hero/coder.svg"
         />
@@ -46,12 +47,12 @@ function Hero() {
           src="/static/doodles/hero/js.svg"
         />
         <img
-          className="sqD bottom-[-320px] right-[65%] sm:right-[45%]"
+          className="sqD bottom-[-200px] right-[55%] w-16 sm:bottom-[-320px] sm:right-[45%] sm:w-auto"
           style={{ animationDelay: "0.6s" }}
           src="/static/doodles/hero/dino.svg"
         />
         <img
-          className="sqD right-[-60px] sm:right-0 bottom-[-180px] lg:[5%]"
+          className="sqD right-[-8px] bottom-[-120px] w-16 sm:right-0 sm:bottom-[-180px] sm:w-auto lg:right-[5%]"
           style={{ animationDelay: "0.7s" }}
           src="/static/doodles/hero/paintbrush.svg"
         />
@@ -60,10 +61,11 @@ function Hero() {
           src="/static/doodles/hero/pop1.svg"
         />
         <img
-          className="sqD left-[-35px] bottom-[-85px] sm:bottom-[-100px] sm:left-5 opacity-40"
+          className="sqD left-[-8px] bottom-[-70px] w-10 sm:bottom-[-100px] sm:left-5 sm:w-auto opacity-40"
           style={{ animationDelay: "0.9s" }}
           src="/static/doodles/hero/code.svg"
         />
+        <DontPress />
       </h1>
       <div className="flex flex-col sm:flex-row items-center gap-3">
         <ScrollLink

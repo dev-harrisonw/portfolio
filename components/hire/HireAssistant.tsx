@@ -96,9 +96,7 @@ function HireAssistant() {
       <div className="rounded-xl border border-fun-gray bg-black/20 overflow-hidden text-left">
         <div className="border-b border-fun-gray px-4 py-3">
           <p className="font-bold">Ask the assistant</p>
-          <p className="text-xs text-fun-gray">
-            Uses OpenAI when `OPENAI_API_KEY` is set; otherwise a helpful fallback.
-          </p>
+          <p className="text-xs text-fun-gray">Optional — skip this and use the steps below.</p>
         </div>
         <div className="p-4 space-y-3">
           <textarea

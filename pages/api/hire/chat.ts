@@ -27,7 +27,7 @@ export default async function handler(
 
   if (!process.env.OPENAI_API_KEY) {
     return res.status(200).json({
-      reply: `Happy to help. I build marketing sites, catalogues, and small web apps.\n\nServices I offer:\n${serviceList}\n\n${context}\n\nUse the guided steps on this page (or share budget, timeline, and goals) and I'll turn it into a clear enquiry. Tip: set OPENAI_API_KEY to enable live AI replies.`,
+      reply: `Happy to help. I build marketing sites, catalogues, and small web apps.\n\nServices I offer:\n${serviceList}\n\nUse the guided steps on this page (or share budget, timeline, and goals) and I'll turn it into a clear enquiry.`,
       provider: "fallback",
     });
   }

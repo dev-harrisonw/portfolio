@@ -25,7 +25,7 @@ function Skills() {
           src="/static/doodles/skills/fillStar.svg"
         />
       </h2>
-      <div className="relative max-w-lg w-full mx-auto md:mx-none grid gap-x-8 gap-y-12 sm:gap-8 md:gap-12 grid-cols-3 sm:grid-cols-6 items-center place-content-center">
+      <div className="skill-grid relative max-w-lg w-full mx-auto md:mx-none grid gap-x-8 gap-y-12 sm:gap-8 md:gap-12 grid-cols-3 sm:grid-cols-6 items-center place-content-center">
         {skills.map((item, index) => {
           return (
             <div

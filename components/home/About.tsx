@@ -1,23 +1,29 @@
 import React from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { site } from "@/data/content/home";
-import { MotionItem, MotionSection } from "../utility/Motion";
+import SectionTitle from "../global/SectionTitle";
+import { fadeUp } from "@/utils/motion";
 
 function About() {
+  const reduce = useReducedMotion();
+
   return (
-    <MotionSection className="relative max-w-3xl mx-auto text-center md:text-left px-1">
-      <MotionItem>
-        <p className="text-sm uppercase tracking-widest text-fun-pink mb-3">
-          About
-        </p>
-        <p className="text-xl md:text-2xl leading-relaxed text-white/90">
-          {site.about}
-        </p>
-        <p className="mt-4 text-sm text-fun-gray">
-          {site.location}
-          {site.focus ? ` · ${site.focus}` : ""}
-        </p>
-      </MotionItem>
-    </MotionSection>
+    <motion.section
+      className="relative z-10 w-full text-left"
+      initial={reduce ? false : "hidden"}
+      whileInView="show"
+      viewport={{ once: true, amount: 0.4 }}
+      variants={fadeUp}
+    >
+      <SectionTitle title="A bit about me." />
+      <p className="text-xl md:text-2xl leading-relaxed text-white/90 max-w-3xl">
+        {site.about}
+      </p>
+      <p className="mt-4 text-sm text-fun-gray">
+        {site.location}
+        {site.focus ? ` · ${site.focus}` : ""}
+      </p>
+    </motion.section>
   );
 }
 

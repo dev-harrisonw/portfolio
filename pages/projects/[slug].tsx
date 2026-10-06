@@ -9,7 +9,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     paths: projects.map((project) => ({
       params: { slug: project.slug },
     })),
-    fallback: false,
+    fallback: "blocking",
   };
 };
 
@@ -33,6 +33,7 @@ function ProjectPage({ project }: { project: Project }) {
       meta={{
         title: project.title,
         desc: project.desc,
+        noindex: project.noindex,
       }}
     >
       <ProjectSingle project={project} />

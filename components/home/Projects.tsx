@@ -15,7 +15,7 @@ function Projects() {
           <SectionTitle title="Here are a few of my favorite projects." />
         </div>
       </MotionItem>
-      <div className="grid grid-cols-1 gap-12 md:gap-5 md:grid-cols-3 items-start">
+      <div className="project-grid grid grid-cols-1 gap-12 md:gap-5 md:grid-cols-3 items-start">
         {featured.map((item) => {
           return <ProjectCard key={item.id} project={item} />;
         })}
