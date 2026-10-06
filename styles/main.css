@@ -296,11 +296,11 @@ pre {
 @keyframes scaleDownIn {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: scale(4) translateY(0px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1) translateY(0px);
   }
 }
 
@@ -318,7 +318,7 @@ pre {
 
 .heroElem {
   overflow: visible;
-  animation: scaleDownIn 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: scaleDownIn 1.5s cubic-bezier(0.87, 0, 0.13, 1);
 }
 
 .heroElem .sqD:not(.squiggle-hero-pop1) {
