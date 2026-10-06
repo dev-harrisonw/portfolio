@@ -134,7 +134,7 @@ async function capture(url: string) {
 export async function refreshProjectScreenshot(slug: string, url: string) {
   await fs.mkdir(CACHE_DIR, { recursive: true });
   const buffer = await capture(url);
-  await fs.writeFile(screenshotCachePath(slug), buffer);
+  await fs.writeFile(screenshotCachePath(slug), new Uint8Array(buffer));
   return buffer;
 }
 
