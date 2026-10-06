@@ -6,8 +6,11 @@ import { AccountButton } from "@/components/auth/AccountButton";
 const nav = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/time", label: "Time" },
+  { href: "/admin/work", label: "Work" },
   { href: "/admin/clients", label: "Clients" },
   { href: "/admin/invoices", label: "Invoices" },
+  { href: "/admin/finance", label: "Finance" },
+  { href: "/admin/reports", label: "Reports" },
   { href: "/admin/posts", label: "Posts" },
   { href: "/admin/leads", label: "Leads" },
 ];

@@ -2,9 +2,19 @@ import { formatMinutes } from "@/lib/billing";
 
 export type Bar = { label: string; title: string; primary: number; secondary?: number; highlight?: boolean };
 
-/** Lightweight stacked bar chart (minutes), no chart library needed. */
-export default function BarChart({ bars, height = 140 }: { bars: Bar[]; height?: number }) {
-  const max = Math.max(60, ...bars.map((b) => b.primary + (b.secondary ?? 0)));
+/** Lightweight stacked bar chart. Defaults to minutes; pass formatValue for money. */
+export default function BarChart({
+  bars,
+  height = 140,
+  formatValue = formatMinutes,
+  floor = 60,
+}: {
+  bars: Bar[];
+  height?: number;
+  formatValue?: (n: number) => string;
+  floor?: number;
+}) {
+  const max = Math.max(floor, ...bars.map((b) => b.primary + (b.secondary ?? 0)));
   return (
     <div>
       <div className="flex items-end gap-[3px]" style={{ height }}>
@@ -14,7 +24,7 @@ export default function BarChart({ bars, height = 140 }: { bars: Bar[]; height?:
             <div
               key={i}
               className="group relative flex-1 flex flex-col justify-end h-full"
-              title={`${bar.title}: ${formatMinutes(total)}`}
+              title={`${bar.title}: ${formatValue(total)}`}
             >
               {bar.secondary ? (
                 <div className="w-full bg-fun-gray-medium/50 rounded-t-sm" style={{ height: `${(bar.secondary / max) * 100}%` }} />

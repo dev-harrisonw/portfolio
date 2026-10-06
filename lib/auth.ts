@@ -1,10 +1,8 @@
-import { getAuth } from "@clerk/nextjs/server";
 import type { NextApiRequest } from "next";
-import { getClerkUser, isAdminUser } from "@/lib/access";
+import { getClerkUser, isAdminUser, readAuth } from "@/lib/access";
 
 export function getClerkUserId(req: NextApiRequest) {
-  const { userId } = getAuth(req);
-  return userId;
+  return readAuth(req).userId;
 }
 
 /**
@@ -12,7 +10,7 @@ export function getClerkUserId(req: NextApiRequest) {
  * or a verified email listed in ADMIN_EMAILS (comma-separated) for first-time setup.
  */
 export async function requireAdmin(req: NextApiRequest) {
-  const { userId } = getAuth(req);
+  const { userId } = readAuth(req);
   if (!userId) {
     return { ok: false as const, status: 401, error: "Unauthorized" };
   }

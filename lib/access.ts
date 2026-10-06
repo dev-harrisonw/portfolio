@@ -5,6 +5,16 @@ import prisma from "@/lib/prisma";
 
 type Req = NextApiRequest | GetServerSidePropsContext["req"];
 
+/** Clerk v6 throws if clerkMiddleware did not run (no publishable key in this process). */
+export function readAuth(req: Req) {
+  try {
+    const { userId } = getAuth(req);
+    return { userId: userId ?? null };
+  } catch {
+    return { userId: null };
+  }
+}
+
 export async function getClerkUser(userId: string) {
   const clerk = await clerkClient();
   return clerk.users.getUser(userId);
@@ -37,7 +47,7 @@ export function isAdminUser(user: User) {
  * linked to the Clerk account on first visit by verified email. Admins may preview any client.
  */
 export async function resolvePortalAccess(req: Req, requestedClientId?: string) {
-  const { userId } = getAuth(req);
+  const { userId } = readAuth(req);
   if (!userId) return { status: "signed-out" as const };
 
   const linked = await prisma.clientUser.findUnique({ where: { clerkUserId: userId }, select: { clientId: true } });

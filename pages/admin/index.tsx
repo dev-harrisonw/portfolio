@@ -5,6 +5,7 @@ import type { GetServerSideProps } from "next";
 import { requireAdminPage } from "@/lib/requireAdminPage";
 import { api } from "@/lib/fetcher";
 import { formatMinutes, formatMoney } from "@/lib/billing";
+import { relativeDay } from "@/lib/clients";
 import type { AdminDashboard } from "@/lib/dashboard";
 import AdminShell from "@/components/admin/AdminShell";
 import { Card } from "@/components/admin/Form";
@@ -89,6 +90,57 @@ export default function AdminDashboardPage({ data }: Props) {
         </MotionItem>
       </MotionSection>
 
+      <section className="mt-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-fun-gray-light uppercase tracking-wider">Cash</h2>
+          <div className="flex gap-3">
+          <Link href="/admin/finance" className="text-sm text-fun-pink hover:underline">
+            Finance
+          </Link>
+          <Link href="/admin/reports" className="text-sm text-fun-pink hover:underline">
+            Reports
+          </Link>
+          </div>
+        </div>
+        <MotionSection className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-5">
+          <MotionItem>
+            <Stat
+              label={`Collected · ${data.finance.monthLabel}`}
+              value={formatMoney(data.finance.collectedThisMonth.amount, data.finance.collectedThisMonth.currency)}
+              sub={`${data.finance.collectedThisMonth.count} paid`}
+            />
+          </MotionItem>
+          <MotionItem>
+            <Stat
+              label="Outstanding"
+              value={formatMoney(data.finance.outstanding.amount, data.finance.outstanding.currency)}
+              sub={`${data.finance.outstanding.count} awaiting payment`}
+            />
+          </MotionItem>
+          <MotionItem>
+            <Stat
+              label="Overdue"
+              value={formatMoney(data.finance.overdue.amount, data.finance.overdue.currency)}
+              sub={`${data.finance.overdue.count} past due`}
+            />
+          </MotionItem>
+          <MotionItem>
+            <Stat
+              label="Drafts"
+              value={formatMoney(data.finance.drafts.amount, data.finance.drafts.currency)}
+              sub={`${data.finance.drafts.count} ready to send`}
+            />
+          </MotionItem>
+          <MotionItem>
+            <Stat
+              label="Net this month"
+              value={formatMoney(data.finance.netThisMonth.amount, data.finance.netThisMonth.currency)}
+              sub={`${formatMoney(data.finance.spentThisMonth.amount, data.finance.spentThisMonth.currency)} spent`}
+            />
+          </MotionItem>
+        </MotionSection>
+      </section>
+
       {data.nudges.length > 0 && (
         <section className="mt-8">
           <h2 className="text-xl font-bold mb-4">Needs a nudge</h2>
@@ -114,6 +166,35 @@ export default function AdminDashboardPage({ data }: Props) {
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {data.activity.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-xl font-bold mb-4">Activity</h2>
+          <Card>
+            <ul className="divide-y divide-fun-gray-darker">
+              {data.activity.map((a) => {
+                const inner = (
+                  <>
+                    <span className="flex-1 min-w-0 truncate">{a.message}</span>
+                    <span className="text-xs text-fun-gray-medium shrink-0">{relativeDay(a.createdAt)}</span>
+                  </>
+                );
+                return (
+                  <li key={a.id} className="text-sm">
+                    {a.href ? (
+                      <Link href={a.href} className="flex items-center gap-3 py-2.5 hover:text-fun-pink">
+                        {inner}
+                      </Link>
+                    ) : (
+                      <div className="flex items-center gap-3 py-2.5">{inner}</div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
         </section>
       )}
 

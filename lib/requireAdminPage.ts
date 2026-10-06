@@ -1,9 +1,8 @@
 import type { GetServerSidePropsContext } from "next";
-import { getAuth } from "@clerk/nextjs/server";
-import { getClerkUser, isAdminUser } from "@/lib/access";
+import { getClerkUser, isAdminUser, readAuth } from "@/lib/access";
 
 export async function requireAdminPage(ctx: GetServerSidePropsContext) {
-  const { userId } = getAuth(ctx.req);
+  const { userId } = readAuth(ctx.req);
   if (!userId) {
     return {
       redirect: {

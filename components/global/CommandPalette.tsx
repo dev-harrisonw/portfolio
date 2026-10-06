@@ -16,6 +16,12 @@ const commands: Command[] = [
   { id: "skills", label: "Skills", href: "/#skills", hint: "Toolbelt" },
   { id: "blog", label: "Blog", href: "/blog", hint: "Writing" },
   { id: "admin", label: "Admin", href: "/admin", hint: "CMS" },
+  { id: "work", label: "Work board", href: "/admin/work", hint: "Tasks and overdue builds" },
+  { id: "finance", label: "Finance", href: "/admin/finance", hint: "Cash and invoices" },
+  { id: "reports", label: "Reports", href: "/admin/reports", hint: "Profitability this year" },
+  { id: "expenses", label: "Expenses", href: "/admin/expenses", hint: "Costs and P&L" },
+  { id: "leads", label: "Leads", href: "/admin/leads", hint: "Hire enquiries" },
+  { id: "signin", label: "Sign in", href: "/sign-in", hint: "Client portal" },
   { id: "shop", label: "Shop", href: "/shop", hint: "Coming soon" },
 ];
 

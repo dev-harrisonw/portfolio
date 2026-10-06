@@ -13,3 +13,14 @@ Create a Neon Postgres database, set `DATABASE_URL` in Vercel, and run `yarn pri
 ## Blog
 
 Create posts under `/admin/posts`. Published posts appear on `/blog` and `/blog/[slug]` (ISR, 60s).
+
+## Sprints
+
+- **Sprint 5** — Clerk, blog CMS, hire leads inbox.
+- **Sprint 6** — Time tracking, retainers, invoices, Stripe checkout, client portal.
+- **Sprint 7** — Finance dashboard (`/admin/finance`): collected / outstanding / overdue / aging, 12-month cash chart, utilisation, invoice CSV. Lead pipeline (`NEW → LOST`) on `/admin/leads`.
+- **Sprint 8** — Operations board (`/admin/work`): task kanban, overdue builds, due payment stages, start timer. Expenses (`/admin/expenses`) feed net profit on Finance. Won leads can be converted into clients.
+
+- **Sprint 9** — Year reports (`/admin/reports`): client profitability, spend by category, utilisation. Invoice reminders (manual + Monday cron). Activity feed on the dashboard.
+
+Deploy the `sprint9_reports_activity` Prisma migration before using reminders or the activity feed in production (`yarn prisma:deploy`).

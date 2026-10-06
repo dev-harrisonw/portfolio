@@ -21,15 +21,31 @@ model Post {
   authorId    String?
 }
 
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  WON
+  LOST
+}
+
 model Lead {
-  id        String   @id @default(cuid())
-  email     String
-  service   String?
-  timeline  String?
-  budget    String?
-  details   String?
-  summary   String?
-  createdAt DateTime @default(now())
+  id                 String     @id @default(cuid())
+  email              String
+  service            String?
+  timeline           String?
+  budget             String?
+  details            String?
+  summary            String?
+  notes              String     @default("")
+  status             LeadStatus @default(NEW)
+  convertedClientId  String?
+  createdAt          DateTime   @default(now())
+
+  convertedClient Client? @relation(fields: [convertedClientId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([convertedClientId])
 }
 
 // ─── Time tracking (Sprint 6). Money is stored in minor units (pence). ───
@@ -97,10 +113,13 @@ model Client {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  users    ClientUser[]
-  projects Project[]
-  carries  AllowanceCarry[]
-  invoices Invoice[]
+  users           ClientUser[]
+  projects        Project[]
+  carries         AllowanceCarry[]
+  invoices        Invoice[]
+  expenses        Expense[]
+  convertedLeads  Lead[]
+  activities      Activity[]
 }
 
 model ClientUser {
@@ -250,6 +269,8 @@ model Invoice {
   dueAt                   DateTime?
   sentAt                  DateTime?
   paidAt                  DateTime?
+  remindedAt              DateTime?
+  reminderCount           Int           @default(0)
   stripeCheckoutSessionId String?       @unique
   checkoutUrl             String?
   createdAt               DateTime      @default(now())
@@ -279,4 +300,45 @@ model InvoiceLine {
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
+}
+
+enum ExpenseCategory {
+  SOFTWARE
+  HOSTING
+  CONTRACTOR
+  TRAVEL
+  OFFICE
+  OTHER
+}
+
+model Expense {
+  id          String          @id @default(cuid())
+  date        DateTime
+  vendor      String
+  category    ExpenseCategory @default(OTHER)
+  description String          @default("")
+  amount      Int
+  currency    String          @default("GBP")
+  clientId    String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  @@index([date])
+  @@index([clientId])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      String
+  message   String
+  href      String?
+  clientId  String?
+  createdAt DateTime @default(now())
+
+  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([clientId])
 }

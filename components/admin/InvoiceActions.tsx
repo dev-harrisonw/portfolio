@@ -30,6 +30,14 @@ export default function InvoiceActions({ invoice, onDone, onError }: Props) {
           {invoice.status === "DRAFT" ? "Send payment link" : "Resend email"}
         </Button>
       )}
+      {invoice.status === "SENT" && (
+        <Button
+          variant="ghost"
+          onClick={() => run(() => api(`/api/admin/invoices/${invoice.id}`, { body: { action: "remind" } }))}
+        >
+          Remind
+        </Button>
+      )}
       {invoice.status === "SENT" && invoice.checkoutUrl && (
         <a
           href={invoice.checkoutUrl}

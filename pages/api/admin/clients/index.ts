@@ -15,6 +15,13 @@ export default adminRoute({
   POST: async (req, res) => {
     const data = parseBody(clientSchema, req);
     const client = await prisma.client.create({ data });
+    const { logActivity } = await import("@/lib/activity");
+    await logActivity({
+      type: "client.created",
+      message: `Added client ${client.name}`,
+      href: `/admin/clients/${client.id}`,
+      clientId: client.id,
+    });
     res.status(201).json({ client });
   },
 });

@@ -47,16 +47,26 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     }),
     prisma.client.findMany({ where: { archived: false }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
   ]);
-  return { props: JSON.parse(JSON.stringify({ invoices, clients })) };
+  const raw = typeof ctx.query.filter === "string" ? ctx.query.filter : "all";
+  const filter = (filters.some((f) => f.id === raw) ? raw : "all") as (typeof filters)[number]["id"];
+  return { props: JSON.parse(JSON.stringify({ invoices, clients, filter })) };
 };
 
-export default function InvoicesPage({ invoices, clients }: { invoices: InvoiceRow[]; clients: { id: string; name: string }[] }) {
+export default function InvoicesPage({
+  invoices,
+  clients,
+  filter: initialFilter,
+}: {
+  invoices: InvoiceRow[];
+  clients: { id: string; name: string }[];
+  filter: (typeof filters)[number]["id"];
+}) {
   const router = useRouter();
   const refresh = () => router.replace(router.asPath, undefined, { scroll: false });
   const [clientId, setClientId] = useState(clients[0]?.id ?? "");
   const [busy, setBusy] = useState<"last" | "current" | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<(typeof filters)[number]["id"]>("all");
+  const [filter, setFilter] = useState<(typeof filters)[number]["id"]>(initialFilter);
   const [viewClient, setViewClient] = useState("all");
 
   const rows = useMemo(() => {

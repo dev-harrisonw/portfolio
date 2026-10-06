@@ -4,6 +4,7 @@ import { getStripe } from "@/lib/stripe";
 import { siteUrl } from "@/lib/site";
 import { voidInvoice } from "@/lib/invoicing/generate";
 import { emailInvoice } from "@/lib/email";
+import { logActivity } from "@/lib/activity";
 import type { Invoice, InvoiceStatus } from "@prisma/client";
 import type Stripe from "stripe";
 
@@ -74,6 +75,12 @@ export async function sendInvoice(invoiceId: string, opts: { email?: boolean } =
       },
     });
     await notify(existing.url, updated);
+    await logActivity({
+      type: "invoice.sent",
+      message: `Sent ${updated.number} to ${invoice.client.name}`,
+      href: `/admin/invoices/${updated.id}`,
+      clientId: invoice.client.id,
+    });
     return { invoice: updated, url: existing.url };
   }
 
@@ -113,7 +120,53 @@ export async function sendInvoice(invoiceId: string, opts: { email?: boolean } =
     },
   });
   await notify(session.url, updated);
+  await logActivity({
+    type: "invoice.sent",
+    message: `Sent ${updated.number} to ${invoice.client.name}`,
+    href: `/admin/invoices/${updated.id}`,
+    clientId: invoice.client.id,
+  });
   return { invoice: updated, url: session.url };
+}
+
+/** Email a payment reminder for a sent invoice. Reuses (or opens) Checkout. */
+export async function remindInvoice(invoiceId: string) {
+  const invoice = await prisma.invoice.findUnique({
+    where: { id: invoiceId },
+    include: {
+      client: { select: { id: true, name: true, billingEmail: true, stripeCustomerId: true } },
+      lines: { orderBy: { sortOrder: "asc" } },
+    },
+  });
+  if (!invoice) throw new HttpError(404, "Invoice not found");
+  if (invoice.status !== "SENT") throw new HttpError(409, "Only sent invoices can be reminded");
+
+  let url = invoice.checkoutUrl;
+  const live = await liveCheckoutUrl(invoice.stripeCheckoutSessionId);
+  if (live?.url) url = live.url;
+  if (!url) {
+    const sent = await sendInvoice(invoiceId, { email: false });
+    url = sent.url;
+  }
+
+  await emailInvoice({
+    invoice: { ...invoice, client: { name: invoice.client.name, billingEmail: invoice.client.billingEmail } },
+    to: invoice.client.billingEmail,
+    checkoutUrl: url,
+    reminder: true,
+  });
+
+  const updated = await prisma.invoice.update({
+    where: { id: invoice.id },
+    data: { remindedAt: new Date(), reminderCount: { increment: 1 }, checkoutUrl: url },
+  });
+  await logActivity({
+    type: "invoice.reminded",
+    message: `Reminded ${updated.number} · ${invoice.client.name}`,
+    href: `/admin/invoices/${updated.id}`,
+    clientId: invoice.client.id,
+  });
+  return updated;
 }
 
 async function setPaid(
@@ -134,6 +187,14 @@ async function setPaid(
     }),
     prisma.paymentStage.updateMany({ where: { invoiceId }, data: { status: "PAID" } }),
   ]);
+  if (updated) {
+    await logActivity({
+      type: "invoice.paid",
+      message: `Paid ${updated.number}`,
+      href: `/admin/invoices/${updated.id}`,
+      clientId: updated.clientId,
+    });
+  }
   return updated;
 }
 

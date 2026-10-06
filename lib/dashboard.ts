@@ -4,6 +4,8 @@ import { priceUsage, projectionScale } from "@/lib/invoicing/calc";
 import { entryInclude, getPickerTree, getRunningEntry } from "@/lib/time";
 import { formatMoney, formatMinutes } from "@/lib/billing";
 import { portalStatus } from "@/lib/clients";
+import { getFinanceSnapshot } from "@/lib/finance";
+import { listActivity } from "@/lib/activity";
 
 export type ClientCard = {
   id: string;
@@ -87,7 +89,7 @@ export async function getAdminDashboard(now: Date = new Date()) {
 
   const names = new Map(usages.map((u) => [u.client.id, u.client.name]));
 
-  const [openInvoices, portalClients] = await Promise.all([
+  const [openInvoices, portalClients, finance, newLeads, overdueProjects, activity] = await Promise.all([
     prisma.invoice.findMany({
       where: { status: { in: ["DRAFT", "SENT"] } },
       orderBy: { createdAt: "desc" },
@@ -106,6 +108,14 @@ export async function getAdminDashboard(now: Date = new Date()) {
       where: { archived: false },
       select: { id: true, name: true, users: { select: { clerkUserId: true } } },
     }),
+    getFinanceSnapshot(now),
+    prisma.lead.count({ where: { status: "NEW" } }),
+    prisma.project.findMany({
+      where: { status: "ACTIVE", dueDate: { lt: now }, client: { archived: false } },
+      select: { id: true, name: true, dueDate: true, client: { select: { id: true, name: true } } },
+      take: 10,
+    }),
+    listActivity(12),
   ]);
 
   const nowMs = now.getTime();
@@ -191,7 +201,31 @@ export async function getAdminDashboard(now: Date = new Date()) {
     }
   }
 
-  const rank = { Overdue: 0, "Over allowance": 1, "Awaiting payment": 2, "Stage due": 3, "On track to overage": 4, "Ready to send": 5, "No portal access": 6 };
+  if (newLeads > 0) {
+    nudges.push({
+      id: "leads-new",
+      tone: "yellow",
+      label: "New leads",
+      title: `${newLeads} waiting`,
+      href: "/admin/leads",
+      detail: "Review hire enquiries and move them through the pipeline",
+    });
+  }
+
+  for (const p of overdueProjects) {
+    nudges.push({
+      id: `dueproj-${p.id}`,
+      tone: "red",
+      label: "Due date passed",
+      title: `${p.client.name} · ${p.name}`,
+      href: "/admin/work",
+      detail: p.dueDate
+        ? `Due ${p.dueDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })}`
+        : "Past the due date",
+    });
+  }
+
+  const rank = { Overdue: 0, "Due date passed": 1, "Over allowance": 2, "Awaiting payment": 3, "Stage due": 4, "On track to overage": 5, "Ready to send": 6, "New leads": 7, "No portal access": 8 };
   nudges.sort((a, b) => (rank[a.label as keyof typeof rank] ?? 9) - (rank[b.label as keyof typeof rank] ?? 9));
 
   return {
@@ -212,6 +246,15 @@ export async function getAdminDashboard(now: Date = new Date()) {
     pickerTree,
     monthLabel: monthStart.toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" }),
     nudges: nudges.slice(0, 8),
+    finance,
+    activity: activity.map((a) => ({
+      id: a.id,
+      type: a.type,
+      message: a.message,
+      href: a.href,
+      createdAt: a.createdAt.toISOString(),
+      client: a.client,
+    })),
   };
 }
 

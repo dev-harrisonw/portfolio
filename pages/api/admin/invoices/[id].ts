@@ -1,9 +1,9 @@
 import prisma from "@/lib/prisma";
 import { adminRoute, HttpError, parseBody, queryId } from "@/lib/api";
-import { markInvoicePaid, sendInvoice, voidInvoiceWithCheckout } from "@/lib/invoicing/checkout";
+import { markInvoicePaid, remindInvoice, sendInvoice, voidInvoiceWithCheckout } from "@/lib/invoicing/checkout";
 import { z } from "zod";
 
-const actionSchema = z.object({ action: z.enum(["send", "pay"]) });
+const actionSchema = z.object({ action: z.enum(["send", "pay", "remind"]) });
 
 export default adminRoute({
   GET: async (req, res) => {
@@ -29,6 +29,10 @@ export default adminRoute({
     const id = queryId(req);
     if (action === "pay") {
       const invoice = await markInvoicePaid(id);
+      return res.status(200).json({ invoice });
+    }
+    if (action === "remind") {
+      const invoice = await remindInvoice(id);
       return res.status(200).json({ invoice });
     }
     const { invoice, url } = await sendInvoice(id, { email: true });
