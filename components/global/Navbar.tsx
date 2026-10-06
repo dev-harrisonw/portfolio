@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import { routes } from "@/data/global";
+import { AccountButton } from "@/components/auth/AccountButton";
 
 function Navbar({ currentPage }) {
   return (
@@ -38,6 +39,9 @@ function Navbar({ currentPage }) {
             </li>
           );
         })}
+        <li className="list-none">
+          <AccountButton />
+        </li>
       </ul>
     </nav>
   );

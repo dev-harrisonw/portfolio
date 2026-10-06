@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {routes} from "@/data/global";
 import useDelayedRender from "use-delayed-render";
+import { AccountButton } from "@/components/auth/AccountButton";
 
 export default function MobileNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -45,15 +46,18 @@ export default function MobileNavbar() {
             />
           </Link>
         </li>
-        <button
-          className="burger visible md:hidden"
-          aria-label="Toggle menu"
-          type="button"
-          onClick={toggleMenu}
-        >
-          <MenuIcon data-hide={isMenuOpen} />
-          <CrossIcon data-hide={!isMenuOpen} />
-        </button>
+        <div className="flex items-center gap-3">
+          <AccountButton />
+          <button
+            className="burger visible md:hidden"
+            aria-label="Toggle menu"
+            type="button"
+            onClick={toggleMenu}
+          >
+            <MenuIcon data-hide={isMenuOpen} />
+            <CrossIcon data-hide={!isMenuOpen} />
+          </button>
+        </div>
       </div>
       {isMenuMounted && (
         <ul
