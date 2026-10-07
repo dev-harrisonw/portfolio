@@ -595,3 +595,74 @@ html.party-mode .experience-grid article:nth-child(2n) {
     animation: none !important;
   }
 }
+
+/* Clerk prebuilt UI — dark surfaces matching the site, no vendor chrome */
+.cl-rootBox,
+.cl-card,
+.cl-cardBox,
+.cl-modalContent,
+.cl-userButtonPopoverCard {
+  color-scheme: dark;
+}
+
+.cl-card,
+.cl-cardBox,
+.cl-modalContent,
+.cl-userButtonPopoverCard {
+  background-color: #141414 !important;
+  color: #dadbdd !important;
+  border-color: #2a2a2c !important;
+  box-shadow: none !important;
+}
+
+.cl-headerTitle,
+.cl-userButtonPopoverActionButtonText {
+  color: #ffffff !important;
+}
+
+.cl-headerSubtitle,
+.cl-formFieldLabel,
+.cl-footerActionText,
+.cl-dividerText {
+  color: #b2bbcf !important;
+}
+
+.cl-formFieldInput,
+.cl-input,
+.cl-phoneInputBox,
+.cl-otpCodeFieldInput {
+  background-color: #1f1f20 !important;
+  color: #ffffff !important;
+  border-color: #2a2a2c !important;
+}
+
+.cl-socialButtonsBlockButton,
+.cl-identityPreview {
+  background-color: #1f1f20 !important;
+  border-color: #2a2a2c !important;
+  color: #ffffff !important;
+}
+
+.cl-formButtonPrimary {
+  background-color: #3bb143 !important;
+  color: #ffffff !important;
+}
+
+.cl-footerActionLink,
+.cl-formResendCodeLink {
+  color: #3bb143 !important;
+}
+
+.cl-footer,
+.cl-footerPages,
+.cl-userButtonPopoverFooter,
+.cl-internal-b3fm6y,
+.cl-badge,
+.cl-rootBox a[href*="clerk.com"],
+.cl-cardBox a[href*="clerk.com"],
+.cl-card a[href*="clerk.com"],
+.cl-modalContent a[href*="clerk.com"],
+.cl-userButtonPopoverCard a[href*="clerk.com"],
+.cl-profileSection a[href*="clerk.com"] {
+  display: none !important;
+}

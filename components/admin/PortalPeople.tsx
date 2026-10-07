@@ -41,7 +41,7 @@ export default function PortalPeople({ clientId, clientName, billingEmail, siteU
       if (result.already) onNotice("They already have portal access. Send them the sign-in link.");
       else if (result.linked) onNotice("They already have an account — they can sign in to the portal now.");
       else if (result.invited) onNotice("Invitation email sent. They'll land on the portal after signing up.");
-      else onNotice("Access granted, but Clerk didn't send the email. Send them the sign-in link below.");
+      else onNotice("Access granted, but the invitation email didn't send. Copy the sign-in link below.");
     } catch (e) {
       onError((e as Error).message);
     } finally {
@@ -55,7 +55,7 @@ export default function PortalPeople({ clientId, clientName, billingEmail, siteU
         <div className="min-w-0">
           <h2 className="text-lg font-bold">Portal access</h2>
           <p className="text-sm text-fun-gray-medium mt-1">
-            Invite people at {clientName} to see hours, progress, and invoices. They sign in with Clerk and land on{" "}
+            Invite people at {clientName} to see hours, progress, and invoices. They sign in with the invitation email and land on{" "}
             <span className="text-fun-gray-light">/portal</span>.
           </p>
         </div>

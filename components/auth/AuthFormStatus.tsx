@@ -12,10 +12,8 @@ export default function AuthFormStatus() {
     <div className="max-w-sm text-center text-fun-gray-light text-sm leading-relaxed">
       {slow ? (
         <p>
-          The sign-in form couldn&apos;t load. Clerk&apos;s domain{" "}
-          <span className="font-monospace text-white">clerk.harrisonwarburton.com</span> is not
-          resolving — add a CNAME to <span className="font-monospace text-white">frontend-api.clerk.services</span>{" "}
-          in DNS, then refresh.
+          The sign-in form couldn&apos;t load. Check your connection and refresh.
+          If it keeps happening, get in touch.
         </p>
       ) : (
         <p>Loading sign in…</p>

@@ -8,10 +8,10 @@ const projects: Project[] = [
     slug: "wesharp",
     desc: "End-to-end knife sharpening ops: public booking, customer portal, and an admin console with live dashboards.",
     overview:
-      "WeSharp is a doorstep knife-sharpening product I designed and built for Greater Manchester and Liverpool kitchens — restaurants, hotels, butchers, and home cooks. The public site handles coverage, pricing, and collection bookings; signed-in kitchens get a portal for orders, blades, invoices, and programmes; staff get a full ops console.\n\nThe stack is a Next.js 15 app (Clerk, TanStack Query, Recharts) talking to a Laravel 13 API with Stripe billing, knife tracking, route planning, CRM, and analytics. Dashboards cover customer overview, subscription allowances, workshop status, collections, finance, and an internal analytics/reporting suite (sales, routes, operations, cash, forecasts).",
+      "WeSharp is a doorstep knife-sharpening product I designed and built for Greater Manchester and Liverpool kitchens — restaurants, hotels, butchers, and home cooks. The public site handles coverage, pricing, and collection bookings; signed-in kitchens get a portal for orders, blades, invoices, and programmes; staff get a full ops console.\n\nThe stack is a Next.js 15 app (TanStack Query, Recharts) talking to a Laravel 13 API with Stripe billing, knife tracking, route planning, CRM, and analytics. Dashboards cover customer overview, subscription allowances, workshop status, collections, finance, and an internal analytics/reporting suite (sales, routes, operations, cash, forecasts).",
     img: "/static/projects/wesharp/cover.jpg",
     link: "https://www.wesharp.co.uk/",
-    tags: ["Next.js", "Laravel", "TypeScript", "PHP", "Clerk", "Stripe", "Tailwind", "Recharts"],
+    tags: ["Next.js", "Laravel", "TypeScript", "PHP", "Stripe", "Tailwind", "Recharts"],
     status: "active",
     featured: true,
     year: 2026,
