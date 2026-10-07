@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useClerk, useUser, UserButton } from "@clerk/nextjs";
 
@@ -12,8 +13,56 @@ function SignInLink() {
   );
 }
 
+function GridIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" width="16" height="16" aria-hidden>
+      <path d="M2 2h5v5H2V2zm7 0h5v5H9V2zM2 9h5v5H2V9zm7 0h5v5H9V9z" />
+    </svg>
+  );
+}
+
+function BriefcaseIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" width="16" height="16" aria-hidden>
+      <path d="M6 2h4a1 1 0 0 1 1 1v1h3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3V3a1 1 0 0 1 1-1zm1 2V3h2v1H7z" />
+    </svg>
+  );
+}
+
+function useAccountAccess(isSignedIn?: boolean) {
+  const [access, setAccess] = useState({ isAdmin: false, hasPortal: false });
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      setAccess({ isAdmin: false, hasPortal: false });
+      return;
+    }
+
+    let cancelled = false;
+    fetch("/api/account")
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        setAccess({
+          isAdmin: Boolean(data.isAdmin),
+          hasPortal: Boolean(data.hasPortal),
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setAccess({ isAdmin: false, hasPortal: true });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isSignedIn]);
+
+  return access;
+}
+
 function AccountInner() {
   const { isLoaded, isSignedIn } = useUser();
+
   if (isLoaded && isSignedIn) {
     return (
       <UserButton
@@ -22,9 +71,15 @@ function AccountInner() {
           elements: {
             avatarBox: "h-9 w-9 ring-2 ring-fun-pink/50",
             userButtonPopoverCard: "bg-fun-gray-darkest border border-fun-gray-darker",
+            userButtonPopoverFooter: { display: "none" },
           },
         }}
-      />
+      >
+        <UserButton.MenuItems>
+          <UserButton.Link label="Client portal" href="/portal" labelIcon={<BriefcaseIcon />} />
+          <UserButton.Link label="Admin dashboard" href="/admin" labelIcon={<GridIcon />} />
+        </UserButton.MenuItems>
+      </UserButton>
     );
   }
   return <SignInLink />;
@@ -62,6 +117,10 @@ function SignedOutCard({ onNavigate }: { onNavigate?: () => void }) {
 function MobileProfileInner({ onNavigate }: { onNavigate?: () => void }) {
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut, openUserProfile } = useClerk();
+  const metadataAdmin = (user?.publicMetadata as { role?: string } | undefined)?.role === "admin";
+  const access = useAccountAccess(isSignedIn);
+  const isAdmin = access.isAdmin || metadataAdmin;
+  const showPortal = access.hasPortal || isAdmin || isSignedIn;
 
   if (!isLoaded) {
     return (
@@ -74,7 +133,6 @@ function MobileProfileInner({ onNavigate }: { onNavigate?: () => void }) {
   }
 
   const email = user.primaryEmailAddress?.emailAddress;
-  const isAdmin = (user.publicMetadata as { role?: string } | undefined)?.role === "admin";
 
   return (
     <div className="rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest p-4 text-left">
@@ -90,13 +148,15 @@ function MobileProfileInner({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <Link
-          href="/portal"
-          onClick={onNavigate}
-          className="rounded-full border border-fun-gray-darker px-3 py-2 text-center text-sm font-bold hover:border-fun-pink hover:text-fun-pink transition-colors"
-        >
-          Portal
-        </Link>
+        {showPortal && (
+          <Link
+            href="/portal"
+            onClick={onNavigate}
+            className="rounded-full border border-fun-gray-darker px-3 py-2 text-center text-sm font-bold hover:border-fun-pink hover:text-fun-pink transition-colors"
+          >
+            Portal
+          </Link>
+        )}
         {isAdmin ? (
           <Link
             href="/admin"
