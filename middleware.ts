@@ -1,27 +1,18 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
 
 /**
- * Session required on admin and client portal surfaces. Role separation happens server-side
- * (ADMIN_EMAILS / ClientUser rows), never from token claims.
+ * clerkMiddleware must run so getAuth() works on Pages Router, but route gates stay
+ * in getServerSideProps. auth.protect() here 404-rewrites to a blank `/clerk_*` URL
+ * when handshake is incomplete — which is how Admin/Portal appeared to go nowhere.
  */
-const isProtectedRoute = createRouteMatcher(["/admin(.*)", "/portal(.*)"]);
-
 const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
-const clerkHandler = clerkMiddleware(
-  async (auth, request) => {
-    if (request.nextUrl.pathname === "/portal/no-access") return;
-    if (isProtectedRoute(request)) {
-      await auth.protect();
-    }
-  },
-  {
-    signInUrl: "/sign-in",
-    signUpUrl: "/sign-up",
-  }
-);
+const clerkHandler = clerkMiddleware({
+  signInUrl: "/sign-in",
+  signUpUrl: "/sign-up",
+});
 
 export default async function middleware(request: NextRequest, event: NextFetchEvent) {
   if (!clerkEnabled) {

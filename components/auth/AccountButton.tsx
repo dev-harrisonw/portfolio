@@ -76,8 +76,20 @@ function AccountInner() {
         }}
       >
         <UserButton.MenuItems>
-          <UserButton.Link label="Client portal" href="/portal" labelIcon={<BriefcaseIcon />} />
-          <UserButton.Link label="Admin dashboard" href="/admin" labelIcon={<GridIcon />} />
+          <UserButton.Action
+            label="Client portal"
+            labelIcon={<BriefcaseIcon />}
+            onClick={() => {
+              window.location.assign("/portal");
+            }}
+          />
+          <UserButton.Action
+            label="Admin dashboard"
+            labelIcon={<GridIcon />}
+            onClick={() => {
+              window.location.assign("/admin");
+            }}
+          />
         </UserButton.MenuItems>
       </UserButton>
     );
