@@ -11,7 +11,7 @@ type MethodHandlers = Partial<Record<"GET" | "POST" | "PUT" | "PATCH" | "DELETE"
 /** Admin-only API route with per-method handlers and consistent error responses. */
 export function adminRoute(handlers: MethodHandlers) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
-    const auth = await requireAdmin(req);
+    const auth = await requireAdmin(req, res);
     if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
 
     const handler = handlers[req.method as keyof MethodHandlers];

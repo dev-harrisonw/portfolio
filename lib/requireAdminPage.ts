@@ -1,8 +1,13 @@
 import type { GetServerSidePropsContext } from "next";
-import { getClerkUser, isAdminUser, readAuth } from "@/lib/access";
+import { getClerkUser, isAdminUser } from "@/lib/access";
+import { applyAuthRedirect, resolveRequestAuth } from "@/lib/clerkRequest";
 
 export async function requireAdminPage(ctx: GetServerSidePropsContext) {
-  const { userId } = readAuth(ctx.req);
+  const auth = await resolveRequestAuth(ctx.req);
+  const handshake = applyAuthRedirect(ctx.res, auth);
+  if (handshake) return handshake;
+
+  const { userId } = auth;
   if (!userId) {
     return {
       redirect: {
@@ -33,7 +38,7 @@ export async function requireAdminPage(ctx: GetServerSidePropsContext) {
   } catch {
     return {
       redirect: {
-        destination: "/sign-in",
+        destination: `/sign-in?redirect_url=${encodeURIComponent(ctx.resolvedUrl)}`,
         permanent: false,
       },
     };

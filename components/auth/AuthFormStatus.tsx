@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function AuthFormStatus() {
+export default function AuthFormStatus({ message }: { message?: string }) {
   const [slow, setSlow] = useState(false);
 
   useEffect(() => {
@@ -16,7 +16,7 @@ export default function AuthFormStatus() {
           If it keeps happening, get in touch.
         </p>
       ) : (
-        <p>Loading sign in…</p>
+        <p>{message || "Loading sign in…"}</p>
       )}
     </div>
   );

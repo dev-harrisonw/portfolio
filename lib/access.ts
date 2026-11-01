@@ -1,19 +1,10 @@
-import { clerkClient, getAuth } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/nextjs/server";
 import type { User } from "@clerk/nextjs/server";
 import type { GetServerSidePropsContext, NextApiRequest } from "next";
+import { applyAuthRedirect, resolveRequestAuth } from "@/lib/clerkRequest";
 import prisma from "@/lib/prisma";
 
 type Req = NextApiRequest | GetServerSidePropsContext["req"];
-
-/** Clerk v6 throws if clerkMiddleware did not run (no publishable key in this process). */
-export function readAuth(req: Req) {
-  try {
-    const { userId } = getAuth(req);
-    return { userId: userId ?? null };
-  } catch {
-    return { userId: null };
-  }
-}
 
 export async function getClerkUser(userId: string) {
   const clerk = await clerkClient();
@@ -47,7 +38,7 @@ export function isAdminUser(user: User) {
  * linked to the Clerk account on first visit by verified email. Admins may preview any client.
  */
 export async function resolvePortalAccess(req: Req, requestedClientId?: string) {
-  const { userId } = readAuth(req);
+  const { userId } = await resolveRequestAuth(req);
   if (!userId) return { status: "signed-out" as const };
 
   const linked = await prisma.clientUser.findUnique({ where: { clerkUserId: userId }, select: { clientId: true } });
@@ -76,6 +67,10 @@ export async function resolvePortalAccess(req: Req, requestedClientId?: string) 
 }
 
 export async function requirePortalPage(ctx: GetServerSidePropsContext) {
+  const auth = await resolveRequestAuth(ctx.req);
+  const handshake = applyAuthRedirect(ctx.res, auth);
+  if (handshake) return handshake;
+
   const requested = typeof ctx.query.client === "string" ? ctx.query.client : undefined;
   const access = await resolvePortalAccess(ctx.req, requested);
   if (access.status === "signed-out") {
