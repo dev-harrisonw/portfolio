@@ -40,13 +40,15 @@ function safeClerkLocation(location: string, base: string) {
   return null;
 }
 
+const dropHeaders = new Set(["host", "connection", "content-length", "transfer-encoding", "keep-alive", "upgrade", "expect", "te", "trailer"]);
+
 export function incomingToRequest(req: IncomingMessage) {
   const host = firstHeader(req.headers["x-forwarded-host"]) || firstHeader(req.headers.host) || "localhost";
   const proto = firstHeader(req.headers["x-forwarded-proto"]) || "https";
   const url = new URL(req.url || "/", `${proto}://${host}`);
   const headers = new Headers();
   for (const [key, value] of Object.entries(req.headers)) {
-    if (value == null || key === "content-length") continue;
+    if (value == null || dropHeaders.has(key.toLowerCase())) continue;
     if (Array.isArray(value)) value.forEach((item) => headers.append(key, item));
     else headers.set(key, value);
   }
@@ -55,10 +57,14 @@ export function incomingToRequest(req: IncomingMessage) {
 
 export function applySetCookies(res: HeaderSource, cookies: string[]) {
   if (!cookies.length) return;
-  const existing = res.getHeader("Set-Cookie");
-  const prev =
-    existing == null ? [] : Array.isArray(existing) ? existing.map(String) : [String(existing)];
-  res.setHeader("Set-Cookie", [...prev, ...cookies]);
+  try {
+    const existing = res.getHeader("Set-Cookie");
+    const prev =
+      existing == null ? [] : Array.isArray(existing) ? existing.map(String) : [String(existing)];
+    res.setHeader("Set-Cookie", [...prev, ...cookies]);
+  } catch (error) {
+    console.error("Clerk session cookie was not written", error);
+  }
 }
 
 type ClerkState = {
@@ -116,17 +122,6 @@ export function resolveRequestAuth(req: Req): Promise<ResolvedAuth> {
 
   pending.set(req, run);
   return run;
-}
-
-export async function clerkHandshake(request: Request) {
-  try {
-    const auth = await authenticate(request);
-    if (!auth.redirect) return null;
-    return auth;
-  } catch (error) {
-    console.error("Clerk handshake recovery failed", error);
-    return null;
-  }
 }
 
 export function applyAuthRedirect(res: ServerResponse, auth: ResolvedAuth) {

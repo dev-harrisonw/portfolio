@@ -1,7 +1,6 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
-import { clerkHandshake } from "@/lib/clerkRequest";
 
 /**
  * clerkMiddleware must run so getAuth() works on Pages Router, but route gates stay
@@ -24,33 +23,12 @@ export default async function middleware(request: NextRequest, event: NextFetchE
     return await clerkHandler(request, event);
   } catch (error) {
     // Clerk 6 can throw "handshake status without redirect" after sign-in on
-    // Pages Router. Continuing without the handshake drops the session, so
-    // Admin and Portal bounce to a blank /sign-in. Replay it when we can.
+    // Pages Router. Rebuilding that handshake inside Edge throws again and
+    // Vercel turns it into a 500 for every signed-in request. Let the page
+    // read the session cookie instead.
     console.error("Clerk middleware failed", error);
-    const handshake = await clerkHandshake(browserRequest(request));
-    if (handshake?.redirect) {
-      const res = NextResponse.redirect(handshake.redirect, 307);
-      res.headers.set("Cache-Control", "no-store");
-      for (const cookie of handshake.cookies) res.headers.append("set-cookie", cookie);
-      return res;
-    }
     return NextResponse.next();
   }
-}
-
-/** Public origin, not the internal host Edge sees behind the proxy. */
-function browserRequest(request: NextRequest) {
-  const host =
-    request.headers.get("x-forwarded-host")?.split(",")[0]?.trim() ||
-    request.headers.get("host") ||
-    request.nextUrl.host;
-  const proto =
-    request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() ||
-    request.nextUrl.protocol.replace(":", "");
-  const url = new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, `${proto}://${host}`);
-  const headers = new Headers(request.headers);
-  headers.delete("content-length");
-  return new Request(url, { method: request.method, headers });
 }
 
 export const config = {
