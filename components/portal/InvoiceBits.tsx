@@ -6,6 +6,7 @@ export type PortalInvoice = {
   number: string;
   status: string;
   total: number;
+  vat: number;
   kind: string;
   createdAt: string;
   dueAt: string | null;
@@ -20,6 +21,37 @@ export const fmtDay = (iso: string, opts: Intl.DateTimeFormatOptions = { day: "n
 
 export function isOverdue(inv: PortalInvoice, now = Date.now()) {
   return inv.status === "SENT" && inv.dueAt != null && new Date(inv.dueAt).getTime() + DAY_MS <= now;
+}
+
+type Dated = { periodStart: Date | string | null; periodEnd: Date | string | null; createdAt: Date | string };
+
+/** The invoice covering a viewed period. Partial first months (billed 14–30 Sep) still match September. */
+export function invoiceForPeriod<T extends Dated>(invoices: T[], period: { start: Date | string; end: Date | string }): T | null {
+  const start = new Date(period.start).getTime();
+  const end = new Date(period.end).getTime();
+  let best: { inv: T; overlap: number; created: number } | null = null;
+  for (const inv of invoices) {
+    if (!inv.periodStart || !inv.periodEnd) continue;
+    const overlap = Math.min(new Date(inv.periodEnd).getTime(), end) - Math.max(new Date(inv.periodStart).getTime(), start);
+    if (overlap <= 0) continue;
+    const created = new Date(inv.createdAt).getTime();
+    if (!best || overlap > best.overlap || (overlap === best.overlap && created > best.created)) best = { inv, overlap, created };
+  }
+  return best?.inv ?? null;
+}
+
+/**
+ * The invoice charges the hours logged, not the retainer the client is on now.
+ * September was billed 22h × £37.50; applying today's £1,500 retainer to that month is wrong.
+ */
+export function billedAsHours(
+  invoice: PortalInvoice,
+  usage: { totals: { billableMinutes: number }; client: { hourlyRate: number; retainerAmount: number | null } }
+) {
+  if (usage.client.retainerAmount == null || usage.totals.billableMinutes <= 0) return false;
+  const hourly = Math.round((usage.totals.billableMinutes * usage.client.hourlyRate) / 60);
+  const net = invoice.total - invoice.vat;
+  return Math.abs(net - hourly) <= 1 && net !== usage.client.retainerAmount;
 }
 
 export function invoicePeriodLabel(inv: PortalInvoice) {

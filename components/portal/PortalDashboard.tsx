@@ -9,6 +9,7 @@ import { MotionItem, MotionSection } from "@/components/utility/Motion";
 import {
   InvoiceStatusPill,
   PayButton,
+  billedAsHours,
   invoiceDateNote,
   invoicePdfHref,
   type PortalInvoice,
@@ -75,7 +76,12 @@ type Props = {
 };
 
 export default function PortalDashboard({ usage, estimate, projected, periodInvoice, clientId }: Props) {
-  const main = usage.allowances[0];
+  const hourly = periodInvoice != null && billedAsHours(periodInvoice, usage);
+  const allowance = usage.allowances[0];
+  // A month billed by the hour predates the retainer, so don't frame it as "18h left of 40h".
+  const main = hourly
+    ? { ...allowance, allowanceMinutes: null, availableMinutes: null, remainingMinutes: null, overageMinutes: 0, carriedInMinutes: 0, pace: { ...allowance.pace, status: "no-allowance" } }
+    : allowance;
   const closed = !usage.period.isCurrent;
   const tone = paceTone[main.overageMinutes > 0 ? "over" : main.pace.status];
   const currency = usage.client.currency;
@@ -104,7 +110,7 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
           {main.availableMinutes != null ? (
             <Row name="Included" value={formatMinutes(main.availableMinutes)} />
           ) : (
-            <Row name="Plan" value="Pay as you go" />
+            <Row name="Plan" value={hourly ? "Hourly, no retainer" : "Pay as you go"} />
           )}
           <Row name="Logged" value={formatMinutes(main.usedMinutes)} tone="font-bold text-white" />
           {main.availableMinutes != null &&

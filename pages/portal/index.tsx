@@ -15,6 +15,7 @@ import {
   InvoiceStatusPill,
   PayButton,
   invoiceDateNote,
+  invoiceForPeriod,
   invoicePdfHref,
   invoicePeriodLabel,
   type PortalInvoice,
@@ -48,6 +49,7 @@ const invoiceSelect = {
   number: true,
   status: true,
   total: true,
+  vat: true,
   kind: true,
   createdAt: true,
   dueAt: true,
@@ -62,6 +64,7 @@ function toPortalInvoice(inv: {
   number: string;
   status: string;
   total: number;
+  vat: number;
   kind: string;
   createdAt: Date;
   dueAt: Date | null;
@@ -120,19 +123,16 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const projected = priceUsage(usage, { scale: projectionScale(usage) });
 
   const visible = access.isAdmin ? { not: "VOID" as const } : { in: ["SENT" as const, "PAID" as const] };
-  const [recent, forPeriod] = await Promise.all([
-    prisma.invoice.findMany({
-      where: { clientId: access.clientId, status: visible },
-      orderBy: { createdAt: "desc" },
-      take: 8,
-      select: invoiceSelect,
-    }),
-    prisma.invoice.findFirst({
-      where: { clientId: access.clientId, kind: "PERIOD", status: visible, periodStart: { gte: period.start, lt: period.end } },
-      orderBy: { createdAt: "desc" },
-      select: invoiceSelect,
-    }),
-  ]);
+  const recent = await prisma.invoice.findMany({
+    where: { clientId: access.clientId, status: visible },
+    orderBy: { createdAt: "desc" },
+    select: invoiceSelect,
+  });
+  // Match on overlap, not "starts inside the month": the first invoice covers 14–30 Sep.
+  const forPeriod = invoiceForPeriod(
+    recent.filter((inv) => inv.kind === "PERIOD"),
+    period
+  );
 
   return {
     props: {
@@ -141,7 +141,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
       projected,
       periods,
       adminPreview,
-      invoices: recent.map(toPortalInvoice),
+      invoices: recent.slice(0, 8).map(toPortalInvoice),
       periodInvoice: forPeriod ? toPortalInvoice(forPeriod) : null,
     },
   };
