@@ -31,7 +31,9 @@ console.log(`migrate-deploy: using ${explicit ? "explicit unpooled" : direct !==
 
 const result = spawnSync("npx", ["prisma", "migrate", "deploy"], {
   stdio: "inherit",
-  env: { ...process.env, DATABASE_URL: direct },
+  // The advisory lock only guards against two deploys migrating at once, and a lock left behind by an
+  // earlier timed-out connection would otherwise block every later build. Migrations are idempotent.
+  env: { ...process.env, DATABASE_URL: direct, PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK: "1" },
 });
 
 process.exit(result.status === null ? 1 : result.status);
