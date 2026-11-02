@@ -1,19 +1,19 @@
 // pdfkit loads these through "#standard-fonts/*", which the serverless file tracer skips.
-// Requiring them here, and keeping the requires external in next.config.js, copies the files
-// into the function so invoice and timesheet PDFs can open Helvetica.
-require("pdfkit/js/standard-fonts/Courier.cjs");
-require("pdfkit/js/standard-fonts/CourierBold.cjs");
-require("pdfkit/js/standard-fonts/CourierBoldOblique.cjs");
-require("pdfkit/js/standard-fonts/CourierOblique.cjs");
-require("pdfkit/js/standard-fonts/Helvetica.cjs");
-require("pdfkit/js/standard-fonts/HelveticaBold.cjs");
-require("pdfkit/js/standard-fonts/HelveticaBoldOblique.cjs");
-require("pdfkit/js/standard-fonts/HelveticaOblique.cjs");
-require("pdfkit/js/standard-fonts/Symbol.cjs");
-require("pdfkit/js/standard-fonts/TimesBold.cjs");
-require("pdfkit/js/standard-fonts/TimesBoldItalic.cjs");
-require("pdfkit/js/standard-fonts/TimesItalic.cjs");
-require("pdfkit/js/standard-fonts/TimesRoman.cjs");
-require("pdfkit/js/standard-fonts/ZapfDingbats.cjs");
+// These subpaths are the ones package.json exports; requiring the .cjs files directly throws
+// ERR_PACKAGE_PATH_NOT_EXPORTED and takes the whole invoice route down with it.
+require("pdfkit/standard-fonts/Courier");
+require("pdfkit/standard-fonts/CourierBold");
+require("pdfkit/standard-fonts/CourierBoldOblique");
+require("pdfkit/standard-fonts/CourierOblique");
+require("pdfkit/standard-fonts/Helvetica");
+require("pdfkit/standard-fonts/HelveticaBold");
+require("pdfkit/standard-fonts/HelveticaBoldOblique");
+require("pdfkit/standard-fonts/HelveticaOblique");
+require("pdfkit/standard-fonts/Symbol");
+require("pdfkit/standard-fonts/TimesBold");
+require("pdfkit/standard-fonts/TimesBoldItalic");
+require("pdfkit/standard-fonts/TimesItalic");
+require("pdfkit/standard-fonts/TimesRoman");
+require("pdfkit/standard-fonts/ZapfDingbats");
 
 export {};
