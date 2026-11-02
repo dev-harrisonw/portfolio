@@ -1,11 +1,16 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
   reactStrictMode: true,
-  experimental: {
-    // @react-pdf/renderer loads pdfkit font files by a computed path, which the serverless file
-    // tracer misses. Without this, every invoice PDF fails with "Cannot find module … Helvetica.cjs".
-    outputFileTracingIncludes: {
-      "/api/**": ["node_modules/pdfkit/js/standard-fonts/**"],
-    },
+  webpack: (config, { isServer }) => {
+    if (!isServer) return config;
+    // Leave pdfkit's font files as real requires. The renderer loads them through a package
+    // import the file tracer cannot see, so these requires are what get them into the bundle.
+    config.externals.push(({ request }, callback) => {
+      if (request && request.startsWith("pdfkit/js/standard-fonts/")) {
+        return callback(null, `commonjs ${request}`);
+      }
+      callback();
+    });
+    return config;
   },
 };

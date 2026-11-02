@@ -1,5 +1,6 @@
 import React from "react";
 import { Document, Page, StyleSheet, Text, View, renderToBuffer } from "@react-pdf/renderer";
+import "@/lib/exports/pdfkitFonts";
 import { formatMinutes, formatMoney } from "@/lib/billing";
 
 const green = "#3BB143";
