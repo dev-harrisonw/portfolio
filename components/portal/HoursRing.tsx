@@ -13,7 +13,7 @@ export default function HoursRing({ used, available }: Props) {
   const pct = Math.min(1, ratio);
   const over = ratio > 1;
   const color = over ? "#fb7185" : ratio > 0.8 ? "#facc15" : "#3BB143";
-  const headline = formatMinutes(available != null && !over ? available - used : used);
+  const headline = formatMinutes(available == null ? used : over ? used - available : available - used);
   const [hours, mins] = headline.split(" ");
   const showMins = mins && mins !== "00m";
 

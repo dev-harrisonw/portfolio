@@ -14,11 +14,18 @@ export const paceTone: Record<string, string> = {
   "no-allowance": "text-fun-gray-light bg-fun-gray-darker",
 };
 
-export function paceText(a: AllowanceUsage, audience: "admin" | "client" = "admin") {
+type PaceOptions = { closed?: boolean; billOverages?: boolean };
+
+export function paceText(a: AllowanceUsage, audience: "admin" | "client" = "admin", opts: PaceOptions = {}) {
   const projected = formatMinutes(a.pace.projectedMinutes);
+  if (opts.closed && a.availableMinutes == null) return `${formatMinutes(a.usedMinutes)} logged`;
   if (a.availableMinutes == null) return `Pay as you go · on course for ~${projected}`;
   const of = formatMinutes(a.availableMinutes);
-  if (a.overageMinutes > 0) return `${formatMinutes(a.overageMinutes)} over the allowance`;
+  if (a.overageMinutes > 0) {
+    const billing = opts.billOverages == null ? "" : opts.billOverages ? " · billed at the hourly rate" : " · not billed";
+    return `${formatMinutes(a.overageMinutes)} over the allowance${billing}`;
+  }
+  if (opts.closed) return `Used ${formatMinutes(a.usedMinutes)} of ${of}`;
   if (a.pace.status === "over") {
     const day = a.pace.runOutDate ? ` around the ${ordinal(new Date(a.pace.runOutDate).getUTCDate())}` : "";
     return audience === "client"

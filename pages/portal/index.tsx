@@ -1,34 +1,83 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useState } from "react";
 import type { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
 import { requirePortalPage } from "@/lib/access";
-import { formatMoney, shiftPeriod } from "@/lib/billing";
+import { formatMoney, shiftPeriod, type BillingPeriod } from "@/lib/billing";
 import { getClientUsage, periodFromParam, periodParam, type ClientUsage } from "@/lib/usage";
 import { priceUsage, projectionScale, type InvoiceDraft } from "@/lib/invoicing/calc";
-import { api } from "@/lib/fetcher";
 import PortalShell from "@/components/portal/PortalShell";
 import PortalDashboard from "@/components/portal/PortalDashboard";
+import PeriodHeader, { type PeriodOption } from "@/components/portal/PeriodHeader";
 import BuildProgress from "@/components/portal/BuildProgress";
 import { AllowanceSummary, CompletedTasks, EntryLog, ProjectBreakdown } from "@/components/portal/HoursBreakdown";
+import {
+  InvoiceStatusPill,
+  PayButton,
+  invoiceDateNote,
+  invoicePdfHref,
+  invoicePeriodLabel,
+  type PortalInvoice,
+} from "@/components/portal/InvoiceBits";
 
 type Props = {
   usage: ClientUsage;
   estimate: InvoiceDraft;
   projected: InvoiceDraft;
-  periods: { value: string; label: string }[];
+  periods: PeriodOption[];
   adminPreview: { clients: { id: string; name: string }[]; currentId: string } | null;
-  invoices: {
-    id: string;
-    number: string;
-    status: string;
-    total: number;
-    kind: string;
-    createdAt: string;
-    checkoutUrl: string | null;
-  }[];
+  invoices: PortalInvoice[];
+  periodInvoice: PortalInvoice | null;
 };
+
+const DAY_MS = 86400000;
+const utc = (d: Date, opts: Intl.DateTimeFormatOptions) => d.toLocaleDateString("en-GB", { ...opts, timeZone: "UTC" });
+
+function describePeriod(p: BillingPeriod): PeriodOption {
+  const last = new Date(p.end.getTime() - DAY_MS);
+  const range = `${utc(p.start, { day: "numeric", month: "short" })} – ${utc(last, { day: "numeric", month: "short", year: "numeric" })}`;
+  return {
+    value: periodParam(p.start),
+    label: p.start.getUTCDate() === 1 ? utc(p.start, { month: "long", year: "numeric" }) : range,
+    range,
+  };
+}
+
+const invoiceSelect = {
+  id: true,
+  number: true,
+  status: true,
+  total: true,
+  kind: true,
+  createdAt: true,
+  dueAt: true,
+  paidAt: true,
+  periodStart: true,
+  periodEnd: true,
+} as const;
+
+const iso = (d: Date | null) => (d ? d.toISOString() : null);
+function toPortalInvoice(inv: {
+  id: string;
+  number: string;
+  status: string;
+  total: number;
+  kind: string;
+  createdAt: Date;
+  dueAt: Date | null;
+  paidAt: Date | null;
+  periodStart: Date | null;
+  periodEnd: Date | null;
+}): PortalInvoice {
+  return {
+    ...inv,
+    createdAt: inv.createdAt.toISOString(),
+    dueAt: iso(inv.dueAt),
+    paidAt: iso(inv.paidAt),
+    periodStart: iso(inv.periodStart),
+    periodEnd: iso(inv.periodEnd),
+  };
+}
 
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const access = await requirePortalPage(ctx);
@@ -58,12 +107,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
 
   const periods = Array.from({ length: 24 }, (_, i) => shiftPeriod(client.periodStartDay, now, -i))
     .filter((p, i) => i === 0 || p.end > earliest || periodParam(p.start) === periodParam(period.start))
-    .map((p) => ({
-      value: periodParam(p.start),
-      label: `${p.start.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} – ${new Date(
-        p.end.getTime() - 86400000
-      ).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}`,
-    }));
+    .map(describePeriod);
 
   const adminPreview = access.isAdmin
     ? {
@@ -75,27 +119,42 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const estimate = priceUsage(usage);
   const projected = priceUsage(usage, { scale: projectionScale(usage) });
 
-  const invoices = (
-    await prisma.invoice.findMany({
-      where: {
-        clientId: access.clientId,
-        status: access.isAdmin ? { not: "VOID" } : { in: ["SENT", "PAID"] },
-      },
+  const visible = access.isAdmin ? { not: "VOID" as const } : { in: ["SENT" as const, "PAID" as const] };
+  const [recent, forPeriod] = await Promise.all([
+    prisma.invoice.findMany({
+      where: { clientId: access.clientId, status: visible },
       orderBy: { createdAt: "desc" },
-      take: 6,
-      select: { id: true, number: true, status: true, total: true, kind: true, createdAt: true, checkoutUrl: true },
-    })
-  ).map((inv) => ({ ...inv, createdAt: inv.createdAt.toISOString() }));
+      take: 8,
+      select: invoiceSelect,
+    }),
+    prisma.invoice.findFirst({
+      where: { clientId: access.clientId, kind: "PERIOD", status: visible, periodStart: { gte: period.start, lt: period.end } },
+      orderBy: { createdAt: "desc" },
+      select: invoiceSelect,
+    }),
+  ]);
 
-  return { props: { usage, estimate, projected, periods, adminPreview, invoices } };
+  return {
+    props: {
+      usage,
+      estimate,
+      projected,
+      periods,
+      adminPreview,
+      invoices: recent.map(toPortalInvoice),
+      periodInvoice: forPeriod ? toPortalInvoice(forPeriod) : null,
+    },
+  };
 };
 
-export default function PortalPage({ usage, estimate, projected, periods, adminPreview, invoices }: Props) {
+export default function PortalPage({ usage, estimate, projected, periods, adminPreview, invoices, periodInvoice }: Props) {
   const router = useRouter();
   const current = periodParam(usage.period.start);
   const hasTime = usage.client.monthlyHours != null || usage.projects.length > 0;
   const paidId = typeof router.query.paid === "string" ? router.query.paid : null;
   const paidInvoice = paidId ? invoices.find((inv) => inv.id === paidId) : null;
+  const previewId = adminPreview?.currentId;
+  const outstanding = invoices.filter((inv) => inv.status === "SENT");
 
   return (
     <PortalShell clientName={usage.client.name} adminPreview={adminPreview}>
@@ -115,46 +174,31 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
         </div>
       )}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between mb-6 sm:mb-8">
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold">{!hasTime ? "Your projects" : usage.period.isCurrent ? "This period" : "Past period"}</h1>
-          <p className="text-sm sm:text-base text-fun-gray-light mt-1">
-            {periods.find((p) => p.value === current)?.label}
-            {hasTime && usage.period.isCurrent && ` · ${usage.period.days.left} days left`}
-          </p>
-        </div>
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
-        {(["csv", "pdf"] as const).map((format) => (
-          <a
-            key={format}
-            href={`/api/portal/timesheet?${new URLSearchParams({
-              period: current,
-              format,
-              ...(adminPreview ? { client: adminPreview.currentId } : {}),
-            })}`}
-            className="rounded-lg border border-fun-gray-darker px-3 py-2.5 sm:py-2 text-sm text-center min-h-[44px] sm:min-h-0 flex items-center justify-center hover:border-fun-pink"
-          >
-            {format === "pdf" ? "Timesheet PDF" : "CSV"}
+      {outstanding.length > 0 && !paidId && (
+        <div className="mb-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 px-4 py-3 text-sm flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="font-semibold text-yellow-200">
+            {formatMoney(outstanding.reduce((sum, inv) => sum + inv.total, 0), usage.client.currency)} outstanding
+          </span>
+          <span className="text-fun-gray-light">
+            {outstanding.map((inv) => `${inv.number}${inv.dueAt ? `, ${invoiceDateNote(inv)?.toLowerCase()}` : ""}`).join(" · ")}
+          </span>
+          <a href="#invoices" className="sm:ml-auto text-fun-pink-light hover:underline">
+            View invoices
           </a>
-        ))}
-        <select
-          aria-label="Billing period"
-          className="col-span-2 sm:col-auto rounded-lg bg-black/20 border border-fun-gray-darker px-3 py-2.5 sm:py-2 text-base sm:text-sm min-h-[44px] sm:min-h-0"
-          value={current}
-          onChange={(e) =>
-            router.push({ pathname: "/portal", query: { ...router.query, period: e.target.value } })
-          }
-        >
-          {periods.map((p) => (
-            <option key={p.value} value={p.value}>
-              {p.label}
-            </option>
-          ))}
-        </select>
         </div>
-      </div>
+      )}
 
-      {hasTime && <PortalDashboard usage={usage} estimate={estimate} projected={projected} />}
+      <PeriodHeader
+        periods={periods}
+        current={current}
+        isCurrent={usage.period.isCurrent}
+        days={usage.period.days}
+        exportsQuery={hasTime ? { period: current, ...(previewId ? { client: previewId } : {}) } : null}
+      />
+
+      {hasTime && (
+        <PortalDashboard usage={usage} estimate={estimate} projected={projected} periodInvoice={periodInvoice} clientId={previewId} />
+      )}
 
       {usage.builds.length > 0 && (
         <section>
@@ -196,35 +240,27 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
       )}
 
       {invoices.length > 0 && (
-        <section className="mt-10">
+        <section id="invoices" className="mt-10 scroll-mt-20">
           <h2 className="text-xl font-bold mb-4">Invoices</h2>
-          <ul className="rounded-2xl border border-fun-gray-darker divide-y divide-fun-gray-darker">
+          <ul className="rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 divide-y divide-fun-gray-darker">
             {invoices.map((inv) => (
-              <li key={inv.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">
-                <span>
-                  <span className="font-bold">{inv.number}</span>
-                  <span className="text-fun-gray-medium"> · {inv.kind === "STAGE" ? "Project payment" : "Period"}</span>
+              <li key={inv.id} className="divide-row flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 text-sm">
+                <span className="min-w-0 flex-1">
+                  <span className="font-semibold">{inv.number}</span>
+                  <span className="block text-xs text-fun-gray-medium">
+                    {invoicePeriodLabel(inv)}
+                    {invoiceDateNote(inv) ? ` · ${invoiceDateNote(inv)}` : ""}
+                  </span>
                 </span>
+                <InvoiceStatusPill invoice={inv} />
+                <span className="font-monospace w-24 text-right">{formatMoney(inv.total, usage.client.currency)}</span>
                 <span className="flex items-center gap-3 shrink-0">
-                  <span className="font-monospace">{formatMoney(inv.total, usage.client.currency)}</span>
-                  <span className="text-xs uppercase tracking-wider text-fun-gray-medium">{inv.status.toLowerCase()}</span>
-                  {inv.status === "SENT" && (
-                    <PayButton
-                      invoiceId={inv.id}
-                      clientId={adminPreview?.currentId}
-                    />
-                  )}
-                  {(inv.status === "SENT" || inv.status === "PAID") && (
-                    <a
-                      href={`/api/portal/invoices/${inv.id}?${new URLSearchParams({
-                        format: "pdf",
-                        ...(adminPreview ? { client: adminPreview.currentId } : {}),
-                      })}`}
-                      className="text-fun-pink hover:underline"
-                    >
+                  {inv.status !== "DRAFT" && (
+                    <a href={invoicePdfHref(inv.id, previewId)} className="text-fun-pink-light hover:underline">
                       PDF
                     </a>
                   )}
+                  {inv.status === "SENT" && <PayButton invoiceId={inv.id} clientId={previewId} />}
                 </span>
               </li>
             ))}
@@ -232,35 +268,5 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
         </section>
       )}
     </PortalShell>
-  );
-}
-
-function PayButton({ invoiceId, clientId }: { invoiceId: string; clientId?: string }) {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  return (
-    <span className="inline-flex flex-col items-end">
-      <button
-        type="button"
-        disabled={busy}
-        className="rounded-full bg-fun-pink px-3 py-1.5 text-xs font-bold text-white hover:bg-fun-pink-light disabled:opacity-40 min-h-[44px] sm:min-h-0"
-        onClick={async () => {
-          setBusy(true);
-          setError(null);
-          try {
-            const qs = clientId ? `?client=${encodeURIComponent(clientId)}` : "";
-            const { url } = await api<{ url: string }>(`/api/portal/invoices/${invoiceId}/pay${qs}`);
-            window.location.href = url;
-          } catch (e) {
-            setError((e as Error).message);
-            setBusy(false);
-          }
-        }}
-      >
-        {busy ? "Opening…" : "Pay"}
-      </button>
-      {error && <span className="mt-1 text-[11px] text-red-400 max-w-[12rem] text-right">{error}</span>}
-    </span>
   );
 }
