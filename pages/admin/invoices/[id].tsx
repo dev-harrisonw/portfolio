@@ -75,6 +75,7 @@ export default function InvoiceDetailPage({ invoice }: { invoice: InvoiceDetail 
         <InvoiceActions
           invoice={invoice}
           onDone={() => router.replace(router.asPath, undefined, { scroll: false })}
+          onDeleted={() => router.push("/admin/invoices")}
           onError={setError}
         />
       }

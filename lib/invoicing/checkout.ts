@@ -234,3 +234,24 @@ export async function voidInvoiceWithCheckout(invoiceId: string) {
   await expireCheckout(invoiceId);
   await voidInvoice(invoiceId);
 }
+
+/**
+ * Permanently remove an invoice. Only void invoices qualify: voiding has already released the time
+ * entries and payment stages, and a sent or paid invoice is a record that must stay.
+ * Lines cascade; anything still pointing at the invoice is unlinked by the schema's SetNull.
+ */
+export async function deleteVoidInvoice(invoiceId: string) {
+  const invoice = await prisma.invoice.findUnique({
+    where: { id: invoiceId },
+    select: { id: true, number: true, status: true, clientId: true },
+  });
+  if (!invoice) throw new HttpError(404, "Not found");
+  if (invoice.status !== "VOID") throw new HttpError(409, "Void the invoice first; only void invoices can be deleted");
+
+  await prisma.invoice.delete({ where: { id: invoiceId } });
+  await logActivity({
+    type: "invoice.deleted",
+    message: `Deleted void invoice ${invoice.number}`,
+    clientId: invoice.clientId,
+  });
+}

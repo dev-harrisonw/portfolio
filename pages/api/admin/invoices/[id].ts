@@ -1,6 +1,12 @@
 import prisma from "@/lib/prisma";
 import { adminRoute, HttpError, parseBody, queryId } from "@/lib/api";
-import { markInvoicePaid, remindInvoice, sendInvoice, voidInvoiceWithCheckout } from "@/lib/invoicing/checkout";
+import {
+  deleteVoidInvoice,
+  markInvoicePaid,
+  remindInvoice,
+  sendInvoice,
+  voidInvoiceWithCheckout,
+} from "@/lib/invoicing/checkout";
 import { z } from "zod";
 
 const actionSchema = z.object({ action: z.enum(["send", "pay", "remind"]) });
@@ -39,7 +45,9 @@ export default adminRoute({
     res.status(200).json({ invoice, url });
   },
   DELETE: async (req, res) => {
-    await voidInvoiceWithCheckout(queryId(req));
+    // Plain DELETE voids; `?permanent=1` removes an invoice that is already void.
+    if (req.query.permanent === "1") await deleteVoidInvoice(queryId(req));
+    else await voidInvoiceWithCheckout(queryId(req));
     res.status(204).end();
   },
 });

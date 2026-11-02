@@ -6,13 +6,33 @@ export type InvoiceActionStatus = "DRAFT" | "SENT" | "PAID" | "VOID";
 type Props = {
   invoice: { id: string; status: InvoiceActionStatus; checkoutUrl: string | null };
   onDone: () => void;
+  /** Called after a permanent delete; defaults to onDone. The detail page uses it to leave the removed invoice. */
+  onDeleted?: () => void;
   onError: (message: string) => void;
 };
 
-export default function InvoiceActions({ invoice, onDone, onError }: Props) {
-  const run = (fn: () => Promise<unknown>) => fn().then(onDone, (e: Error) => onError(e.message));
+export default function InvoiceActions({ invoice, onDone, onDeleted, onError }: Props) {
+  const run = (fn: () => Promise<unknown>, after: () => void = onDone) =>
+    fn().then(after, (e: Error) => onError(e.message));
 
-  if (invoice.status === "VOID") return null;
+  if (invoice.status === "VOID") {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="danger"
+          onClick={() =>
+            confirm("Permanently delete this void invoice? This can't be undone.") &&
+            run(
+              () => api(`/api/admin/invoices/${invoice.id}?permanent=1`, { method: "DELETE" }),
+              onDeleted ?? onDone
+            )
+          }
+        >
+          Delete
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-wrap gap-2">
