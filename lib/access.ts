@@ -78,7 +78,7 @@ export async function requirePortalPage(ctx: GetServerSidePropsContext) {
   } catch (error) {
     // A Clerk or database hiccup must not surface as a 500 page.
     console.error("Portal access lookup failed", error);
-    return { redirect: { destination: "/portal/no-access", permanent: false } } as const;
+    return { redirect: { destination: "/portal/no-access?error=unavailable", permanent: false } } as const;
   }
   if (access.status === "signed-out") {
     return {
