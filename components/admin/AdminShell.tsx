@@ -3,17 +3,106 @@ import { useRouter } from "next/router";
 import type { ReactNode } from "react";
 import { AccountButton } from "@/components/auth/AccountButton";
 
-const nav = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/time", label: "Time" },
-  { href: "/admin/work", label: "Work" },
-  { href: "/admin/clients", label: "Clients" },
-  { href: "/admin/invoices", label: "Invoices" },
-  { href: "/admin/finance", label: "Finance" },
-  { href: "/admin/reports", label: "Reports" },
-  { href: "/admin/posts", label: "Posts" },
-  { href: "/admin/leads", label: "Leads" },
+type IconName = "dashboard" | "time" | "work" | "clients" | "invoices" | "finance" | "reports" | "posts" | "leads";
+
+const groups: { label: string; items: { href: string; label: string; icon: IconName }[] }[] = [
+  { label: "Overview", items: [{ href: "/admin", label: "Dashboard", icon: "dashboard" }] },
+  {
+    label: "Delivery",
+    items: [
+      { href: "/admin/time", label: "Time", icon: "time" },
+      { href: "/admin/work", label: "Work", icon: "work" },
+    ],
+  },
+  {
+    label: "Clients",
+    items: [
+      { href: "/admin/clients", label: "Clients", icon: "clients" },
+      { href: "/admin/invoices", label: "Invoices", icon: "invoices" },
+      { href: "/admin/leads", label: "Leads", icon: "leads" },
+    ],
+  },
+  {
+    label: "Insights",
+    items: [
+      { href: "/admin/finance", label: "Finance", icon: "finance" },
+      { href: "/admin/reports", label: "Reports", icon: "reports" },
+    ],
+  },
+  { label: "Content", items: [{ href: "/admin/posts", label: "Posts", icon: "posts" }] },
 ];
+
+const flat = groups.flatMap((g) => g.items);
+
+const paths: Record<IconName, ReactNode> = {
+  dashboard: (
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </>
+  ),
+  time: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </>
+  ),
+  work: (
+    <>
+      <rect x="3" y="4" width="5" height="16" rx="1" />
+      <rect x="10" y="4" width="5" height="10" rx="1" />
+      <rect x="17" y="4" width="4" height="6" rx="1" />
+    </>
+  ),
+  clients: (
+    <>
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M2.5 20c.6-3.4 3.2-5.5 6.5-5.5s5.9 2.1 6.5 5.5" />
+      <path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.9.7 3.1 2.5 3.5 5.2" />
+    </>
+  ),
+  invoices: (
+    <>
+      <path d="M6 3h9l4 4v14H6z" />
+      <path d="M14 3v5h5M9 13h7M9 17h5" />
+    </>
+  ),
+  finance: <path d="M3 17l5-5 4 4 8-9M15 7h5v5" />,
+  reports: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />,
+  posts: (
+    <>
+      <path d="M4 20h4l11-11-4-4L4 16z" />
+      <path d="M13 7l4 4" />
+    </>
+  ),
+  leads: (
+    <>
+      <path d="M3 13l3-8h12l3 8v6H3z" />
+      <path d="M3 13h5l1 3h6l1-3h5" />
+    </>
+  ),
+};
+
+function Icon({ name }: { name: IconName }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="shrink-0"
+    >
+      {paths[name]}
+    </svg>
+  );
+}
 
 type Props = {
   title: string;
@@ -23,59 +112,98 @@ type Props = {
   wide?: boolean;
 };
 
-function NavLinks({ pathname }: { pathname: string }) {
-  const isActive = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
-  return (
-    <>
-      {nav.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className={`rounded-full px-3 py-1.5 whitespace-nowrap text-sm transition-colors ${
-            isActive(item.href) ? "bg-fun-pink-dark text-white" : "text-fun-gray-light hover:text-white"
-          }`}
-        >
-          {item.label}
-        </Link>
-      ))}
-    </>
-  );
-}
-
 export default function AdminShell({ title, eyebrow = "Admin", actions, children, wide }: Props) {
   const { pathname } = useRouter();
-  const max = wide ? "max-w-6xl" : "max-w-4xl";
+  const isActive = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
+  const max = wide ? "max-w-[1400px]" : "max-w-5xl";
 
   return (
-    <div className="min-h-screen bg-bg text-white overflow-x-clip">
-      <header className="sticky top-0 z-20 border-b border-fun-gray-darker bg-bg/90 backdrop-blur-md">
-        <div className={`${max} mx-auto px-4 sm:px-5`}>
-          <div className="flex items-center gap-3 min-h-[52px]">
-            <Link href="/" className="text-sm font-bold text-fun-pink shrink-0">
-              HW
+    <div className="theme-dd min-h-screen overflow-x-clip">
+      {/* Desktop sidebar */}
+      <aside className="dd-sidebar hidden md:flex fixed inset-y-0 left-0 z-30 w-56 flex-col">
+        <Link href="/admin" className="flex items-center gap-2.5 px-5 h-14 border-b border-[color:var(--dd-border)]">
+          <img src="/static/logos/logo_no_text.svg" width={26} height={26} alt="" style={{ width: 26, height: 26 }} />
+          <span className="font-bold tracking-tight">HarrisonW</span>
+          <span className="ml-auto rounded bg-[color:var(--dd-raised)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fun-gray-light">
+            Admin
+          </span>
+        </Link>
+        <nav className="flex-1 overflow-y-auto py-2" aria-label="Admin">
+          {groups.map((group) => (
+            <div key={group.label}>
+              <p className="dd-nav-group">{group.label}</p>
+              {group.items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="dd-nav-link"
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                >
+                  <Icon name={item.icon} />
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          ))}
+        </nav>
+        <div className="border-t border-[color:var(--dd-border)] p-3 space-y-1">
+          <Link href="/" className="dd-nav-link !mx-0">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M7 17L17 7M9 7h8v8" />
+            </svg>
+            View site
+          </Link>
+          <Link href="/portal" className="dd-nav-link !mx-0">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <circle cx="12" cy="12" r="3" />
+              <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+            </svg>
+            Preview client portal
+          </Link>
+        </div>
+      </aside>
+
+      <div className="md:pl-56">
+        {/* Top bar */}
+        <header className="dd-topbar sticky top-0 z-20">
+          <div className="flex items-center gap-3 px-4 sm:px-6 h-12">
+            <Link href="/admin" className="md:hidden flex items-center shrink-0" aria-label="Admin home">
+              <img src="/static/logos/logo_no_text.svg" width={24} height={24} alt="" style={{ width: 24, height: 24 }} />
             </Link>
-            <nav className="hidden md:flex gap-1 text-sm min-w-0">
-              <NavLinks pathname={pathname} />
-            </nav>
-            <div className="ml-auto shrink-0">
+            <div className="flex items-center gap-1.5 text-xs text-fun-gray-medium min-w-0">
+              <span>{eyebrow}</span>
+              <span aria-hidden>/</span>
+              <span className="text-white font-semibold truncate">{title}</span>
+            </div>
+            <div className="ml-auto shrink-0 scale-90 origin-right">
               <AccountButton />
             </div>
           </div>
-          <nav className="md:hidden flex gap-1 overflow-x-auto scroll-hide -mx-4 px-4 pb-2.5">
-            <NavLinks pathname={pathname} />
+          <nav className="md:hidden flex gap-1 overflow-x-auto scroll-hide px-4 pb-2" aria-label="Admin">
+            {flat.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 whitespace-nowrap text-xs transition-colors ${
+                  isActive(item.href) ? "bg-[color:var(--dd-raised)] text-white font-semibold" : "text-fun-gray-light hover:text-white"
+                }`}
+              >
+                <Icon name={item.icon} />
+                {item.label}
+              </Link>
+            ))}
           </nav>
-        </div>
-      </header>
-      <main className={`${max} mx-auto px-4 sm:px-5 py-6 sm:py-10`}>
-        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <div className="min-w-0">
-            <p className="text-fun-pink text-xs sm:text-sm uppercase tracking-widest">{eyebrow}</p>
-            <h1 className="text-2xl sm:text-3xl font-bold truncate">{title}</h1>
+        </header>
+
+        <main className={`${max} mx-auto px-4 sm:px-6 py-6 sm:py-8`}>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-3 mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate min-w-0">{title}</h1>
+            {actions && <div className="flex flex-wrap gap-2 shrink-0">{actions}</div>}
           </div>
-          {actions && <div className="flex flex-wrap gap-2 shrink-0">{actions}</div>}
-        </div>
-        {children}
-      </main>
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

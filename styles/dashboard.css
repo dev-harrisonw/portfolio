@@ -1,0 +1,138 @@
+/*
+ * Dark "ops dashboard" theme for /admin and /portal.
+ * Layout idea borrowed from Datadog: slim sidebar, dense panels, small-caps section labels, quiet borders.
+ * Everything is scoped to .theme-dd so the public site keeps its own look.
+ */
+:root {
+  --dd-bg: #16191f;
+  --dd-side: #101318;
+  --dd-panel: #1d2129;
+  --dd-raised: #232833;
+  --dd-border: #2b303b;
+  --dd-border-strong: #3a4150;
+  --dd-text: #e7eaf0;
+  --dd-muted: #8d95a6;
+  --dd-accent: #3bb143;
+}
+
+.theme-dd {
+  background: var(--dd-bg);
+  color: var(--dd-text);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Surfaces shared by the primitives in components/admin/Form.tsx */
+.dd-panel {
+  background: var(--dd-panel);
+  border: 1px solid var(--dd-border);
+  border-radius: 8px;
+}
+.dd-input {
+  background: var(--dd-side);
+  border: 1px solid var(--dd-border);
+  border-radius: 6px;
+}
+.dd-input:focus {
+  border-color: var(--dd-accent);
+  box-shadow: 0 0 0 1px var(--dd-accent);
+}
+
+/* Existing pages use rounded-2xl cards and fun-gray borders; re-skin them without touching each page. */
+.theme-dd .rounded-2xl,
+.theme-dd .rounded-xl {
+  border-radius: 8px;
+}
+.theme-dd .rounded-lg {
+  border-radius: 6px;
+}
+.theme-dd [class*="border-fun-gray-darker"]:not(:hover):not(:focus) {
+  border-color: var(--dd-border);
+}
+.theme-dd [class*="divide-fun-gray-darker"] > * + * {
+  border-color: var(--dd-border);
+}
+.theme-dd [class*="bg-fun-gray-darkest"] {
+  background-color: var(--dd-panel);
+}
+.theme-dd .bg-black\/20,
+.theme-dd .bg-black\/30 {
+  background-color: var(--dd-side);
+}
+.theme-dd .text-fun-gray-light {
+  color: #aab1c0;
+}
+.theme-dd .text-fun-gray-medium {
+  color: var(--dd-muted);
+}
+.theme-dd .bg-bg {
+  background-color: var(--dd-bg);
+}
+
+/* Section headings: Datadog-style compact titles instead of big marketing headings. */
+.theme-dd h2.text-xl {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #aab1c0;
+}
+
+/* Tables and lists get a subtle hover like Datadog's list view. */
+.theme-dd li.divide-row:hover,
+.theme-dd tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+/* Sidebar */
+.dd-sidebar {
+  background: var(--dd-side);
+  border-right: 1px solid var(--dd-border);
+}
+.dd-nav-group {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #667085;
+  padding: 0 12px;
+  margin: 18px 0 6px;
+}
+.dd-nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  margin: 1px 8px;
+  border-radius: 6px;
+  color: #aab1c0;
+  font-size: 13px;
+  transition: background-color 0.12s, color 0.12s;
+}
+.dd-nav-link:hover {
+  background: var(--dd-raised);
+  color: #fff;
+}
+.dd-nav-link[aria-current="page"] {
+  background: var(--dd-raised);
+  color: #fff;
+  font-weight: 600;
+}
+.dd-nav-link[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--dd-accent);
+}
+
+.dd-topbar {
+  background: rgba(22, 25, 31, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--dd-border);
+}
