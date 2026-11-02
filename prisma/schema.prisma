@@ -93,6 +93,8 @@ model Client {
   id               String         @id @default(cuid())
   name             String
   billingEmail     String
+  /// Postal address printed on invoices, one line each.
+  billingAddress   String?
   currency         String         @default("GBP")
   hourlyRate       Int
   /// Retainer allowance per period; null = pay-as-you-go.

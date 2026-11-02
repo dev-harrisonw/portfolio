@@ -4,6 +4,7 @@ import { Button, Field, fromMinor, Input, Select, toInt, toMinor } from "@/compo
 export type ClientFormValues = {
   name: string;
   billingEmail: string;
+  billingAddress: string | null;
   currency: string;
   hourlyRate: number;
   monthlyHours: number | null;
@@ -26,6 +27,7 @@ type Props = {
 export default function ClientForm({ initial, submitLabel, onSubmit }: Props) {
   const [name, setName] = useState(initial?.name ?? "");
   const [billingEmail, setBillingEmail] = useState(initial?.billingEmail ?? "");
+  const [billingAddress, setBillingAddress] = useState(initial?.billingAddress ?? "");
   const [currency, setCurrency] = useState(initial?.currency ?? "GBP");
   const [hourlyRate, setHourlyRate] = useState(fromMinor(initial?.hourlyRate));
   const [monthlyHours, setMonthlyHours] = useState(initial?.monthlyHours?.toString() ?? "");
@@ -51,6 +53,7 @@ export default function ClientForm({ initial, submitLabel, onSubmit }: Props) {
       await onSubmit({
         name,
         billingEmail,
+        billingAddress: billingAddress.trim() || null,
         currency,
         hourlyRate: toMinor(hourlyRate) ?? 0,
         monthlyHours: toInt(monthlyHours),
@@ -80,6 +83,16 @@ export default function ClientForm({ initial, submitLabel, onSubmit }: Props) {
         <Field label="Billing email" hint="Invoices and monthly summaries go here">
           <Input type="email" value={billingEmail} onChange={(e) => setBillingEmail(e.target.value)} placeholder="accounts@acme.com" />
         </Field>
+        <div className="sm:col-span-2">
+          <Field label="Billing address" hint="Printed on the invoice, one line per row">
+            <textarea
+              className="dd-input w-full px-3 py-2 text-sm min-h-[88px]"
+              value={billingAddress}
+              onChange={(e) => setBillingAddress(e.target.value)}
+              placeholder={"FAO Accounts\n1 High Street\nManchester M1 1AA"}
+            />
+          </Field>
+        </div>
         <Field label="Hourly rate">
           <Input inputMode="decimal" value={hourlyRate} onChange={(e) => setHourlyRate(e.target.value)} placeholder="65.00" />
         </Field>

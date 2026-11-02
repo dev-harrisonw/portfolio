@@ -42,7 +42,18 @@ export async function sendInvoice(invoiceId: string, opts: { email?: boolean } =
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
     include: {
-      client: { select: { id: true, name: true, billingEmail: true, stripeCustomerId: true } },
+      client: {
+        select: {
+          id: true,
+          name: true,
+          billingEmail: true,
+          billingAddress: true,
+          hourlyRate: true,
+          monthlyHours: true,
+          billOverages: true,
+          stripeCustomerId: true,
+        },
+      },
       lines: { orderBy: { sortOrder: "asc" } },
     },
   });
@@ -55,7 +66,7 @@ export async function sendInvoice(invoiceId: string, opts: { email?: boolean } =
     if (!opts.email) return;
     try {
       await emailInvoice({
-        invoice: { ...invoice, ...record, client: { name: invoice.client.name, billingEmail: invoice.client.billingEmail } },
+        invoice: { ...invoice, ...record, client: invoice.client },
         to: invoice.client.billingEmail,
         checkoutUrl: url,
       });
@@ -134,7 +145,18 @@ export async function remindInvoice(invoiceId: string) {
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
     include: {
-      client: { select: { id: true, name: true, billingEmail: true, stripeCustomerId: true } },
+      client: {
+        select: {
+          id: true,
+          name: true,
+          billingEmail: true,
+          billingAddress: true,
+          hourlyRate: true,
+          monthlyHours: true,
+          billOverages: true,
+          stripeCustomerId: true,
+        },
+      },
       lines: { orderBy: { sortOrder: "asc" } },
     },
   });
@@ -150,7 +172,7 @@ export async function remindInvoice(invoiceId: string) {
   }
 
   await emailInvoice({
-    invoice: { ...invoice, client: { name: invoice.client.name, billingEmail: invoice.client.billingEmail } },
+    invoice: { ...invoice, client: invoice.client },
     to: invoice.client.billingEmail,
     checkoutUrl: url,
     reminder: true,

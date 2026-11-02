@@ -10,7 +10,16 @@ export async function loadInvoicePdf(id: string, clientId?: string) {
       ...(clientId ? { clientId, status: { in: ["SENT", "PAID"] } } : {}),
     },
     include: {
-      client: { select: { name: true, billingEmail: true } },
+      client: {
+        select: {
+          name: true,
+          billingEmail: true,
+          billingAddress: true,
+          hourlyRate: true,
+          monthlyHours: true,
+          billOverages: true,
+        },
+      },
       lines: { orderBy: { sortOrder: "asc" } },
     },
   });

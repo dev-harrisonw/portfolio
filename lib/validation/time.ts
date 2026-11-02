@@ -7,6 +7,7 @@ const rollover = z.enum(["EXPIRE", "ROLLOVER", "ROLLOVER_CAPPED"]);
 export const clientSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   billingEmail: z.string().trim().email("A valid billing email is required"),
+  billingAddress: z.string().trim().max(500).nullable().optional(),
   currency: z.string().length(3).toUpperCase().default("GBP"),
   hourlyRate: minor,
   monthlyHours: z.number().int().min(0).nullable().optional(),
