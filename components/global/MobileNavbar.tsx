@@ -64,7 +64,7 @@ export default function MobileNavbar({ currentPage }: { currentPage?: string }) 
     <nav className="relative">
       <div
         ref={headerRef}
-        className="sticky top-0 z-[110] w-full flex items-center justify-between px-5 py-3 bg-bg/95 backdrop-blur-md"
+        className="mobile-header sticky top-0 z-[110] w-full flex items-center justify-between px-5 py-3 bg-bg/95 backdrop-blur-md"
       >
         <Link href="/" className="list-none font-black text-xl flex items-center" onClick={closeMenu}>
           <img

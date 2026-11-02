@@ -454,6 +454,10 @@ html.party-leaving::after {
 html.party-leaving body {
   animation: none;
 }
+/* The sticky phone header has its own solid background; pulse it with the page so it doesn't sit there as a grey band. */
+html.party-mode .mobile-header {
+  animation: disco-body 0.85s linear infinite;
+}
 @keyframes party-overlay-out {
   from {
     opacity: 0.42;
@@ -587,6 +591,7 @@ html.party-mode .experience-grid article:nth-child(2n) {
   .party-confetti i,
   html.party-mode::after,
   html.party-mode body,
+  html.party-mode .mobile-header,
   html.party-mode .site-logo,
   html.party-mode .site-logo-letter,
   html.party-mode .heroElem .heroTitle > img.sqD,
