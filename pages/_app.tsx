@@ -28,6 +28,8 @@ export default function App({ Component, pageProps }: AppProps) {
       publishableKey={publishableKey}
       appearance={clerkAppearance}
       localization={clerkLocalization}
+      signInFallbackRedirectUrl="/auth/continue"
+      signUpFallbackRedirectUrl="/auth/continue"
       {...pageProps}
     >
       {tree}

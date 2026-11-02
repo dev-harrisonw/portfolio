@@ -64,15 +64,18 @@ export default function MobileNavbar({ currentPage }: { currentPage?: string }) 
     <nav className="relative">
       <div
         ref={headerRef}
-        className="sticky top-0 z-[110] w-full flex items-center justify-between px-5 py-4 bg-bg/95 backdrop-blur-md"
+        className="sticky top-0 z-[110] w-full flex items-center justify-between px-5 py-3 bg-bg/95 backdrop-blur-md"
       >
-        <Link href="/" className="list-none font-bold text-lg" onClick={closeMenu}>
+        <Link href="/" className="list-none font-black text-xl flex items-center" onClick={closeMenu}>
           <img
-            className="site-logo"
-            src="/static/logos/logo_full.svg"
-            width="160"
-            alt="Harrison Warburton"
+            className="site-logo mr-2 shrink-0"
+            src="/static/logos/logo_no_text.svg"
+            width="40"
+            height="40"
+            alt=""
+            style={{ width: 40, height: 40 }}
           />
+          HarrisonW
         </Link>
         <button
           className="burger visible md:hidden"

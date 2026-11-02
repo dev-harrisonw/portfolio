@@ -72,7 +72,14 @@ export async function requirePortalPage(ctx: GetServerSidePropsContext) {
   if (handshake) return handshake;
 
   const requested = typeof ctx.query.client === "string" ? ctx.query.client : undefined;
-  const access = await resolvePortalAccess(ctx.req, requested);
+  let access: Awaited<ReturnType<typeof resolvePortalAccess>>;
+  try {
+    access = await resolvePortalAccess(ctx.req, requested);
+  } catch (error) {
+    // A Clerk or database hiccup must not surface as a 500 page.
+    console.error("Portal access lookup failed", error);
+    return { redirect: { destination: "/portal/no-access", permanent: false } } as const;
+  }
   if (access.status === "signed-out") {
     return {
       redirect: { destination: `/sign-in?redirect_url=${encodeURIComponent(ctx.resolvedUrl)}`, permanent: false },

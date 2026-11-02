@@ -98,9 +98,10 @@ body::-webkit-scrollbar-track {
 
 .menu {
   margin: 0;
-  padding: 16px 20px 32px;
+  padding: 16px 20px calc(32px + env(safe-area-inset-bottom, 0px));
   width: 100%;
   z-index: 100;
+  overscroll-behavior: contain;
   opacity: 0;
   left: 0;
   right: 0;

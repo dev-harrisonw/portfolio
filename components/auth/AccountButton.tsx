@@ -80,14 +80,14 @@ function AccountInner() {
             label="Client portal"
             labelIcon={<BriefcaseIcon />}
             onClick={() => {
-              window.location.assign("/portal");
+              window.location.assign("/auth/continue?returnTo=/portal");
             }}
           />
           <UserButton.Action
             label="Admin dashboard"
             labelIcon={<GridIcon />}
             onClick={() => {
-              window.location.assign("/admin");
+              window.location.assign("/auth/continue?returnTo=/admin");
             }}
           />
         </UserButton.MenuItems>
@@ -162,7 +162,7 @@ function MobileProfileInner({ onNavigate }: { onNavigate?: () => void }) {
       <div className="mt-4 grid grid-cols-2 gap-2">
         {showPortal && (
           <Link
-            href="/portal"
+            href="/auth/continue?returnTo=/portal"
             onClick={onNavigate}
             className="rounded-full border border-fun-gray-darker px-3 py-2 text-center text-sm font-bold hover:border-fun-pink hover:text-fun-pink transition-colors"
           >
@@ -171,7 +171,7 @@ function MobileProfileInner({ onNavigate }: { onNavigate?: () => void }) {
         )}
         {isAdmin ? (
           <Link
-            href="/admin"
+            href="/auth/continue?returnTo=/admin"
             onClick={onNavigate}
             className="rounded-full border border-fun-gray-darker px-3 py-2 text-center text-sm font-bold hover:border-fun-pink hover:text-fun-pink transition-colors"
           >
