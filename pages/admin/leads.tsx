@@ -173,19 +173,19 @@ export default function AdminLeads({ leads: initial, thisWeek }: Props) {
 
   return (
     <AdminShell title="Leads" wide>
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 mb-8">
-        <button type="button" onClick={() => setFilter("all")} className="text-left">
-          <Card className={filter === "all" ? "border-fun-pink" : ""}>
+      <div className="grid gap-2 sm:gap-3 grid-cols-3 lg:grid-cols-6 mb-4 sm:mb-8">
+        <button type="button" onClick={() => setFilter("all")} className="text-left min-w-0">
+          <Card className={`h-full ${filter === "all" ? "border-fun-pink" : ""}`}>
             <p className="text-[10px] uppercase tracking-wider text-fun-gray-light">This week</p>
-            <p className="text-2xl font-bold font-monospace mt-1">{thisWeek}</p>
-            <p className="text-xs text-fun-gray-medium mt-1">{leads.length} total</p>
+            <p className="text-xl sm:text-2xl font-bold font-monospace mt-1">{thisWeek}</p>
+            <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-0.5 sm:mt-1">{leads.length} total</p>
           </Card>
         </button>
         {LEAD_STATUSES.map((s) => (
-          <button key={s} type="button" onClick={() => setFilter(s)} className="text-left">
-            <Card className={filter === s ? "border-fun-pink" : ""}>
+          <button key={s} type="button" onClick={() => setFilter(s)} className="text-left min-w-0">
+            <Card className={`h-full ${filter === s ? "border-fun-pink" : ""}`}>
               <p className="text-[10px] uppercase tracking-wider text-fun-gray-light">{leadStatusLabel[s]}</p>
-              <p className="text-2xl font-bold font-monospace mt-1">{leads.filter((l) => l.status === s).length}</p>
+              <p className="text-xl sm:text-2xl font-bold font-monospace mt-1">{leads.filter((l) => l.status === s).length}</p>
             </Card>
           </button>
         ))}
@@ -194,7 +194,7 @@ export default function AdminLeads({ leads: initial, thisWeek }: Props) {
       {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
 
       {filter === "all" ? (
-        <div className="grid gap-4 lg:grid-cols-5">
+        <div className="grid gap-3 sm:gap-4 lg:grid-cols-5">
           {LEAD_STATUSES.map((s) => (
             <section key={s} className="min-w-0">
               <h2 className="text-xs uppercase tracking-wider text-fun-gray-light mb-3 flex items-center justify-between">

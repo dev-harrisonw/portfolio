@@ -164,23 +164,23 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
       </Head>
 
       {paidInvoice && (
-        <div className="mb-6 rounded-2xl border border-fun-pink/40 bg-fun-pink-darkest px-4 py-3 text-sm">
+        <div className="mb-3 sm:mb-6 rounded-2xl border border-fun-pink/40 bg-fun-pink-darkest px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm">
           Payment received for <span className="font-bold">{paidInvoice.number}</span>. Thank you.
         </div>
       )}
       {paidId && !paidInvoice && (
-        <div className="mb-6 rounded-2xl border border-fun-pink/40 bg-fun-pink-darkest px-4 py-3 text-sm">
+        <div className="mb-3 sm:mb-6 rounded-2xl border border-fun-pink/40 bg-fun-pink-darkest px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm">
           Payment received. If the invoice still shows as sent, refresh in a moment.
         </div>
       )}
 
       {outstanding.length > 0 && !paidId && (
-        <div className="mb-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 px-4 py-3 text-sm flex flex-wrap items-center gap-x-3 gap-y-1">
+        <div className="mb-3 sm:mb-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="font-semibold text-yellow-200">
             {formatMoney(outstanding.reduce((sum, inv) => sum + inv.total, 0), usage.client.currency)} outstanding
           </span>
           <span className="text-fun-gray-light">
-            {outstanding.map((inv) => `${inv.number}${inv.dueAt ? `, ${invoiceDateNote(inv)?.toLowerCase()}` : ""}`).join(" · ")}
+            {outstanding.map((inv) => `${inv.number}${inv.dueAt ? `, ${invoiceDateNote(inv)?.replace(/^\w/, (c) => c.toLowerCase())}` : ""}`).join(" · ")}
           </span>
           <a href="#invoices" className="sm:ml-auto text-fun-pink-light hover:underline">
             View invoices
@@ -202,65 +202,71 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
 
       {usage.builds.length > 0 && (
         <section>
-          {hasTime && <h2 className="text-xl font-bold mb-4">Project builds</h2>}
+          {hasTime && <h2 className="text-xl font-bold mb-3 sm:mb-4">Project builds</h2>}
           <BuildProgress builds={usage.builds} currency={usage.client.currency} />
         </section>
       )}
 
       {hasTime && usage.allowances.length > 1 && (
-        <section className="mb-10">
-          <h2 className="text-xl font-bold mb-4">Allowances</h2>
+        <section className="mb-6 sm:mb-10">
+          <h2 className="text-xl font-bold mb-3 sm:mb-4">Allowances</h2>
           <AllowanceSummary usage={usage} />
         </section>
       )}
 
       {hasTime ? (
         <>
-          <div className="grid gap-8 lg:grid-cols-5 mb-10">
+          <div className="grid gap-6 sm:gap-8 lg:grid-cols-5">
             <section className="lg:col-span-3">
-              <h2 className="text-xl font-bold mb-4">Where the time went</h2>
+              <h2 className="text-xl font-bold mb-3 sm:mb-4">Where the time went</h2>
               <ProjectBreakdown usage={usage} />
             </section>
             <section className="lg:col-span-2">
-              <h2 className="text-xl font-bold mb-4">Work completed</h2>
+              <h2 className="text-xl font-bold mb-3 sm:mb-4">Work completed</h2>
               <CompletedTasks usage={usage} />
             </section>
           </div>
 
-          <section className="mt-10">
-            <h2 className="text-xl font-bold mb-4">Time log</h2>
-            <EntryLog usage={usage} />
-          </section>
+          {usage.entries.length > 0 && (
+            <section className="mt-6 sm:mt-10">
+              <h2 className="text-xl font-bold mb-3 sm:mb-4">Time log</h2>
+              <EntryLog usage={usage} />
+            </section>
+          )}
         </>
       ) : (
         <section>
-          <h2 className="text-xl font-bold mb-4">Work completed this period</h2>
+          <h2 className="text-xl font-bold mb-3 sm:mb-4">Work completed this period</h2>
           <CompletedTasks usage={usage} />
         </section>
       )}
 
       {invoices.length > 0 && (
-        <section id="invoices" className="mt-10 scroll-mt-20">
-          <h2 className="text-xl font-bold mb-4">Invoices</h2>
+        <section id="invoices" className="mt-6 sm:mt-10 scroll-mt-20">
+          <h2 className="text-xl font-bold mb-3 sm:mb-4">Invoices</h2>
           <ul className="rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 divide-y divide-fun-gray-darker">
             {invoices.map((inv) => (
-              <li key={inv.id} className="divide-row flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 text-sm">
+              <li key={inv.id} className="divide-row flex items-center gap-3 sm:gap-4 px-3.5 sm:px-4 py-3 text-sm">
                 <span className="min-w-0 flex-1">
-                  <span className="font-semibold">{inv.number}</span>
-                  <span className="block text-xs text-fun-gray-medium">
+                  <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="font-semibold">{inv.number}</span>
+                    <InvoiceStatusPill invoice={inv} />
+                  </span>
+                  <span className="block text-xs text-fun-gray-medium mt-0.5">
                     {invoicePeriodLabel(inv)}
                     {invoiceDateNote(inv) ? ` · ${invoiceDateNote(inv)}` : ""}
                   </span>
                 </span>
-                <InvoiceStatusPill invoice={inv} />
-                <span className="font-monospace w-24 text-right">{formatMoney(inv.total, usage.client.currency)}</span>
-                <span className="flex items-center gap-3 shrink-0">
+                <span className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 sm:gap-4 shrink-0">
+                <span className="font-monospace sm:w-24 text-right">{formatMoney(inv.total, usage.client.currency)}</span>
+                <span className="flex items-center gap-3">
                   {inv.status !== "DRAFT" && (
                     <a href={invoicePdfHref(inv.id, previewId)} className="text-fun-pink-light hover:underline">
                       PDF
                     </a>
                   )}
                   {inv.status === "SENT" && <PayButton invoiceId={inv.id} clientId={previewId} />}
+                </span>
                 </span>
               </li>
             ))}

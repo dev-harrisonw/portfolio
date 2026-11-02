@@ -18,7 +18,7 @@ export default function HoursRing({ used, available }: Props) {
   const showMins = mins && mins !== "00m";
 
   return (
-    <div className="relative w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 shrink-0">
+    <div className="relative w-28 h-28 sm:w-40 sm:h-40 lg:w-48 lg:h-48 shrink-0">
       <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full -rotate-90" aria-hidden>
         <circle cx={size / 2} cy={size / 2} r={r} stroke="#2a2a2c" strokeWidth={stroke} fill="none" />
         {available != null && (

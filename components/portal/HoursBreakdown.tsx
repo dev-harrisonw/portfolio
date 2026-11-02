@@ -1,7 +1,7 @@
 import { formatMinutes } from "@/lib/billing";
 import type { ClientUsage } from "@/lib/usage";
 
-const card = "rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-4 sm:p-5";
+const card = "rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3.5 sm:p-5";
 const fmtDate = (iso: string, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" }) =>
   new Date(iso).toLocaleDateString("en-GB", { ...opts, timeZone: "UTC" });
 
@@ -57,7 +57,7 @@ export function ProjectBreakdown({ usage }: { usage: ClientUsage }) {
   if (usage.byProject.length === 0) return <div className={`${card} text-fun-gray-light`}>No time logged in this period yet.</div>;
   return (
     <div className={card}>
-      <ul className="space-y-5">
+      <ul className="space-y-4 sm:space-y-5">
         {usage.byProject.map((project) => (
           <li key={project.projectId}>
             <div className="flex items-center justify-between">

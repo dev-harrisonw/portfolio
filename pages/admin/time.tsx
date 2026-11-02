@@ -101,7 +101,7 @@ export default function TimePage({ clients: initialClients, running: initialRunn
       actions={
         <a
           href={`/api/admin/exports/all?period=${range.from.toISOString().slice(0, 7)}`}
-          className="rounded-full border border-fun-gray-darker px-4 py-2 text-sm hover:border-fun-pink"
+          className="rounded-full border border-fun-gray-darker px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm hover:border-fun-pink"
         >
           Export all clients (CSV)
         </a>
@@ -118,7 +118,7 @@ export default function TimePage({ clients: initialClients, running: initialRunn
         }}
       />
 
-      <div className="mt-6 sm:mt-8 flex flex-col gap-3">
+      <div className="mt-3 sm:mt-8 flex flex-col gap-2 sm:gap-3">
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <div className="flex rounded-full border border-fun-gray-darker p-1 text-sm">
           {(["week", "month"] as View[]).map((v) => (
@@ -147,7 +147,7 @@ export default function TimePage({ clients: initialClients, running: initialRunn
           aria-label="Filter by client"
           value={clientFilter}
           onChange={(e) => router.replace({ query: e.target.value ? { client: e.target.value } : {} }, undefined, { shallow: true })}
-          className="w-full sm:w-auto"
+          className="!w-auto flex-1 min-w-0 sm:flex-none"
         >
           <option value="">All clients</option>
           {clients.map((c) => (
@@ -156,7 +156,10 @@ export default function TimePage({ clients: initialClients, running: initialRunn
             </option>
           ))}
         </Select>
-        <div className="flex items-center gap-3 sm:gap-4 text-sm sm:ml-auto">
+        <Button variant="ghost" onClick={() => setShowManual((v) => !v)} className="shrink-0 sm:order-last">
+          {showManual ? "Close" : "Add entry"}
+        </Button>
+        <div className="w-full sm:w-auto flex items-center gap-3 sm:gap-4 text-sm sm:ml-auto">
           <span>
             <span className="text-fun-gray-medium">Total </span>
             <span className="font-monospace">{formatMinutes(total)}</span>
@@ -165,9 +168,6 @@ export default function TimePage({ clients: initialClients, running: initialRunn
             <span className="text-fun-gray-medium">Billable </span>
             <span className="font-monospace text-fun-pink">{formatMinutes(billable)}</span>
           </span>
-          <Button variant="ghost" onClick={() => setShowManual((v) => !v)}>
-            {showManual ? "Close" : "Add entry"}
-          </Button>
         </div>
         </div>
       </div>
@@ -184,7 +184,7 @@ export default function TimePage({ clients: initialClients, running: initialRunn
         />
       )}
 
-      <div className="mt-6 space-y-6">
+      <div className="mt-3 sm:mt-6 space-y-3 sm:space-y-6">
         {entries === null ? (
           <div className="space-y-3">
             <Skeleton className="h-16" />

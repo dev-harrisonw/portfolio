@@ -48,7 +48,7 @@ export default function PeriodHeader({ periods, current, isCurrent, days, export
   const pct = Math.round((days.elapsed / days.total) * 100);
 
   return (
-    <div className="dd-panel p-4 sm:p-5 mb-6 sm:mb-8 flex flex-col gap-4 lg:flex-row lg:items-center">
+    <div className="dd-panel p-3.5 sm:p-5 mb-3 sm:mb-8 flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center">
       <div className="flex items-center gap-3 min-w-0">
         <Arrow dir="prev" value={older} />
         <div className="min-w-0 flex-1 text-center lg:text-left">
@@ -75,10 +75,10 @@ export default function PeriodHeader({ periods, current, isCurrent, days, export
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
+      <div className="flex items-center gap-2 lg:ml-auto">
         <select
           aria-label="Jump to billing period"
-          className="dd-input flex-1 sm:flex-none px-3 py-2 text-base sm:text-sm min-h-[40px]"
+          className="dd-input min-w-0 flex-1 sm:flex-none px-3 py-2 text-base sm:text-sm min-h-[40px]"
           value={current}
           onChange={(e) => router.push({ pathname: "/portal", query: { ...router.query, period: e.target.value } })}
         >
@@ -94,12 +94,19 @@ export default function PeriodHeader({ periods, current, isCurrent, days, export
             <a
               key={format}
               href={`/api/portal/timesheet?${new URLSearchParams({ ...exportsQuery, format })}`}
-              className="rounded-md border border-[color:var(--dd-border)] px-3 py-2 text-sm min-h-[40px] flex items-center gap-1.5 text-fun-gray-light hover:text-white hover:bg-[color:var(--dd-raised)]"
+              className="rounded-md border border-[color:var(--dd-border)] px-2.5 sm:px-3 py-2 text-sm min-h-[40px] shrink-0 flex items-center gap-1.5 text-fun-gray-light hover:text-white hover:bg-[color:var(--dd-raised)]"
             >
               <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
                 <path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              {format === "pdf" ? "Timesheet" : "CSV"}
+              {format === "pdf" ? (
+                <>
+                  <span className="sm:hidden">PDF</span>
+                  <span className="hidden sm:inline">Timesheet</span>
+                </>
+              ) : (
+                "CSV"
+              )}
             </a>
           ))}
       </div>

@@ -88,7 +88,7 @@ export default function InvoiceDetailPage({ invoice }: { invoice: InvoiceDetail 
         {due && <span className={`text-sm ${due.overdue ? "text-red-300" : "text-fun-gray-medium"}`}>{due.text}</span>}
       </div>
 
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-2 sm:gap-3 grid-cols-2 lg:grid-cols-4 mb-4 sm:mb-8">
         <Card>
           <p className="text-[10px] uppercase tracking-wider text-fun-gray-light">Client</p>
           <Link href={`/admin/clients/${invoice.client.id}`} className="block font-bold mt-1 text-fun-pink hover:underline truncate">
@@ -115,7 +115,7 @@ export default function InvoiceDetailPage({ invoice }: { invoice: InvoiceDetail 
         </Card>
       </div>
 
-      <section className="mb-10">
+      <section className="mb-6 sm:mb-10">
         <h2 className="text-xl font-bold mb-4">Lines</h2>
         <Card>
           <ul className="divide-y divide-fun-gray-darker">

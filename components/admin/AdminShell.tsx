@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AccountButton } from "@/components/auth/AccountButton";
 
 type IconName = "dashboard" | "time" | "work" | "clients" | "invoices" | "finance" | "reports" | "posts" | "leads";
@@ -33,6 +33,9 @@ const groups: { label: string; items: { href: string; label: string; icon: IconN
 ];
 
 const flat = groups.flatMap((g) => g.items);
+const tabHrefs = ["/admin", "/admin/time", "/admin/clients", "/admin/invoices"];
+const tabs = tabHrefs.map((href) => flat.find((item) => item.href === href)!);
+const moreItems = flat.filter((item) => !tabHrefs.includes(item.href));
 
 const paths: Record<IconName, ReactNode> = {
   dashboard: (
@@ -85,12 +88,12 @@ const paths: Record<IconName, ReactNode> = {
   ),
 };
 
-function Icon({ name }: { name: IconName }) {
+function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
   return (
     <svg
       viewBox="0 0 24 24"
-      width="16"
-      height="16"
+      width={size}
+      height={size}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.8"
@@ -113,9 +116,19 @@ type Props = {
 };
 
 export default function AdminShell({ title, eyebrow = "Admin", actions, children, wide }: Props) {
-  const { pathname } = useRouter();
+  const { pathname, asPath } = useRouter();
   const isActive = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
   const max = wide ? "max-w-[1400px]" : "max-w-5xl";
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreActive = moreItems.some((item) => isActive(item.href));
+
+  useEffect(() => setMoreOpen(false), [asPath]);
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMoreOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [moreOpen]);
 
   return (
     <div className="theme-dd min-h-screen overflow-x-clip">
@@ -170,7 +183,12 @@ export default function AdminShell({ title, eyebrow = "Admin", actions, children
             <Link href="/admin" className="md:hidden flex items-center shrink-0" aria-label="Admin home">
               <img src="/static/logos/logo_no_text.svg" width={24} height={24} alt="" style={{ width: 24, height: 24 }} />
             </Link>
-            <div className="flex items-center gap-1.5 text-xs text-fun-gray-medium min-w-0">
+            {/* Phones show the page title here instead of a separate heading row. */}
+            <div className="sm:hidden min-w-0 leading-tight">
+              {eyebrow !== "Admin" && <p className="text-[10px] uppercase tracking-wider text-fun-gray-medium">{eyebrow}</p>}
+              <p className="text-[15px] font-bold truncate">{title}</p>
+            </div>
+            <div className="hidden sm:flex items-center gap-1.5 text-xs text-fun-gray-medium min-w-0">
               <span>{eyebrow}</span>
               <span aria-hidden>/</span>
               <span className="text-white font-semibold truncate">{title}</span>
@@ -179,31 +197,85 @@ export default function AdminShell({ title, eyebrow = "Admin", actions, children
               <AccountButton />
             </div>
           </div>
-          <nav className="md:hidden flex gap-1 overflow-x-auto scroll-hide px-4 pb-2" aria-label="Admin">
-            {flat.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
-                className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 whitespace-nowrap text-xs transition-colors ${
-                  isActive(item.href) ? "bg-[color:var(--dd-raised)] text-white font-semibold" : "text-fun-gray-light hover:text-white"
-                }`}
-              >
-                <Icon name={item.icon} />
-                {item.label}
-              </Link>
-            ))}
-          </nav>
         </header>
 
-        <main className={`${max} mx-auto px-4 sm:px-6 py-6 sm:py-8`}>
-          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-3 mb-6">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate min-w-0">{title}</h1>
-            {actions && <div className="flex flex-wrap gap-2 shrink-0">{actions}</div>}
+        <main className={`${max} mx-auto px-3 sm:px-6 pt-3 sm:py-8 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-8`}>
+          <div className={`flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-3 mb-3 sm:mb-6 ${actions ? "flex" : "hidden sm:flex"}`}>
+            <h1 className="hidden sm:block text-2xl font-bold tracking-tight truncate min-w-0">{title}</h1>
+            {actions && (
+              <div className="flex gap-2 shrink-0 overflow-x-auto scroll-hide -mx-3 px-3 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible [&>*]:shrink-0">
+                {actions}
+              </div>
+            )}
           </div>
           {children}
         </main>
       </div>
+
+      {/* Phone tab bar */}
+      {moreOpen && (
+        <button type="button" aria-label="Close menu" className="md:hidden fixed inset-0 z-30 bg-black/50" onClick={() => setMoreOpen(false)} />
+      )}
+      <nav
+        className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-[color:var(--dd-border)] bg-[color:var(--dd-side)] pb-[env(safe-area-inset-bottom)]"
+        aria-label="Admin"
+      >
+        {moreOpen && (
+          <div id="admin-more" className="border-b border-[color:var(--dd-border)] p-2 grid grid-cols-3 gap-1">
+            {moreItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                className={`flex flex-col items-center gap-1 rounded-md py-2.5 text-xs ${
+                  isActive(item.href) ? "bg-[color:var(--dd-raised)] text-white font-semibold" : "text-fun-gray-light"
+                }`}
+              >
+                <Icon name={item.icon} size={20} />
+                {item.label}
+              </Link>
+            ))}
+            <Link href="/portal" className="flex flex-col items-center gap-1 rounded-md py-2.5 text-xs text-fun-gray-light">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <circle cx="12" cy="12" r="3" />
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+              </svg>
+              Portal
+            </Link>
+          </div>
+        )}
+        <div className="grid grid-cols-5">
+          {tabs.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive(item.href) ? "page" : undefined}
+              className={`flex flex-col items-center gap-0.5 pt-2 pb-1.5 text-[11px] ${
+                isActive(item.href) ? "text-fun-pink font-semibold" : "text-fun-gray-light"
+              }`}
+            >
+              <Icon name={item.icon} size={20} />
+              {item.label}
+            </Link>
+          ))}
+          <button
+            type="button"
+            aria-expanded={moreOpen}
+            aria-controls="admin-more"
+            onClick={() => setMoreOpen((open) => !open)}
+            className={`flex flex-col items-center gap-0.5 pt-2 pb-1.5 text-[11px] ${
+              moreActive || moreOpen ? "text-fun-pink font-semibold" : "text-fun-gray-light"
+            }`}
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+              <circle cx="5" cy="12" r="1.2" />
+              <circle cx="12" cy="12" r="1.2" />
+              <circle cx="19" cy="12" r="1.2" />
+            </svg>
+            {moreActive && !moreOpen ? moreItems.find((item) => isActive(item.href))!.label : "More"}
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }

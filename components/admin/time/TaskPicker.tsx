@@ -54,7 +54,7 @@ export default function TaskPicker({ clients, value, onChange, defaultClientId, 
   }
 
   return (
-    <div className="grid gap-2 sm:grid-cols-3">
+    <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 [&>:last-child]:col-span-2 sm:[&>:last-child]:col-span-1">
       <Select
         aria-label="Client"
         value={clientId}

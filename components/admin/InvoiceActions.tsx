@@ -35,7 +35,7 @@ export default function InvoiceActions({ invoice, onDone, onDeleted, onError }: 
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:gap-2 [&>*]:justify-center [&>*]:whitespace-nowrap [&>*]:!px-2 sm:[&>*]:!px-3.5 [&>*]:!text-[13px] sm:[&>*]:!text-sm">
       <a
         href={`/api/admin/invoices/${invoice.id}?format=pdf`}
         className="rounded-full border border-fun-gray-darker px-4 py-2.5 sm:py-2 text-sm hover:border-fun-pink min-h-[44px] sm:min-h-0 inline-flex items-center"

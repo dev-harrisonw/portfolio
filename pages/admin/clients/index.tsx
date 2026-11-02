@@ -96,7 +96,7 @@ export default function ClientsPage({ clients, showArchived }: { clients: Client
       actions={!creating && <Button onClick={() => setCreating(true)}>New client</Button>}
     >
       {creating && (
-        <Card className="mb-8">
+        <Card className="mb-4 sm:mb-8">
           <p className="text-sm text-fun-gray-medium mb-4">
             Create the company first, then invite their billing contact to the portal from the client record.
           </p>

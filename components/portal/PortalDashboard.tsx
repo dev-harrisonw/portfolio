@@ -15,7 +15,7 @@ import {
   type PortalInvoice,
 } from "@/components/portal/InvoiceBits";
 
-const card = "rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-4 sm:p-5";
+const card = "rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3.5 sm:p-5";
 const label = "text-[10px] sm:text-xs uppercase tracking-wider text-fun-gray-light";
 const DAY_MS = 86400000;
 
@@ -51,9 +51,9 @@ function weeklyBars(usage: ClientUsage, available: number | null) {
 
 function Row({ name, value, tone }: { name: string; value: ReactNode; tone?: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-3 py-1.5">
-      <span className="text-sm text-fun-gray-light">{name}</span>
-      <span className={`font-monospace text-sm tabular-nums text-right ${tone ?? ""}`}>{value}</span>
+    <div className="flex items-baseline justify-between gap-3 py-1 sm:py-1.5">
+      <span className="text-[13px] sm:text-sm text-fun-gray-light">{name}</span>
+      <span className={`font-monospace text-[13px] sm:text-sm tabular-nums text-right ${tone ?? ""}`}>{value}</span>
     </div>
   );
 }
@@ -90,12 +90,45 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
   const hasUnbilled = bars.some((b) => b.secondary > 0);
   const overNote = usage.client.billOverages ? "billed at the hourly rate" : "not billed";
 
+  const hoursRows = (
+    <>
+      {main.availableMinutes != null ? (
+        <Row name="Included" value={formatMinutes(main.availableMinutes)} />
+      ) : (
+        <Row name="Plan" value={hourly ? "Hourly, no retainer" : "Pay as you go"} />
+      )}
+      <Row name="Logged" value={formatMinutes(main.usedMinutes)} tone="font-bold text-white" />
+      {main.availableMinutes != null &&
+        (main.overageMinutes > 0 ? (
+          <Row
+            name="Over allowance"
+            tone="text-red-300"
+            value={
+              <>
+                {formatMinutes(main.overageMinutes)}
+                <span className="block text-[11px] font-sans">{overNote}</span>
+              </>
+            }
+          />
+        ) : (
+          <Row name={closed ? "Unused" : "Remaining"} value={formatMinutes(main.remainingMinutes ?? 0)} />
+        ))}
+      {usage.totals.nonBillableMinutes > 0 && (
+        <Row name="Extra, not billed" value={formatMinutes(usage.totals.nonBillableMinutes)} tone="text-fun-gray-medium" />
+      )}
+    </>
+  );
+
   return (
-    <MotionSection className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-8 sm:mb-10">
-      <MotionItem className={`${card} col-span-2 lg:col-span-1 lg:row-span-2 flex flex-row lg:flex-col lg:justify-center items-center gap-4 sm:gap-5`}>
-        <HoursRing used={main.usedMinutes} available={main.availableMinutes} />
-        <div className="min-w-0 flex-1 lg:flex-none text-left lg:text-center">
-          <p className={`rounded-full px-3 py-1 text-xs inline-block max-w-full ${tone}`}>
+    <MotionSection className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-10">
+      <MotionItem className={`${card} col-span-2 lg:col-span-1 lg:row-span-2 flex flex-col sm:flex-row lg:flex-col sm:items-center lg:justify-center gap-3 sm:gap-5`}>
+        <div className="flex items-center gap-4">
+          <HoursRing used={main.usedMinutes} available={main.availableMinutes} />
+          {/* Phones fold the hours table in beside the ring instead of giving it its own card. */}
+          <div className="sm:hidden min-w-0 flex-1 divide-y divide-fun-gray-darker">{hoursRows}</div>
+        </div>
+        <div className="min-w-0 sm:flex-1 lg:flex-none text-left lg:text-center">
+          <p className={`rounded-lg sm:rounded-full px-3 py-1.5 sm:py-1 text-xs inline-block max-w-full ${tone}`}>
             {paceText(main, "client", { closed, billOverages: usage.client.billOverages })}
           </p>
           {main.carriedInMinutes > 0 && (
@@ -104,34 +137,9 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
         </div>
       </MotionItem>
 
-      <MotionItem className={`${card} col-span-2 sm:col-span-1`}>
+      <MotionItem className={`${card} hidden sm:block sm:col-span-1`}>
         <p className={label}>Hours</p>
-        <div className="mt-2 divide-y divide-fun-gray-darker">
-          {main.availableMinutes != null ? (
-            <Row name="Included" value={formatMinutes(main.availableMinutes)} />
-          ) : (
-            <Row name="Plan" value={hourly ? "Hourly, no retainer" : "Pay as you go"} />
-          )}
-          <Row name="Logged" value={formatMinutes(main.usedMinutes)} tone="font-bold text-white" />
-          {main.availableMinutes != null &&
-            (main.overageMinutes > 0 ? (
-              <Row
-                name="Over allowance"
-                tone="text-red-300"
-                value={
-                  <>
-                    {formatMinutes(main.overageMinutes)}
-                    <span className="block text-[11px] font-sans">{overNote}</span>
-                  </>
-                }
-              />
-            ) : (
-              <Row name={closed ? "Unused" : "Remaining"} value={formatMinutes(main.remainingMinutes ?? 0)} />
-            ))}
-          {usage.totals.nonBillableMinutes > 0 && (
-            <Row name="Extra, not billed" value={formatMinutes(usage.totals.nonBillableMinutes)} tone="text-fun-gray-medium" />
-          )}
-        </div>
+        <div className="mt-2 divide-y divide-fun-gray-darker">{hoursRows}</div>
       </MotionItem>
 
       <MotionItem className={`${card} col-span-2 sm:col-span-1 flex flex-col`}>

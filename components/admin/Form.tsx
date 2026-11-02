@@ -41,7 +41,7 @@ export function Button({
 }
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`dd-panel p-4 sm:p-5 ${className}`}>{children}</div>;
+  return <div className={`dd-panel p-3.5 sm:p-5 ${className}`}>{children}</div>;
 }
 
 /** Pounds string ⇄ pence integer for money inputs. */

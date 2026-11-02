@@ -75,7 +75,7 @@ export default function AdminDashboardPage({ data }: Props) {
         </div>
       )}
 
-      <MotionSection className="mt-6 sm:mt-8 grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+      <MotionSection className="mt-4 sm:mt-8 grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         <MotionItem>
           <Stat label="Billable this period" value={formatMinutes(data.totals.billableMinutes)} sub={`${formatMinutes(data.totals.nonBillableMinutes)} non-billable`} />
         </MotionItem>
@@ -102,7 +102,7 @@ export default function AdminDashboardPage({ data }: Props) {
           </Link>
           </div>
         </div>
-        <MotionSection className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-5">
+        <MotionSection className="grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-5">
           <MotionItem>
             <Stat
               label={`Collected · ${data.finance.monthLabel}`}
@@ -131,7 +131,7 @@ export default function AdminDashboardPage({ data }: Props) {
               sub={`${data.finance.drafts.count} ready to send`}
             />
           </MotionItem>
-          <MotionItem>
+          <MotionItem className="col-span-2 lg:col-span-1">
             <Stat
               label="Net this month"
               value={formatMoney(data.finance.netThisMonth.amount, data.finance.netThisMonth.currency)}
@@ -142,25 +142,27 @@ export default function AdminDashboardPage({ data }: Props) {
       </section>
 
       {data.nudges.length > 0 && (
-        <section className="mt-8">
+        <section className="mt-6 sm:mt-8">
           <h2 className="text-xl font-bold mb-4">Needs a nudge</h2>
           <ul className="grid gap-2 sm:grid-cols-2">
             {data.nudges.map((n) => (
               <li key={n.id}>
                 <Link
                   href={n.href}
-                  className="flex items-start justify-between gap-3 rounded-2xl border border-fun-gray-darker px-4 py-3 hover:border-fun-pink transition-colors h-full"
+                  className="flex items-start justify-between gap-3 rounded-2xl border border-fun-gray-darker px-3 py-2.5 sm:px-4 sm:py-3 hover:border-fun-pink transition-colors h-full"
                 >
-                  <span className="min-w-0">
-                    <span
-                      className={`inline-block rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider ${
-                        n.tone === "red" ? "bg-red-500/15 text-red-300" : "bg-yellow-500/15 text-yellow-300"
-                      }`}
-                    >
-                      {n.label}
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider ${
+                          n.tone === "red" ? "bg-red-500/15 text-red-300" : "bg-yellow-500/15 text-yellow-300"
+                        }`}
+                      >
+                        {n.label}
+                      </span>
+                      <span className="font-bold truncate">{n.title}</span>
                     </span>
-                    <p className="font-bold mt-1 truncate">{n.title}</p>
-                    <p className="text-xs text-fun-gray-medium mt-0.5">{n.detail}</p>
+                    <p className="text-xs text-fun-gray-medium mt-1">{n.detail}</p>
                   </span>
                 </Link>
               </li>
@@ -170,7 +172,7 @@ export default function AdminDashboardPage({ data }: Props) {
       )}
 
       {data.activity.length > 0 && (
-        <section className="mt-8">
+        <section className="mt-6 sm:mt-8">
           <h2 className="text-xl font-bold mb-4">Activity</h2>
           <Card>
             <ul className="divide-y divide-fun-gray-darker">
@@ -198,7 +200,7 @@ export default function AdminDashboardPage({ data }: Props) {
         </section>
       )}
 
-      <section className="mt-10">
+      <section className="mt-6 sm:mt-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Clients this period</h2>
           <Link href="/admin/clients" className="text-sm text-fun-pink hover:underline">
@@ -220,7 +222,7 @@ export default function AdminDashboardPage({ data }: Props) {
         )}
       </section>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-3">
+      <div className="mt-6 sm:mt-10 grid gap-3 sm:gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
             <h2 className="font-bold text-sm sm:text-base">Hours per day · {data.monthLabel}</h2>
@@ -261,7 +263,7 @@ export default function AdminDashboardPage({ data }: Props) {
         </Card>
       </div>
 
-      <section className="mt-10">
+      <section className="mt-6 sm:mt-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Recent entries</h2>
           <Link href="/admin/time" className="text-sm text-fun-pink hover:underline">
@@ -275,13 +277,16 @@ export default function AdminDashboardPage({ data }: Props) {
             <ul className="divide-y divide-fun-gray-darker">
               {data.recent.map((e) => (
                 <li key={e.id} className="flex items-start sm:items-center gap-3 sm:gap-4 py-2.5 text-sm">
-                  <span className="w-12 sm:w-20 shrink-0 text-xs text-fun-gray-medium pt-0.5 sm:pt-0">
+                  <span className="hidden sm:block w-20 shrink-0 text-xs text-fun-gray-medium">
                     {new Date(e.startedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                   </span>
                   <span className="flex-1 min-w-0">
                     <span className="font-bold">{e.task.title}</span>
-                    <span className="text-fun-gray-medium"> · {e.task.project.client.name}</span>
-                    {e.note && <span className="block sm:inline text-fun-gray-light"> — {e.note}</span>}
+                    <span className="hidden sm:inline text-fun-gray-medium"> · {e.task.project.client.name}</span>
+                    <span className="block sm:hidden text-xs text-fun-gray-medium truncate">
+                      {new Date(e.startedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} · {e.task.project.client.name}
+                    </span>
+                    {e.note && <span className="block sm:inline text-fun-gray-light"><span className="hidden sm:inline"> — </span>{e.note}</span>}
                   </span>
                   <span className="font-monospace text-xs shrink-0">{formatMinutes(e.durationMinutes)}</span>
                 </li>

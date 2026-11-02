@@ -78,7 +78,7 @@ export default function FinancePage({ data }: Props) {
         </div>
       }
     >
-      <MotionSection className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+      <MotionSection className="grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         <MotionItem>
           <Stat
             label={`Collected · ${data.monthLabel}`}
@@ -112,7 +112,7 @@ export default function FinancePage({ data }: Props) {
         </MotionItem>
       </MotionSection>
 
-      <MotionSection className="mt-3 grid gap-3 sm:gap-4 grid-cols-2">
+      <MotionSection className="mt-3 grid gap-2 sm:gap-4 grid-cols-2">
         <MotionItem>
           <Stat
             label={`Spent · ${data.monthLabel}`}
@@ -130,7 +130,7 @@ export default function FinancePage({ data }: Props) {
         </MotionItem>
       </MotionSection>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-3">
+      <div className="mt-6 sm:mt-10 grid gap-3 sm:gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
             <h2 className="font-bold">Cash · last 12 months</h2>
@@ -166,7 +166,7 @@ export default function FinancePage({ data }: Props) {
         </Card>
       </div>
 
-      <section className="mt-10">
+      <section className="mt-6 sm:mt-10">
         <h2 className="text-xl font-bold mb-4">Receivables aging</h2>
         <Card>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -184,7 +184,7 @@ export default function FinancePage({ data }: Props) {
         </Card>
       </section>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 sm:mt-10 grid gap-3 sm:gap-6 lg:grid-cols-2">
         <section>
           <h2 className="text-xl font-bold mb-4">By client this year</h2>
           <Card>
@@ -257,7 +257,7 @@ export default function FinancePage({ data }: Props) {
         </section>
       </div>
 
-      <section className="mt-10">
+      <section className="mt-6 sm:mt-10">
         <h2 className="text-xl font-bold mb-4">Recently paid</h2>
         <Card>
           {data.recentPaid.length === 0 ? (
@@ -283,7 +283,7 @@ export default function FinancePage({ data }: Props) {
           )}
         </Card>
       </section>
-      <section className="mt-10">
+      <section className="mt-6 sm:mt-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Recent expenses</h2>
           <Link href="/admin/expenses" className="text-sm text-fun-pink hover:underline">

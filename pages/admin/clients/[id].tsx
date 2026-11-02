@@ -83,12 +83,12 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   };
 };
 
-function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Stat({ label, value, sub, clip }: { label: string; value: string; sub?: string; clip?: boolean }) {
   return (
-    <div className="rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-4 min-w-0">
+    <div className="rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3.5 sm:p-4 min-w-0">
       <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-gray-light">{label}</p>
       <p className="text-lg sm:text-xl font-bold mt-1 font-monospace tabular-nums truncate">{value}</p>
-      {sub && <p className="text-xs text-fun-gray-medium mt-1 leading-snug">{sub}</p>}
+      {sub && <p className={`text-[11px] sm:text-xs text-fun-gray-medium mt-1 leading-snug ${clip ? "truncate" : ""}`} title={clip ? sub : undefined}>{sub}</p>}
     </div>
   );
 }
@@ -163,7 +163,7 @@ export default function ClientDetailPage({ client, usage, estimateTotal, invoice
         </div>
       )}
 
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-2 sm:gap-3 grid-cols-2 lg:grid-cols-4 mb-4 sm:mb-8">
         <Stat
           label="This period"
           value={allowance ? formatMinutes(allowance.usedMinutes) : "—"}
@@ -181,10 +181,10 @@ export default function ClientDetailPage({ client, usage, estimateTotal, invoice
           value={formatMoney(openTotal, client.currency)}
           sub={openInvoices.length ? `${openInvoices.length} draft or sent` : "Nothing outstanding"}
         />
-        <Stat label="Portal" value={portalStatusLabel[access]} sub={client.billingEmail} />
+        <Stat label="Portal" value={portalStatusLabel[access]} sub={client.billingEmail} clip />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 mb-10">
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-2 mb-6 sm:mb-10">
         <PortalPeople
           clientId={client.id}
           clientName={client.name}
@@ -196,7 +196,7 @@ export default function ClientDetailPage({ client, usage, estimateTotal, invoice
           onError={(message) => setError(message || null)}
         />
 
-        <section className="rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-4 sm:p-5">
+        <section className="rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3.5 sm:p-5">
           <div className="flex items-center justify-between gap-3 mb-3">
             <h2 className="text-lg font-bold">Invoices</h2>
             <Link href="/admin/invoices" className="text-sm text-fun-pink hover:underline">
@@ -234,7 +234,7 @@ export default function ClientDetailPage({ client, usage, estimateTotal, invoice
               })}
             </ul>
           )}
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-3 sm:mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             <Button
               variant="ghost"
               disabled={drafting}
@@ -273,7 +273,7 @@ export default function ClientDetailPage({ client, usage, estimateTotal, invoice
         </section>
       </div>
 
-      <section className="mb-10">
+      <section className="mb-6 sm:mb-10">
         <h2 className="text-xl font-bold mb-4">Projects &amp; tasks</h2>
         <div className="grid gap-4">
           {client.projects.map((project) => (
@@ -299,7 +299,7 @@ export default function ClientDetailPage({ client, usage, estimateTotal, invoice
       </section>
 
       {usage && usage.entries.length > 0 && (
-        <section className="mb-10">
+        <section className="mb-6 sm:mb-10">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">This period&apos;s time</h2>
             <Link href={`/admin/time?client=${client.id}`} className="text-sm text-fun-pink hover:underline">
@@ -330,7 +330,7 @@ export default function ClientDetailPage({ client, usage, estimateTotal, invoice
         </section>
       )}
 
-      <section className="mb-10">
+      <section className="mb-6 sm:mb-10">
         <h2 className="text-xl font-bold mb-4">Exports</h2>
         <Card className="flex flex-wrap items-center gap-3">
           <input

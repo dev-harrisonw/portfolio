@@ -101,7 +101,7 @@ export default function ExpensesPage({ expenses: initial, clients }: Props) {
         </Link>
       }
     >
-      <Card className="mb-8">
+      <Card className="mb-4 sm:mb-8">
         <h2 className="font-bold mb-4">Log an expense</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Date">

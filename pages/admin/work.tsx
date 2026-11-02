@@ -124,35 +124,35 @@ export default function WorkPage({ data }: Props) {
         }}
       />
 
-      <MotionSection className="mt-6 grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+      <MotionSection className="mt-3 sm:mt-6 grid gap-2 sm:gap-4 grid-cols-4">
         <MotionItem>
           <Card>
-            <p className="text-[10px] uppercase tracking-wider text-fun-gray-light">To do</p>
-            <p className="text-2xl font-bold font-monospace mt-1">{data.counts.TODO}</p>
+            <p className="text-[10px] uppercase tracking-wider text-fun-gray-light leading-tight">To do</p>
+            <p className="text-xl sm:text-2xl font-bold font-monospace mt-1">{data.counts.TODO}</p>
           </Card>
         </MotionItem>
         <MotionItem>
           <Card>
-            <p className="text-[10px] uppercase tracking-wider text-fun-gray-light">In progress</p>
-            <p className="text-2xl font-bold font-monospace mt-1">{data.counts.IN_PROGRESS}</p>
+            <p className="text-[10px] uppercase tracking-wider text-fun-gray-light leading-tight">In progress</p>
+            <p className="text-xl sm:text-2xl font-bold font-monospace mt-1">{data.counts.IN_PROGRESS}</p>
           </Card>
         </MotionItem>
         <MotionItem>
           <Card>
-            <p className="text-[10px] uppercase tracking-wider text-fun-gray-light">Overdue projects</p>
-            <p className="text-2xl font-bold font-monospace mt-1">{data.overdueProjects.length}</p>
+            <p className="text-[10px] uppercase tracking-wider text-fun-gray-light leading-tight">Overdue projects</p>
+            <p className="text-xl sm:text-2xl font-bold font-monospace mt-1">{data.overdueProjects.length}</p>
           </Card>
         </MotionItem>
         <MotionItem>
           <Card>
-            <p className="text-[10px] uppercase tracking-wider text-fun-gray-light">Stages due</p>
-            <p className="text-2xl font-bold font-monospace mt-1">{data.dueStages.length}</p>
+            <p className="text-[10px] uppercase tracking-wider text-fun-gray-light leading-tight">Stages due</p>
+            <p className="text-xl sm:text-2xl font-bold font-monospace mt-1">{data.dueStages.length}</p>
           </Card>
         </MotionItem>
       </MotionSection>
 
       {(data.overdueProjects.length > 0 || data.dueStages.length > 0) && (
-        <div className="mt-8 grid gap-4 lg:grid-cols-2">
+        <div className="mt-5 sm:mt-8 grid gap-3 sm:gap-4 lg:grid-cols-2">
           {data.overdueProjects.length > 0 && (
             <Card>
               <h2 className="font-bold mb-3">Past due</h2>
@@ -194,7 +194,7 @@ export default function WorkPage({ data }: Props) {
       )}
 
       <form
-        className="mt-8 flex flex-col sm:flex-row gap-2"
+        className="mt-4 sm:mt-8 grid grid-cols-2 gap-2 sm:flex sm:flex-row"
         onSubmit={(e) => {
           e.preventDefault();
           addTask();
@@ -215,31 +215,33 @@ export default function WorkPage({ data }: Props) {
             </option>
           ))}
         </Select>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="New task" className="sm:flex-1" />
-        <Button disabled={busy || !projectId || !title.trim()}>{busy ? "Adding…" : "Add task"}</Button>
+        <div className="col-span-2 flex gap-2 sm:contents">
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="New task" className="min-w-0 flex-1" />
+          <Button className="shrink-0" disabled={busy || !projectId || !title.trim()}>{busy ? "Adding…" : "Add task"}</Button>
+        </div>
       </form>
       {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
 
-      <div className="mt-6 flex justify-end">
+      <div className="mt-4 sm:mt-6 flex justify-end">
         <label className="text-xs text-fun-gray-medium flex items-center gap-2">
           <input type="checkbox" checked={hideDone} onChange={(e) => setHideDone(e.target.checked)} />
           Hide done
         </label>
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+      <div className="mt-2 sm:mt-4 grid gap-4 lg:grid-cols-3">
         {COLUMNS.map((col) => (
           <section key={col.id}>
-            <h2 className="text-xs uppercase tracking-wider text-fun-gray-light mb-3 flex items-center justify-between">
+            <h2 className="text-xs uppercase tracking-wider text-fun-gray-light mb-2 sm:mb-3 flex items-center justify-between">
               {col.label}
               <span className="font-monospace">{grouped[col.id].length}</span>
             </h2>
-            <ul className="space-y-3">
+            <ul className="space-y-2 sm:space-y-3">
               {grouped[col.id].length === 0 ? (
                 <li className="text-xs text-fun-gray-medium rounded-xl border border-dashed border-fun-gray-darker px-3 py-6 text-center">Empty</li>
               ) : (
                 grouped[col.id].map((t) => (
-                  <li key={t.id} className="rounded-xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-4">
+                  <li key={t.id} className="rounded-xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3 sm:p-4">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="font-bold">{t.title}</p>
@@ -250,7 +252,7 @@ export default function WorkPage({ data }: Props) {
                       <select
                         value={t.status}
                         onChange={(e) => setStatus(t.id, e.target.value as TaskStatus)}
-                        className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-wider outline-none bg-transparent border-0 cursor-pointer ${statusTone[t.status as TaskStatus]}`}
+                        className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-wider outline-none border-0 cursor-pointer ${statusTone[t.status as TaskStatus]}`}
                         aria-label="Task status"
                       >
                         {COLUMNS.map((c) => (
@@ -261,7 +263,7 @@ export default function WorkPage({ data }: Props) {
                       </select>
                     </div>
                     {t.status !== "DONE" && (
-                      <button type="button" onClick={() => start(t.id)} className="mt-3 text-xs text-fun-pink hover:underline">
+                      <button type="button" onClick={() => start(t.id)} className="mt-2 sm:mt-3 text-xs text-fun-pink hover:underline">
                         ▶ Start timer
                       </button>
                     )}

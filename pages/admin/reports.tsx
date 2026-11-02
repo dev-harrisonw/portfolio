@@ -41,7 +41,7 @@ export default function ReportsPage({ data }: Props) {
         </Link>
       }
     >
-      <MotionSection className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+      <MotionSection className="grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         <MotionItem>
           <Stat label="Collected YTD" value={formatMoney(data.totals.collected, data.totals.currency)} />
         </MotionItem>
@@ -64,7 +64,7 @@ export default function ReportsPage({ data }: Props) {
         </MotionItem>
       </MotionSection>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-3">
+      <div className="mt-6 sm:mt-10 grid gap-3 sm:gap-6 lg:grid-cols-3">
         <section className="lg:col-span-2">
           <h2 className="text-xl font-bold mb-4">Client profitability</h2>
           <Card>

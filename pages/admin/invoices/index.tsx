@@ -97,11 +97,11 @@ export default function InvoicesPage({
       wide
       actions={
         clients.length > 0 && (
-          <div className="flex flex-wrap gap-2 items-center">
+          <div className="w-full grid grid-cols-2 gap-2 sm:w-auto sm:flex sm:flex-wrap sm:items-center">
             <select
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
-              className="rounded-lg bg-black/20 border border-fun-gray-darker px-3 py-2 text-base sm:text-sm min-h-[44px] sm:min-h-0"
+              className="col-span-2 rounded-lg bg-black/20 border border-fun-gray-darker px-3 py-2 text-base sm:text-sm min-h-[44px] sm:min-h-0"
               aria-label="Client to invoice"
             >
               {clients.map((c) => (
@@ -123,11 +123,11 @@ export default function InvoicesPage({
       {error && <p className="text-sm text-red-400 mb-4">{error}</p>}
 
       {invoices.length > 0 && (
-        <div className="mb-5 flex flex-col sm:flex-row gap-3">
+        <div className="mb-3 sm:mb-5 flex items-center gap-2 sm:gap-3">
           <select
             value={viewClient}
             onChange={(e) => setViewClient(e.target.value)}
-            className="rounded-lg bg-black/20 border border-fun-gray-darker px-3 py-2 text-base sm:text-sm min-h-[44px] sm:min-h-0 sm:max-w-xs"
+            className="rounded-lg bg-black/20 border border-fun-gray-darker px-3 py-2 text-base sm:text-sm min-h-[40px] sm:min-h-0 w-32 shrink-0 sm:w-auto sm:max-w-xs"
             aria-label="Filter by client"
           >
             <option value="all">All clients</option>
@@ -137,7 +137,7 @@ export default function InvoicesPage({
               </option>
             ))}
           </select>
-          <div className="flex gap-2 overflow-x-auto scroll-hide pb-1">
+          <div className="flex gap-1.5 sm:gap-2 overflow-x-auto scroll-hide min-w-0 flex-1 -mr-3 pr-3 sm:mr-0 sm:pr-0">
             {filters.map((f) => (
               <button
                 key={f.id}
@@ -159,11 +159,11 @@ export default function InvoicesPage({
       ) : rows.length === 0 ? (
         <Card className="text-fun-gray-light">Nothing matches that filter.</Card>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {rows.map((inv) => {
             const due = dueLabel(inv.dueAt, inv.status);
             return (
-              <article key={inv.id} className="rounded-2xl border border-fun-gray-darker p-4 sm:p-5">
+              <article key={inv.id} className="rounded-2xl border border-fun-gray-darker p-3.5 sm:p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-bold">
@@ -184,7 +184,7 @@ export default function InvoicesPage({
                     </span>
                   </div>
                 </div>
-                <ul className="mt-3 text-sm text-fun-gray-light space-y-1">
+                <ul className="mt-2 sm:mt-3 text-sm text-fun-gray-light space-y-1">
                   {inv.lines.map((l, i) => (
                     <li key={i} className="flex justify-between gap-3">
                       <span className="min-w-0 truncate">{l.description}</span>
@@ -192,7 +192,7 @@ export default function InvoicesPage({
                     </li>
                   ))}
                 </ul>
-                <div className="mt-4">
+                <div className="mt-3 sm:mt-4">
                   <InvoiceActions invoice={inv} onDone={refresh} onError={setError} />
                 </div>
               </article>

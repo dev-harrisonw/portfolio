@@ -21,7 +21,7 @@ export default function BuildProgress({ builds, currency }: { builds: Build[]; c
         const due = b.dueDate ? new Date(b.dueDate) : null;
         const daysToDue = due ? Math.ceil((due.getTime() - Date.now()) / 86400000) : null;
         return (
-          <MotionItem key={b.id} className="rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-4 sm:p-5 min-w-0">
+          <MotionItem key={b.id} className="rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3.5 sm:p-5 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-pink">Project build</p>
