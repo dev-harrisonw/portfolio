@@ -42,8 +42,22 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const usage = await getClientUsage(access.clientId, period, now, { audience: "client" });
   if (!usage) return { notFound: true };
 
-  const periods = Array.from({ length: 12 }, (_, i) => shiftPeriod(client.periodStartDay, now, -i))
-    .filter((p, i) => i === 0 || p.end > client.createdAt)
+  // How far back the switcher goes. The client record's creation date is a poor limit: work and
+  // invoices are often entered after the fact, so also reach back to the earliest time entry and invoice.
+  const [firstEntry, firstInvoice] = await Promise.all([
+    prisma.timeEntry.aggregate({ where: { task: { project: { clientId: access.clientId } } }, _min: { startedAt: true } }),
+    prisma.invoice.aggregate({ where: { clientId: access.clientId, status: { not: "VOID" } }, _min: { periodStart: true } }),
+  ]);
+  const earliest = new Date(
+    Math.min(
+      client.createdAt.getTime(),
+      firstEntry._min.startedAt?.getTime() ?? Infinity,
+      firstInvoice._min.periodStart?.getTime() ?? Infinity
+    )
+  );
+
+  const periods = Array.from({ length: 24 }, (_, i) => shiftPeriod(client.periodStartDay, now, -i))
+    .filter((p, i) => i === 0 || p.end > earliest || periodParam(p.start) === periodParam(period.start))
     .map((p) => ({
       value: periodParam(p.start),
       label: `${p.start.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} – ${new Date(
