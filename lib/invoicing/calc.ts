@@ -74,7 +74,8 @@ export function priceUsage(usage: ClientUsage, opts: { scale?: number } = {}): I
 
     const available = allowance.allowanceMinutes + allowance.carriedInMinutes;
     const overage = Math.max(0, used - available);
-    if (overage > 0) {
+    // Clients can opt out of charging overage. The hours are still tracked and shown as over the allowance.
+    if (overage > 0 && client.billOverages) {
       lines.push({
         projectId: allowance.projectId,
         description: `Additional hours${allowance.scope === "project" ? ` (${allowance.label})` : ""} — ${formatMinutes(overage)}`,

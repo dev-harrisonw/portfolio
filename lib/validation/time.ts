@@ -17,6 +17,7 @@ export const clientSchema = z.object({
   roundingMinutes: z.union([z.literal(0), z.literal(6), z.literal(15)]).default(0),
   vatRateBps: z.number().int().min(0).max(10000).default(0),
   reviewBeforeSend: z.boolean().default(false),
+  billOverages: z.boolean().default(true),
   archived: z.boolean().optional(),
 });
 

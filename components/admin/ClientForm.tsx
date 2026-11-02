@@ -14,6 +14,7 @@ export type ClientFormValues = {
   roundingMinutes: number;
   vatRateBps: number;
   reviewBeforeSend: boolean;
+  billOverages: boolean;
 };
 
 type Props = {
@@ -35,6 +36,7 @@ export default function ClientForm({ initial, submitLabel, onSubmit }: Props) {
   const [roundingMinutes, setRoundingMinutes] = useState((initial?.roundingMinutes ?? 0).toString());
   const [vatPercent, setVatPercent] = useState(((initial?.vatRateBps ?? 0) / 100).toString());
   const [reviewBeforeSend, setReviewBeforeSend] = useState(initial?.reviewBeforeSend ?? false);
+  const [billOverages, setBillOverages] = useState(initial?.billOverages ?? true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -59,6 +61,7 @@ export default function ClientForm({ initial, submitLabel, onSubmit }: Props) {
         roundingMinutes: toInt(roundingMinutes) ?? 0,
         vatRateBps: Math.round((parseFloat(vatPercent) || 0) * 100),
         reviewBeforeSend,
+        billOverages: isRetainer ? billOverages : true,
       });
       setSaved(true);
     } catch (e) {
@@ -107,6 +110,15 @@ export default function ClientForm({ initial, submitLabel, onSubmit }: Props) {
             <option value="ROLLOVER_CAPPED">Roll over (capped)</option>
           </Select>
         </Field>
+        <label className="flex items-center gap-2 text-sm text-fun-gray-light self-center mt-4">
+          <input
+            type="checkbox"
+            checked={billOverages}
+            disabled={!isRetainer}
+            onChange={(e) => setBillOverages(e.target.checked)}
+          />
+          Bill hours over the allowance
+        </label>
         <Field label="Rollover cap (hours)">
           <Input
             inputMode="numeric"

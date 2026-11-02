@@ -108,6 +108,8 @@ model Client {
   /// Basis points, e.g. 2000 = 20%. 0 = not VAT-registered.
   vatRateBps       Int            @default(0)
   reviewBeforeSend Boolean        @default(false)
+  /// When false, hours over the retainer are tracked and shown but never charged.
+  billOverages     Boolean        @default(true)
   stripeCustomerId String?
   archived         Boolean        @default(false)
   createdAt        DateTime       @default(now())

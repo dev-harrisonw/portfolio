@@ -41,6 +41,7 @@ export type ClientUsage = {
     periodStartDay: number;
     roundingMinutes: number;
     vatRateBps: number;
+    billOverages: boolean;
   };
   projects: { id: string; name: string; hourlyRate: number | null; monthlyHours: number | null }[];
   period: { start: string; end: string; days: { total: number; elapsed: number; left: number }; isCurrent: boolean };
@@ -222,6 +223,7 @@ export async function getClientUsage(
       periodStartDay: client.periodStartDay,
       roundingMinutes: client.roundingMinutes,
       vatRateBps: client.vatRateBps,
+      billOverages: client.billOverages,
     },
     projects: client.projects.map((pr) => ({ id: pr.id, name: pr.name, hourlyRate: pr.hourlyRate, monthlyHours: pr.monthlyHours })),
     period: { start: p.start.toISOString(), end: p.end.toISOString(), days: periodDays(p, paceNow), isCurrent },

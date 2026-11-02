@@ -33,7 +33,10 @@ export function AllowanceSummary({ usage }: { usage: ClientUsage }) {
                   </div>
                   <p className="text-sm mt-2 text-fun-gray-light">
                     {a.overageMinutes > 0 ? (
-                      <span className="text-red-300">{formatMinutes(a.overageMinutes)} over the allowance (billed at the hourly rate)</span>
+                      <span className="text-red-300">
+                        {formatMinutes(a.overageMinutes)} over the allowance
+                        {usage.client.billOverages ? " (billed at the hourly rate)" : " (not billed)"}
+                      </span>
                     ) : (
                       <>{formatMinutes(a.remainingMinutes ?? 0)} remaining</>
                     )}
