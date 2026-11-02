@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && node scripts/migrate-deploy.js && next build",
+    "build": "prisma generate && node scripts/migrate-deploy.js && node scripts/db-report.js && next build",
     "start": "next start",
     "serve": "next serve",
     "db:up": "docker compose up -d db",
