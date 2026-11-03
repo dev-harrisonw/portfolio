@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getClerkUser, isAdminUser } from "@/lib/access";
+import { getClerkUser, isAdminUser, userHasPortal } from "@/lib/access";
 import { applySetCookies, resolveRequestAuth } from "@/lib/clerkRequest";
-import prisma from "@/lib/prisma";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
@@ -17,18 +16,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const [user, linked] = await Promise.all([
-      getClerkUser(userId),
-      prisma.clientUser.findUnique({
-        where: { clerkUserId: userId },
-        select: { id: true },
-      }),
-    ]);
-    const isAdmin = isAdminUser(user);
+    const [user, hasPortal] = await Promise.all([getClerkUser(userId), userHasPortal(userId)]);
     return res.status(200).json({
       signedIn: true,
-      isAdmin,
-      hasPortal: isAdmin || Boolean(linked),
+      isAdmin: isAdminUser(user),
+      hasPortal,
     });
   } catch {
     return res.status(200).json({ signedIn: true, isAdmin: false, hasPortal: true });

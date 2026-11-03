@@ -55,15 +55,33 @@ export async function resolvePortalAccess(req: Req, requestedClientId?: string) 
 
   if (linked) return { status: "ok" as const, clientId: linked.clientId, isAdmin: false };
 
-  const emails = verifiedEmails(user);
-  const invite = await prisma.clientUser.findFirst({
-    where: { clerkUserId: null, email: { in: emails } },
-    orderBy: { createdAt: "asc" },
-  });
+  const invite = await findPendingInvite(verifiedEmails(user));
   if (!invite) return { status: "no-access" as const };
 
   await prisma.clientUser.update({ where: { id: invite.id }, data: { clerkUserId: userId } });
   return { status: "ok" as const, clientId: invite.clientId, isAdmin: false };
+}
+
+/** True when this login is staff, already linked, or matches an invitation by verified email. */
+export async function userHasPortal(userId: string) {
+  const linked = await prisma.clientUser.findUnique({ where: { clerkUserId: userId }, select: { id: true } });
+  if (linked) return true;
+
+  const user = await getClerkUser(userId);
+  if (isAdminUser(user)) return true;
+
+  return Boolean(await findPendingInvite(verifiedEmails(user)));
+}
+
+function findPendingInvite(emails: string[]) {
+  if (!emails.length) return null;
+  return prisma.clientUser.findFirst({
+    where: {
+      clerkUserId: null,
+      OR: emails.map((email) => ({ email: { equals: email, mode: "insensitive" as const } })),
+    },
+    orderBy: { createdAt: "asc" },
+  });
 }
 
 export async function requirePortalPage(ctx: GetServerSidePropsContext) {

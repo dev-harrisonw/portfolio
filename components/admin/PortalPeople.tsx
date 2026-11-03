@@ -23,6 +23,7 @@ async function copyText(value: string) {
 export default function PortalPeople({ clientId, clientName, billingEmail, siteUrl, users, onUsersChange, onNotice, onError }: Props) {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const status = portalStatus(users);
   const signInUrl = `${siteUrl}/sign-in?redirect_url=/portal`;
   const billingInvited = users.some((u) => u.email === billingEmail.toLowerCase());
@@ -31,16 +32,27 @@ export default function PortalPeople({ clientId, clientName, billingEmail, siteU
     setBusy(true);
     onError("");
     try {
-      const result = await api<{ user: PortalUser; invited: boolean; linked: boolean; already?: boolean }>(
+      const result = await api<{
+        user: PortalUser;
+        invited: boolean;
+        linked: boolean;
+        already?: boolean;
+        emailed?: boolean;
+        delivered?: "branded" | "clerk" | "none";
+        inviteUrl?: string | null;
+      }>(
         `/api/admin/clients/${clientId}/users`,
         { body: { email: target } }
       );
       setEmail("");
       const createdAt = result.user.createdAt ?? new Date().toISOString();
       onUsersChange([...users.filter((u) => u.id !== result.user.id && u.email !== result.user.email), { ...result.user, createdAt }]);
+      if (result.inviteUrl) setInviteUrl(result.inviteUrl);
       if (result.already) onNotice("They already have portal access. Send them the sign-in link.");
-      else if (result.linked) onNotice("They already have an account — they can sign in to the portal now.");
-      else if (result.invited) onNotice("Invitation email sent. They'll land on the portal after signing up.");
+      else if (result.linked) onNotice(result.emailed ? "They already have an account. I emailed them a sign-in link." : "They already have an account — they can sign in to the portal now.");
+      else if (result.invited && result.delivered === "branded") onNotice("Invitation sent from Harrison Warburton. They'll land on the portal after they open it.");
+      else if (result.invited && result.emailed) onNotice("Invitation sent. The link opens the live site. They'll land on the portal after they open it.");
+      else if (result.invited) onNotice("Access granted, but the email didn't send. Copy the invitation link below.");
       else onNotice("Access granted, but the invitation email didn't send. Copy the sign-in link below.");
     } catch (e) {
       onError((e as Error).message);
@@ -133,6 +145,15 @@ export default function PortalPeople({ clientId, clientName, billingEmail, siteU
       )}
 
       <div className="mt-5 flex flex-wrap gap-2">
+        {inviteUrl && (
+          <button
+            type="button"
+            className="rounded-full border border-fun-gray-darker px-3 py-2 text-xs hover:border-fun-pink min-h-[44px] sm:min-h-0"
+            onClick={() => copyText(inviteUrl).then(() => onNotice("Invitation link copied."))}
+          >
+            Copy invitation link
+          </button>
+        )}
         <button
           type="button"
           className="rounded-full border border-fun-gray-darker px-3 py-2 text-xs hover:border-fun-pink min-h-[44px] sm:min-h-0"
