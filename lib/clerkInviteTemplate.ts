@@ -44,22 +44,26 @@ export async function brandClerkInvitationTemplate() {
     .join("");
   const markup = html + extras;
 
-  const payload = {
+  const base = {
     name: template.name || "Invitation",
-    subject: "Your client portal is ready",
-    body: `You're invited to the Harrison Warburton client portal.\n\nOpen this link to create your sign-in:\n{{action_url}}\n`,
-    markup,
+    subject: template.subject || "Your client portal is ready",
     from_email_name: template.from_email_name,
     reply_to_email_name: template.reply_to_email_name,
     delivered_by_clerk: template.delivered_by_clerk ?? true,
   };
 
-  const saved = await fetch(`https://api.clerk.com/v1/templates/email/${SLUG}`, {
-    method: "PUT",
-    headers,
-    body: JSON.stringify(payload),
-  });
-  if (!saved.ok) {
-    console.error("Clerk invitation template update failed", saved.status);
+  const attempts = [
+    { ...base, body: markup, markup },
+    { ...base, body: markup },
+  ];
+  for (const payload of attempts) {
+    const saved = await fetch(`https://api.clerk.com/v1/templates/email/${SLUG}`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify(payload),
+    });
+    if (saved.ok) return;
+    const detail = await saved.text();
+    console.error("Clerk invitation template update failed", saved.status, detail.slice(0, 500));
   }
 }
