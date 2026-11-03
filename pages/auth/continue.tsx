@@ -34,7 +34,8 @@ function Continue() {
           return;
         }
         if (returnTo) {
-          window.location.replace(returnTo);
+          const wantsAdmin = returnTo === "/admin" || returnTo.startsWith("/admin/") || returnTo.startsWith("/admin?");
+          window.location.replace(wantsAdmin && !data.isAdmin ? "/portal" : returnTo);
           return;
         }
         if (data.isAdmin) {

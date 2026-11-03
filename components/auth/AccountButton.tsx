@@ -62,6 +62,7 @@ function useAccountAccess(isSignedIn?: boolean) {
 
 function AccountInner() {
   const { isLoaded, isSignedIn } = useUser();
+  const access = useAccountAccess(Boolean(isLoaded && isSignedIn));
 
   if (isLoaded && isSignedIn) {
     return (
@@ -83,13 +84,15 @@ function AccountInner() {
               window.location.assign("/auth/continue?returnTo=/portal");
             }}
           />
-          <UserButton.Action
-            label="Admin dashboard"
-            labelIcon={<GridIcon />}
-            onClick={() => {
-              window.location.assign("/auth/continue?returnTo=/admin");
-            }}
-          />
+          {access.isAdmin && (
+            <UserButton.Action
+              label="Admin dashboard"
+              labelIcon={<GridIcon />}
+              onClick={() => {
+                window.location.assign("/auth/continue?returnTo=/admin");
+              }}
+            />
+          )}
         </UserButton.MenuItems>
       </UserButton>
     );
