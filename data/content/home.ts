@@ -17,6 +17,7 @@ export const site = {
   focus: "Web development, WordPress, and product UI",
   githubUsername: "dev-harrisonw",
   githubUsernames: ["dev-harrisonw", "dp-harrison", "HarrisonW28"],
+  gitlabUsernames: ["dpe-harrison"],
 };
 
 export const skills: Skill[] = [

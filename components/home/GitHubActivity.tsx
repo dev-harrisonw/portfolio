@@ -15,6 +15,15 @@ type Stats = {
 
 const levelClass = ["bg-fun-gray/20", "bg-fun-pink/30", "bg-fun-pink/50", "bg-fun-pink/75", "bg-fun-pink"];
 
+type Source = { username: string; host: "github" | "gitlab"; url: string };
+
+function sourcesFromSite(): Source[] {
+  return [
+    ...site.githubUsernames.map((username) => ({ username, host: "github" as const, url: `https://github.com/${username}` })),
+    ...site.gitlabUsernames.map((username) => ({ username, host: "gitlab" as const, url: `https://gitlab.com/${username}` })),
+  ];
+}
+
 function formatDay(iso: string) {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", {
     weekday: "short",
@@ -28,7 +37,7 @@ function formatDay(iso: string) {
 function GitHubActivity() {
   const [days, setDays] = useState<Day[] | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
-  const [usernames, setUsernames] = useState<string[]>(site.githubUsernames);
+  const [sources, setSources] = useState<Source[]>(sourcesFromSite);
   const [error, setError] = useState(false);
   const [hover, setHover] = useState<Day | null>(null);
 
@@ -45,7 +54,7 @@ function GitHubActivity() {
         }
         setDays(data.days);
         setStats(data.stats ?? null);
-        if (data.usernames?.length) setUsernames(data.usernames);
+        if (data.sources?.length) setSources(data.sources);
       })
       .catch(() => {
         if (!cancelled) {
@@ -67,7 +76,7 @@ function GitHubActivity() {
   return (
     <MotionSection className="flex flex-col relative min-w-0 w-full">
       <MotionItem>
-        <SectionTitle title="GitHub activity." />
+        <SectionTitle title="Contributions." />
       </MotionItem>
       <MotionItem className="min-w-0 w-full">
         <div className="rounded-xl border border-fun-gray p-4 md:p-6 min-w-0 overflow-hidden">
@@ -129,9 +138,9 @@ function GitHubActivity() {
                       <span className="text-fun-gray">
                         {" "}
                         ·{" "}
-                        {usernames
-                          .filter((name) => hover.byUser[name])
-                          .map((name) => `@${name} ${hover.byUser[name]}`)
+                        {sources
+                          .filter((source) => hover.byUser[source.username])
+                          .map((source) => `@${source.username} ${hover.byUser[source.username]}`)
                           .join(" · ")}
                       </span>
                     )}
@@ -160,27 +169,23 @@ function GitHubActivity() {
               ))}
             </dl>
           )}
-          <p className="mt-4 text-xs text-fun-gray leading-relaxed md:whitespace-nowrap">
+          <p className="mt-4 text-xs text-fun-gray leading-relaxed">
             Combined public activity from{" "}
-            {usernames.map((name, i) => (
-              <span key={name}>
-                {i > 0 && (i === usernames.length - 1 ? " and " : ", ")}
-                <a
-                  href={`https://github.com/${name}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-fun-pink hover:underline"
-                >
-                  @{name}
+            {sources.map((source, i) => (
+              <span key={`${source.host}:${source.username}`}>
+                {i > 0 && (i === sources.length - 1 ? " and " : ", ")}
+                <a href={source.url} target="_blank" rel="noreferrer" className="text-fun-pink hover:underline">
+                  @{source.username}
                 </a>
+                {source.host === "gitlab" ? " on GitLab" : ""}
               </span>
             ))}
             {stats?.byUser && (
               <span>
                 {" "}
                 (
-                {usernames
-                  .map((name) => `${(stats.byUser[name] ?? 0).toLocaleString()} on @${name}`)
+                {sources
+                  .map((source) => `${(stats.byUser[source.username] ?? 0).toLocaleString()} on @${source.username}`)
                   .join(", ")}
                 )
               </span>

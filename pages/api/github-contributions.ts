@@ -45,7 +45,9 @@ function longestStreak(days: ContributionDay[]) {
   return best;
 }
 
-async function fetchUserDays(username: string) {
+type Source = { username: string; host: "github" | "gitlab" };
+
+async function fetchGithubDays(username: string) {
   const response = await fetch(
     `https://github-contributions-api.jogruber.de/v4/${encodeURIComponent(username)}?y=last`
   );
@@ -54,19 +56,43 @@ async function fetchUserDays(username: string) {
   return (data.contributions || []) as { date: string; count: number; level: number }[];
 }
 
+/** GitLab's public contribution calendar. Days with no activity are omitted. */
+async function fetchGitlabDays(username: string) {
+  const response = await fetch(`https://gitlab.com/users/${encodeURIComponent(username)}/calendar.json`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) throw new Error(`${username} ${response.status}`);
+  const data = (await response.json()) as Record<string, number>;
+  return Object.entries(data).map(([date, count]) => ({ date, count: Number(count) || 0 }));
+}
+
+function profileUrl(source: Source) {
+  const base = source.host === "gitlab" ? "https://gitlab.com" : "https://github.com";
+  return `${base}/${source.username}`;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const usernames = site.githubUsernames;
+  const sources: Source[] = [
+    ...site.githubUsernames.map((username) => ({ username, host: "github" as const })),
+    ...(site.gitlabUsernames ?? []).map((username) => ({ username, host: "gitlab" as const })),
+  ];
+  const usernames = sources.map((source) => source.username);
   try {
-    const results = await Promise.allSettled(usernames.map((name) => fetchUserDays(name)));
+    const results = await Promise.allSettled(
+      sources.map((source) => (source.host === "gitlab" ? fetchGitlabDays(source.username) : fetchGithubDays(source.username)))
+    );
     const merged = new Map<string, ContributionDay>();
 
     results.forEach((result, index) => {
-      const username = usernames[index];
+      const source = sources[index];
       if (result.status !== "fulfilled") return;
+      // GitHub supplies the full year, including empty days, so the grid stays aligned.
+      // GitLab only lists active days, and those outside the year are left out.
       for (const day of result.value) {
+        if (source.host === "gitlab" && !merged.has(day.date)) continue;
         const existing = merged.get(day.date) ?? { date: day.date, count: 0, level: 0, byUser: {} };
         existing.count += day.count;
-        existing.byUser[username] = day.count;
+        existing.byUser[source.username] = (existing.byUser[source.username] ?? 0) + day.count;
         existing.level = levelFromCount(existing.count);
         merged.set(day.date, existing);
       }
@@ -75,11 +101,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const days = [...merged.values()].sort((a, b) => a.date.localeCompare(b.date));
     const total = days.reduce((sum, day) => sum + day.count, 0);
     const activeDays = days.filter((day) => day.count > 0).length;
-    const loaded = usernames.filter((_, i) => results[i].status === "fulfilled");
+    const loaded = sources.filter((_, i) => results[i].status === "fulfilled");
 
     res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
     res.status(200).json({
-      usernames: loaded,
+      usernames: loaded.map((source) => source.username),
+      sources: loaded.map((source) => ({ ...source, url: profileUrl(source) })),
       days,
       stats: {
         total,
@@ -87,11 +114,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         currentStreak: currentStreak(days),
         longestStreak: longestStreak(days),
         byUser: Object.fromEntries(
-          loaded.map((name) => [name, days.reduce((sum, day) => sum + (day.byUser[name] ?? 0), 0)])
+          loaded.map((source) => [source.username, days.reduce((sum, day) => sum + (day.byUser[source.username] ?? 0), 0)])
         ),
       },
     });
   } catch {
-    res.status(500).json({ error: "Failed to load GitHub contributions", usernames, days: [] });
+    res.status(500).json({ error: "Failed to load contributions", usernames, days: [] });
   }
 }
