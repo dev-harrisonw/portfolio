@@ -39,37 +39,6 @@ export default function InvoiceName({
     }
   };
 
-  if (editing) {
-    return (
-      <input
-        autoFocus
-        value={value}
-        aria-label="Invoice name"
-        onChange={(event) => setValue(event.target.value)}
-        onFocus={(event) => event.currentTarget.select()}
-        onBlur={() => {
-          if (skip.current) {
-            skip.current = false;
-            return;
-          }
-          void save();
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            event.currentTarget.blur();
-          }
-          if (event.key === "Escape") {
-            skip.current = true;
-            setValue(number);
-            setEditing(false);
-          }
-        }}
-        className="dd-input min-w-0 w-[12rem] max-w-full px-2 py-1 text-inherit font-bold"
-      />
-    );
-  }
-
   const label = href ? (
     <Link href={href} className="truncate hover:text-fun-pink">
       {number}
@@ -79,19 +48,51 @@ export default function InvoiceName({
   );
 
   return (
-    <span className="group/name inline-flex items-center gap-1.5 min-w-0 max-w-full">
-      {label}
-      <button
-        type="button"
-        aria-label={`Rename ${number}`}
-        onClick={() => setEditing(true)}
-        className="shrink-0 text-fun-gray-medium opacity-40 hover:text-white focus:opacity-100 sm:opacity-0 sm:group-hover/name:opacity-100"
-      >
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M12 20h9" />
-          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5z" />
-        </svg>
-      </button>
+    <span className="group relative inline-flex min-w-0 max-w-full items-center align-baseline pr-6">
+      {editing ? (
+        <input
+          autoFocus
+          value={value}
+          size={Math.max(value.length, 4)}
+          aria-label="Invoice name"
+          onChange={(event) => setValue(event.target.value)}
+          onFocus={(event) => event.currentTarget.select()}
+          onBlur={() => {
+            if (skip.current) {
+              skip.current = false;
+              return;
+            }
+            void save();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              event.currentTarget.blur();
+            }
+            if (event.key === "Escape") {
+              skip.current = true;
+              setValue(number);
+              setEditing(false);
+            }
+          }}
+          className="w-auto max-w-full border-0 border-b border-fun-pink bg-transparent px-0 py-0 font-bold text-inherit outline-none"
+        />
+      ) : (
+        label
+      )}
+      {!editing && (
+        <button
+          type="button"
+          aria-label={`Rename ${number}`}
+          onClick={() => setEditing(true)}
+          className="absolute right-0 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-white opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 max-sm:opacity-80"
+        >
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5z" />
+          </svg>
+        </button>
+      )}
     </span>
   );
 }
