@@ -9,13 +9,18 @@ export default adminRoute({
     res.status(200).json({ entries: await listEntries({ from, to, clientId }) });
   },
   POST: async (req, res) => {
-    const { durationMinutes, startedAt, ...rest } = parseBody(entrySchema, req);
+    const data = parseBody(entrySchema, req);
+    const priced = data.amount != null;
+    const durationMinutes = priced ? 0 : data.durationMinutes ?? 0;
     const entry = await prisma.timeEntry.create({
       data: {
-        ...rest,
-        startedAt,
+        taskId: data.taskId,
+        startedAt: data.startedAt,
+        note: data.note,
+        billable: data.billable,
+        amount: priced ? data.amount : null,
         durationMinutes,
-        endedAt: new Date(startedAt.getTime() + durationMinutes * 60_000),
+        endedAt: priced ? data.startedAt : new Date(data.startedAt.getTime() + durationMinutes * 60_000),
       },
       include: entryInclude,
     });

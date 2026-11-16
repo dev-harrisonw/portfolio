@@ -18,6 +18,21 @@ export const ENTRY_HEADER = ["Date", "Client", "Project", "Task", "Note", "Hours
 export function usageRows(usage: ClientUsage) {
   const rates = new Map(usage.projects.map((p) => [p.id, p.hourlyRate ?? usage.client.hourlyRate]));
   return usage.entries.map((e) => {
+    if (e.amount != null) {
+      return [
+        e.startedAt.slice(0, 10),
+        usage.client.name,
+        e.projectName,
+        e.taskTitle,
+        e.note,
+        "0.00",
+        0,
+        e.billable ? "yes" : "no",
+        "",
+        e.billable ? (e.amount / 100).toFixed(2) : "0.00",
+        usage.client.currency,
+      ];
+    }
     const minutes = e.billable ? roundMinutes(e.durationMinutes, usage.client.roundingMinutes) : e.durationMinutes;
     const rate = rates.get(e.projectId) ?? usage.client.hourlyRate;
     return [

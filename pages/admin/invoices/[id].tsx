@@ -30,7 +30,7 @@ type InvoiceDetail = {
   client: { id: string; name: string; billingEmail: string };
   project: { id: string; name: string } | null;
   lines: { id: string; description: string; minutes: number; amount: number }[];
-  entries: { id: string; durationMinutes: number; note: string; startedAt: string; task: { title: string } }[];
+  entries: { id: string; durationMinutes: number; amount: number | null; note: string; startedAt: string; task: { title: string } }[];
 };
 
 const fmt = (iso: string | null) =>
@@ -47,7 +47,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       lines: { orderBy: { sortOrder: "asc" } },
       entries: {
         orderBy: { startedAt: "asc" },
-        select: { id: true, durationMinutes: true, note: true, startedAt: true, task: { select: { title: true } } },
+        select: { id: true, durationMinutes: true, amount: true, note: true, startedAt: true, task: { select: { title: true } } },
       },
     },
   });
@@ -160,7 +160,9 @@ export default function InvoiceDetailPage({ invoice }: { invoice: InvoiceDetail 
                     {entry.task.title}
                     {entry.note && <span className="text-fun-gray-light"> — {entry.note}</span>}
                   </span>
-                  <span className="font-monospace text-xs shrink-0">{formatMinutes(entry.durationMinutes)}</span>
+                  <span className="font-monospace text-xs shrink-0">
+                    {entry.amount != null ? formatMoney(entry.amount, invoice.currency) : formatMinutes(entry.durationMinutes)}
+                  </span>
                 </li>
               ))}
             </ul>

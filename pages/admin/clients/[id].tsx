@@ -322,7 +322,9 @@ export default function ClientDetailPage({ client, usage, estimateTotal, invoice
                       <span className="text-fun-gray-medium"> · {e.projectName}</span>
                       {e.note && <span className="text-fun-gray-light"> — {e.note}</span>}
                     </span>
-                    <span className="font-monospace text-xs shrink-0">{formatMinutes(e.durationMinutes)}</span>
+                    <span className="font-monospace text-xs shrink-0">
+                      {e.amount != null ? formatMoney(e.amount, client.currency) : formatMinutes(e.durationMinutes)}
+                    </span>
                   </li>
                 ))}
             </ul>

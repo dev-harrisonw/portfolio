@@ -73,15 +73,24 @@ export const timerStopSchema = z.object({
   note: z.string().max(2000).optional(),
 });
 
-export const entrySchema = z.object({
+const entryFields = z.object({
   taskId: z.string().min(1, "Pick a task"),
   startedAt: z.coerce.date(),
-  durationMinutes: z.number().int().min(1, "Duration must be at least a minute").max(24 * 60),
+  durationMinutes: z.number().int().min(0).max(24 * 60).optional(),
+  /** Minor units. Set this, and leave duration empty, to bill a fixed price instead of time. */
+  amount: z.number().int().min(1, "Enter a price").nullable().optional(),
   note: z.string().max(2000).default(""),
   billable: z.boolean().default(true),
 });
 
-export const entryUpdateSchema = entrySchema.partial();
+export const entrySchema = entryFields.superRefine((value, ctx) => {
+  if (value.amount != null) return;
+  if (value.durationMinutes == null || value.durationMinutes < 1) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Duration must be at least a minute", path: ["durationMinutes"] });
+  }
+});
+
+export const entryUpdateSchema = entryFields.partial();
 
 export const rangeSchema = z.object({
   from: z.coerce.date(),

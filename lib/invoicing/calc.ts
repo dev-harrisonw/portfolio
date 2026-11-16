@@ -32,10 +32,12 @@ export function priceUsage(usage: ClientUsage, opts: { scale?: number } = {}): I
   const projectById = new Map(usage.projects.map((p) => [p.id, p]));
   const rateFor = (projectId: string) => projectById.get(projectId)?.hourlyRate ?? client.hourlyRate;
   const billable = usage.entries.filter((e) => e.billable);
+  const timed = billable.filter((e) => e.amount == null);
+  const priced = billable.filter((e) => e.amount != null);
   const ownAllowance = new Set(usage.projects.filter((p) => p.monthlyHours != null).map((p) => p.id));
 
   const roundedByProject = new Map<string, number>();
-  for (const e of billable) {
+  for (const e of timed) {
     roundedByProject.set(e.projectId, (roundedByProject.get(e.projectId) ?? 0) + roundMinutes(e.durationMinutes, client.roundingMinutes));
   }
   const scaled = (m: number) => Math.round(m * scale);
@@ -86,9 +88,19 @@ export function priceUsage(usage: ClientUsage, opts: { scale?: number } = {}): I
     }
   }
 
+  for (const e of priced) {
+    lines.push({
+      projectId: e.projectId,
+      description: e.note.trim() || e.taskTitle,
+      minutes: 0,
+      rate: 0,
+      amount: e.amount ?? 0,
+    });
+  }
+
   const subtotal = lines.reduce((s, l) => s + l.amount, 0);
   const vat = Math.round((subtotal * client.vatRateBps) / 10000);
-  return { lines, subtotal, vatRateBps: client.vatRateBps, vat, total: subtotal + vat, entryIds: billable.map((e) => e.id) };
+  return { lines, subtotal, vatRateBps: client.vatRateBps, vat, total: subtotal + vat, entryIds: [...timed, ...priced].map((e) => e.id) };
 }
 
 /** Scale factor that projects current-period usage to the end of the period. */

@@ -124,7 +124,7 @@ function Timesheet({ usage, estimate }: { usage: ClientUsage; estimate: InvoiceD
           <View style={s.th}>
             <Text style={{ width: 50 }}>Date</Text>
             <Text style={{ flex: 1 }}>Work</Text>
-            <Text style={[s.right, { width: 50 }]}>Time</Text>
+            <Text style={[s.right, { width: 70 }]}>Time</Text>
           </View>
         </View>
         {usage.entries.map((e) => (
@@ -136,8 +136,8 @@ function Timesheet({ usage, estimate }: { usage: ClientUsage; estimate: InvoiceD
               </Text>
               {e.note ? <Text style={s.muted}>{e.note}</Text> : null}
             </View>
-            <Text style={[s.right, { width: 50 }]}>
-              {formatMinutes(e.durationMinutes)}
+            <Text style={[s.right, { width: 70 }]}>
+              {e.amount != null ? formatMoney(e.amount, usage.client.currency) : formatMinutes(e.durationMinutes)}
               {e.billable ? "" : "*"}
             </Text>
           </View>

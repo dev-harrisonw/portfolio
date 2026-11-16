@@ -288,7 +288,9 @@ export default function AdminDashboardPage({ data }: Props) {
                     </span>
                     {e.note && <span className="block sm:inline text-fun-gray-light"><span className="hidden sm:inline"> — </span>{e.note}</span>}
                   </span>
-                  <span className="font-monospace text-xs shrink-0">{formatMinutes(e.durationMinutes)}</span>
+                  <span className="font-monospace text-xs shrink-0">
+                    {e.amount != null ? formatMoney(e.amount, e.task.project.client.currency) : formatMinutes(e.durationMinutes)}
+                  </span>
                 </li>
               ))}
             </ul>

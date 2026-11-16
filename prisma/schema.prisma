@@ -193,6 +193,8 @@ model TimeEntry {
   /// Null while the timer is running. Only one running entry is allowed (enforced in lib/time).
   endedAt         DateTime?
   durationMinutes Int       @default(0)
+  /// Minor currency units when this row is a fixed price instead of time. Null means it is timed.
+  amount          Int?
   note            String    @default("")
   billable        Boolean   @default(true)
   invoiceId       String?

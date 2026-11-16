@@ -1,4 +1,4 @@
-import { formatMinutes } from "@/lib/billing";
+import { formatMinutes, formatMoney } from "@/lib/billing";
 import type { ClientUsage } from "@/lib/usage";
 
 const card = "rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3.5 sm:p-5";
@@ -150,11 +150,12 @@ export function EntryLog({ usage }: { usage: ClientUsage }) {
   const periodEnd = new Date(usage.period.end).getTime();
   const showProject = usage.byProject.length > 1;
 
-  const weeks = new Map<number, { from: number; minutes: number; entries: ClientUsage["entries"] }>();
+  const weeks = new Map<number, { from: number; minutes: number; amount: number; entries: ClientUsage["entries"] }>();
   for (const e of usage.entries) {
     const index = Math.max(0, Math.floor((new Date(e.startedAt).getTime() - start) / WEEK_MS));
-    const week = weeks.get(index) ?? { from: start + index * WEEK_MS, minutes: 0, entries: [] };
-    week.minutes += e.durationMinutes;
+    const week = weeks.get(index) ?? { from: start + index * WEEK_MS, minutes: 0, amount: 0, entries: [] };
+    if (e.amount == null) week.minutes += e.durationMinutes;
+    else week.amount += e.amount;
     week.entries.push(e);
     weeks.set(index, week);
   }
@@ -172,7 +173,14 @@ export function EntryLog({ usage }: { usage: ClientUsage }) {
             <span className="text-xs text-fun-gray-medium">
               {week.entries.length} {week.entries.length === 1 ? "entry" : "entries"}
             </span>
-            <span className="ml-auto font-monospace text-sm">{formatMinutes(week.minutes)}</span>
+            <span className="ml-auto font-monospace text-sm">
+              {[
+                week.minutes > 0 || week.amount === 0 ? formatMinutes(week.minutes) : "",
+                week.amount > 0 ? formatMoney(week.amount, usage.client.currency) : "",
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </span>
           </summary>
           <ul className="divide-y divide-fun-gray-darker border-t border-fun-gray-darker">
             {[...week.entries].reverse().map((e) => (
@@ -187,7 +195,7 @@ export function EntryLog({ usage }: { usage: ClientUsage }) {
                   {e.note && <span className="block text-xs sm:text-sm text-fun-gray-light mt-0.5">{e.note}</span>}
                 </span>
                 <span className="shrink-0 text-right font-monospace whitespace-nowrap">
-                  {formatMinutes(e.durationMinutes)}
+                  {e.amount != null ? formatMoney(e.amount, usage.client.currency) : formatMinutes(e.durationMinutes)}
                   {!e.billable && <span className="block text-[11px] text-fun-gray-medium font-sans">not billed</span>}
                 </span>
               </li>

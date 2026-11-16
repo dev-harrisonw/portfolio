@@ -11,15 +11,23 @@ export default adminRoute({
     if (!existing) throw new HttpError(404, "Not found");
 
     const startedAt = data.startedAt ?? existing.startedAt;
-    const durationMinutes = data.durationMinutes ?? existing.durationMinutes;
     const isRunning = existing.endedAt === null;
+    const amount = data.amount === undefined ? existing.amount : data.amount;
+    const priced = amount != null && !isRunning;
+    const durationMinutes = priced ? 0 : data.durationMinutes ?? existing.durationMinutes;
 
     const entry = await prisma.timeEntry.update({
       where: { id },
       data: {
         ...data,
         startedAt,
-        ...(isRunning ? {} : { durationMinutes, endedAt: new Date(startedAt.getTime() + durationMinutes * 60_000) }),
+        amount: isRunning ? existing.amount : amount,
+        ...(isRunning
+          ? {}
+          : {
+              durationMinutes,
+              endedAt: priced ? startedAt : new Date(startedAt.getTime() + durationMinutes * 60_000),
+            }),
       },
       include: entryInclude,
     });

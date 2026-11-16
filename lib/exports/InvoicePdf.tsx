@@ -94,8 +94,9 @@ async function loadWork(invoice: InvoicePdfData): Promise<Area[]> {
     orderBy: { startedAt: "asc" },
     include: { task: { select: { title: true, status: true } } },
   });
-  const areas: Area[] = [];
+    const areas: Area[] = [];
   for (const entry of entries) {
+    if (entry.amount != null) continue;
     let area = areas.find((a) => a.title === entry.task.title);
     if (!area) {
       area = { title: entry.task.title, status: entry.task.status, minutes: 0, details: [] };

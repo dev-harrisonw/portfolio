@@ -21,6 +21,8 @@ export type UsageEntry = {
   id: string;
   startedAt: string;
   durationMinutes: number;
+  /** Minor units when this row is a fixed price. Null means it is time. */
+  amount: number | null;
   note: string;
   billable: boolean;
   taskId: string;
@@ -173,7 +175,7 @@ export async function getClientUsage(
     const resolved = resolveAllowance(client, project);
     const carriedIn = carries.find((c) => (projectId ? c.projectId === projectId : c.clientId === clientId))?.carriedMinutes ?? 0;
     const used = entries
-      .filter((e) => e.billable && (projectId ? e.task.projectId === projectId : !ownAllowance.has(e.task.projectId)))
+      .filter((e) => e.amount == null && e.billable && (projectId ? e.task.projectId === projectId : !ownAllowance.has(e.task.projectId)))
       .reduce((sum, e) => sum + e.durationMinutes, 0);
     const available = resolved.allowanceMinutes != null ? resolved.allowanceMinutes + carriedIn : null;
     const pace = computePace(used, available, p, paceNow);
@@ -194,7 +196,7 @@ export async function getClientUsage(
   };
 
   const projectMap = new Map<string, ClientUsage["byProject"][number]>();
-  for (const e of entries) {
+  for (const e of entries.filter((entry) => entry.amount == null)) {
     const pr = e.task.project;
     const row = projectMap.get(pr.id) ?? { projectId: pr.id, name: pr.name, minutes: 0, billableMinutes: 0, tasks: [] };
     row.minutes += e.durationMinutes;
@@ -208,8 +210,9 @@ export async function getClientUsage(
     .map((row) => ({ ...row, tasks: row.tasks.sort((a, b) => b.minutes - a.minutes) }))
     .sort((a, b) => b.minutes - a.minutes);
 
-  const total = entries.reduce((s, e) => s + e.durationMinutes, 0);
-  const billable = entries.filter((e) => e.billable).reduce((s, e) => s + e.durationMinutes, 0);
+  const timed = entries.filter((e) => e.amount == null);
+  const total = timed.reduce((s, e) => s + e.durationMinutes, 0);
+  const billable = timed.filter((e) => e.billable).reduce((s, e) => s + e.durationMinutes, 0);
 
   return {
     client: {
@@ -240,6 +243,7 @@ export async function getClientUsage(
       id: e.id,
       startedAt: e.startedAt.toISOString(),
       durationMinutes: e.durationMinutes,
+      amount: e.amount,
       note: e.note,
       billable: e.billable,
       taskId: e.taskId,
