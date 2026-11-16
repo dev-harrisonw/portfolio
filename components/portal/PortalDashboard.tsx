@@ -9,6 +9,7 @@ import { MotionItem, MotionSection } from "@/components/utility/Motion";
 import {
   InvoiceStatusPill,
   PayButton,
+  PortalLineList,
   billedAsHours,
   invoiceDateNote,
   invoicePdfHref,
@@ -121,7 +122,7 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
 
   return (
     <MotionSection className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-10">
-      <MotionItem className={`${card} col-span-2 lg:col-span-1 lg:row-span-2 flex flex-col sm:flex-row lg:flex-col sm:items-center lg:justify-center gap-3 sm:gap-5`}>
+      <MotionItem className={`${card} col-span-2 lg:col-span-1 flex flex-col sm:flex-row lg:flex-col sm:items-center lg:justify-center gap-3 sm:gap-5`}>
         <div className="flex items-center gap-4">
           <HoursRing used={main.usedMinutes} available={main.availableMinutes} />
           {/* Phones fold the hours table in beside the ring instead of giving it its own card. */}
@@ -137,12 +138,12 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
         </div>
       </MotionItem>
 
-      <MotionItem className={`${card} hidden sm:block sm:col-span-1`}>
+      <MotionItem className={`${card} hidden sm:block sm:col-span-2 lg:col-span-2`}>
         <p className={label}>Hours</p>
         <div className="mt-2 divide-y divide-fun-gray-darker">{hoursRows}</div>
       </MotionItem>
 
-      <MotionItem className={`${card} col-span-2 sm:col-span-1 flex flex-col`}>
+      <MotionItem className={`${card} col-span-2 lg:col-span-3 flex flex-col`}>
         {periodInvoice ? (
           <>
             <div className="flex items-center justify-between gap-2">
@@ -153,16 +154,7 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
               {formatMoney(periodInvoice.total, currency)}
             </p>
             <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-1">{invoiceDateNote(periodInvoice)}</p>
-            {periodInvoice.lines.length > 0 && (
-              <ul className="mt-3 space-y-1.5">
-                {periodInvoice.lines.map((line, index) => (
-                  <li key={index} className="text-xs text-fun-gray-light">
-                    <span>{line.description}</span>
-                    {line.detail && <span className="block text-fun-gray-medium">{line.detail}</span>}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <PortalLineList lines={periodInvoice.lines} currency={currency} />
             <div className="mt-auto pt-3 flex items-center gap-3">
               {periodInvoice.status === "SENT" && <PayButton invoiceId={periodInvoice.id} clientId={clientId} />}
               {periodInvoice.status !== "DRAFT" && (
@@ -193,7 +185,7 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
         )}
       </MotionItem>
 
-      <MotionItem className={`${card} col-span-2`}>
+      <MotionItem className={`${card} col-span-2 lg:col-span-3`}>
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <p className={label}>Hours per week</p>
           <div className="flex flex-wrap gap-3 text-[11px] text-fun-gray-medium">

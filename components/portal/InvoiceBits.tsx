@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatMoney } from "@/lib/billing";
 import { api } from "@/lib/fetcher";
 
 export type PortalInvoice = {
@@ -68,6 +69,23 @@ export function invoiceDateNote(inv: PortalInvoice) {
   if (inv.status === "SENT" && inv.dueAt) return `${isOverdue(inv) ? "Was due" : "Due"} ${fmtDay(inv.dueAt)}`;
   if (inv.status === "DRAFT") return "Draft, not sent yet";
   return null;
+}
+
+export function PortalLineList({ lines, currency }: { lines: PortalInvoice["lines"]; currency: string }) {
+  if (lines.length === 0) return null;
+  return (
+    <ul className="mt-3 border-t border-fun-gray-darker">
+      {lines.map((line, index) => (
+        <li key={index} className="flex items-start justify-between gap-4 border-b border-fun-gray-darker py-2.5 last:border-b-0">
+          <span className="min-w-0">
+            <span className="block text-sm leading-snug text-white">{line.description}</span>
+            {line.detail && <span className="mt-1 block text-xs leading-relaxed text-fun-gray-medium">{line.detail}</span>}
+          </span>
+          <span className="shrink-0 pt-0.5 text-right font-monospace text-sm tabular-nums">{formatMoney(line.amount, currency)}</span>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export function InvoiceStatusPill({ invoice }: { invoice: PortalInvoice }) {

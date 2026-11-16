@@ -14,6 +14,7 @@ import { AllowanceSummary, CompletedTasks, EntryLog, ProjectBreakdown } from "@/
 import {
   InvoiceStatusPill,
   PayButton,
+  PortalLineList,
   invoiceDateNote,
   invoiceForPeriod,
   invoicePdfHref,
@@ -248,38 +249,31 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
           <h2 className="text-xl font-bold mb-3 sm:mb-4">Invoices</h2>
           <ul className="rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 divide-y divide-fun-gray-darker">
             {invoices.map((inv) => (
-              <li key={inv.id} className="divide-row flex items-center gap-3 sm:gap-4 px-3.5 sm:px-4 py-3 text-sm">
-                <span className="min-w-0 flex-1">
-                  <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <span className="font-semibold">{inv.number}</span>
-                    <InvoiceStatusPill invoice={inv} />
+              <li key={inv.id} className="px-3.5 sm:px-4 py-3 text-sm">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="font-semibold">{inv.number}</span>
+                      <InvoiceStatusPill invoice={inv} />
+                    </span>
+                    <span className="mt-0.5 block text-xs text-fun-gray-medium">
+                      {invoicePeriodLabel(inv)}
+                      {invoiceDateNote(inv) ? ` · ${invoiceDateNote(inv)}` : ""}
+                    </span>
                   </span>
-                  <span className="block text-xs text-fun-gray-medium mt-0.5">
-                    {invoicePeriodLabel(inv)}
-                    {invoiceDateNote(inv) ? ` · ${invoiceDateNote(inv)}` : ""}
+                  <span className="flex shrink-0 flex-col items-end gap-1.5 sm:flex-row sm:items-center sm:gap-4">
+                    <span className="text-right font-monospace sm:w-24">{formatMoney(inv.total, usage.client.currency)}</span>
+                    <span className="flex items-center gap-3">
+                      {inv.status !== "DRAFT" && (
+                        <a href={invoicePdfHref(inv.id, previewId)} className="text-fun-pink-light hover:underline">
+                          PDF
+                        </a>
+                      )}
+                      {inv.status === "SENT" && <PayButton invoiceId={inv.id} clientId={previewId} />}
+                    </span>
                   </span>
-                  {inv.lines.length > 0 && (
-                    <ul className="mt-2 space-y-1">
-                      {inv.lines.map((line, index) => (
-                        <li key={index} className="text-xs text-fun-gray-light">
-                          <span>{line.description}</span>
-                          {line.detail && <span className="block text-fun-gray-medium">{line.detail}</span>}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </span>
-                <span className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 sm:gap-4 shrink-0">
-                <span className="font-monospace sm:w-24 text-right">{formatMoney(inv.total, usage.client.currency)}</span>
-                <span className="flex items-center gap-3">
-                  {inv.status !== "DRAFT" && (
-                    <a href={invoicePdfHref(inv.id, previewId)} className="text-fun-pink-light hover:underline">
-                      PDF
-                    </a>
-                  )}
-                  {inv.status === "SENT" && <PayButton invoiceId={inv.id} clientId={previewId} />}
-                </span>
-                </span>
+                </div>
+                <PortalLineList lines={inv.lines} currency={usage.client.currency} />
               </li>
             ))}
           </ul>
