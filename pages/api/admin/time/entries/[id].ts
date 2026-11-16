@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { adminRoute, HttpError, parseBody, queryId } from "@/lib/api";
+import { syncClientDrafts } from "@/lib/invoicing/syncDraft";
 import { entryInclude } from "@/lib/time";
 import { entryUpdateSchema } from "@/lib/validation/time";
 
@@ -7,7 +8,10 @@ export default adminRoute({
   PUT: async (req, res) => {
     const id = queryId(req);
     const data = parseBody(entryUpdateSchema, req);
-    const existing = await prisma.timeEntry.findUnique({ where: { id } });
+    const existing = await prisma.timeEntry.findUnique({
+      where: { id },
+      include: { task: { select: { project: { select: { clientId: true } } } } },
+    });
     if (!existing) throw new HttpError(404, "Not found");
 
     const startedAt = data.startedAt ?? existing.startedAt;
@@ -31,10 +35,19 @@ export default adminRoute({
       },
       include: entryInclude,
     });
+    await syncClientDrafts(existing.task.project.clientId);
+    if (entry.task.project.client.id !== existing.task.project.clientId) await syncClientDrafts(entry.task.project.client.id);
     res.status(200).json({ entry });
   },
   DELETE: async (req, res) => {
-    await prisma.timeEntry.delete({ where: { id: queryId(req) } });
+    const id = queryId(req);
+    const existing = await prisma.timeEntry.findUnique({
+      where: { id },
+      select: { task: { select: { project: { select: { clientId: true } } } } },
+    });
+    if (!existing) throw new HttpError(404, "Not found");
+    await prisma.timeEntry.delete({ where: { id } });
+    await syncClientDrafts(existing.task.project.clientId);
     res.status(204).end();
   },
 });

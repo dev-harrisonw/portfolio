@@ -129,11 +129,20 @@ export default function InvoicesPage({
                 </option>
               ))}
             </select>
-            <Button onClick={() => generate(-1)} disabled={!!busy || !clientId || lastState === "locked"} title={lastState === "locked" ? "Last period already has an invoice that has been sent." : undefined}>
-              {busy === "last" ? "Working…" : lastState === "locked" ? "Last period sent" : lastState === "draft" ? "Update last period" : "Draft last period"}
+            <Button
+              onClick={() => generate(-1)}
+              disabled={!!busy || !clientId || lastState !== "open"}
+              title={lastState === "locked" ? "Last period already has an invoice that has been sent." : lastState === "draft" ? "Last period already has a draft. It updates as time is logged." : undefined}
+            >
+              {busy === "last" ? "Working…" : lastState === "locked" ? "Last period sent" : lastState === "draft" ? "Last period drafted" : "Draft last period"}
             </Button>
-            <Button variant="ghost" onClick={() => generate(0)} disabled={!!busy || !clientId || currentState === "locked"} title={currentState === "locked" ? "This period already has an invoice that has been sent." : undefined}>
-              {busy === "current" ? "Working…" : currentState === "locked" ? "This period sent" : currentState === "draft" ? "Update this period" : "Draft this period"}
+            <Button
+              variant="ghost"
+              onClick={() => generate(0)}
+              disabled={!!busy || !clientId || currentState !== "open"}
+              title={currentState === "locked" ? "This period already has an invoice that has been sent." : currentState === "draft" ? "This period already has a draft. It updates as time is logged." : undefined}
+            >
+              {busy === "current" ? "Working…" : currentState === "locked" ? "This period sent" : currentState === "draft" ? "This period drafted" : "Draft this period"}
             </Button>
           </div>
         )

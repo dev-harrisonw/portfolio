@@ -82,12 +82,14 @@ export async function refreshPeriodInvoice(invoiceId: string, opts: { pullUnbill
       startedAt: { gte: period.start, lt: period.end },
       endedAt: { not: null },
     },
-    select: { id: true, invoiceId: true, billable: true },
+    select: { id: true, invoiceId: true, billable: true, withheld: true },
   });
-  const include = new Set(periodEntries.filter((entry) => entry.invoiceId === invoice.id).map((entry) => entry.id));
+  const include = new Set(
+    periodEntries.filter((entry) => entry.invoiceId === invoice.id && entry.billable && !entry.withheld).map((entry) => entry.id)
+  );
   if (opts.pullUnbilled) {
     for (const entry of periodEntries) {
-      if (entry.billable && entry.invoiceId == null) include.add(entry.id);
+      if (entry.billable && !entry.withheld && entry.invoiceId == null) include.add(entry.id);
     }
   }
 

@@ -1,0 +1,1 @@
+ALTER TABLE "TimeEntry" ADD COLUMN "withheld" BOOLEAN NOT NULL DEFAULT false;

@@ -20,6 +20,7 @@ export default function InvoiceTime({
   periodStart,
   periodEnd,
   entries,
+  withheld = [],
   clients,
   onChange,
   onError,
@@ -30,6 +31,7 @@ export default function InvoiceTime({
   periodStart: string | null;
   periodEnd: string | null;
   entries: Entry[];
+  withheld?: Entry[];
   clients: PickerClient[];
   onChange: () => void;
   onError: (message: string) => void;
@@ -73,6 +75,16 @@ export default function InvoiceTime({
     }
   };
 
+  const restore = async (entry: Entry) => {
+    onError("");
+    try {
+      await api(`/api/admin/invoices/${invoiceId}/entries/${entry.id}`, { method: "POST" });
+      onChange();
+    } catch (e) {
+      onError((e as Error).message);
+    }
+  };
+
   return (
     <section>
       <h2 className="text-xl font-bold mb-4">Time on this invoice</h2>
@@ -99,6 +111,25 @@ export default function InvoiceTime({
               </li>
             ))}
           </ul>
+        )}
+        {editable && withheld.length > 0 && (
+          <div className="mt-4 border-t border-fun-gray-darker pt-3">
+            <p className="text-xs text-fun-gray-medium mb-1">Left off this invoice</p>
+            <ul className="divide-y divide-fun-gray-darker">
+              {withheld.map((entry) => (
+                <li key={entry.id} className="flex items-start gap-3 py-2 text-sm text-fun-gray-light">
+                  <span className="w-16 shrink-0 text-xs text-fun-gray-medium">{fmt(entry.startedAt)}</span>
+                  <span className="flex-1 min-w-0">
+                    {entry.task.title}
+                    {entry.note && <span> — {entry.note}</span>}
+                  </span>
+                  <button type="button" onClick={() => restore(entry)} className="text-xs text-fun-pink hover:underline shrink-0">
+                    Put back
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
         {editable && periodStart && periodEnd && (
           <div className="mt-4 space-y-2 border-t border-fun-gray-darker pt-4">

@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { HttpError } from "@/lib/http";
+import { syncDraftsForEntry } from "@/lib/invoicing/syncDraft";
 
 const MINUTE_MS = 60_000;
 
@@ -21,24 +22,28 @@ export async function startTimer(taskId: string, note = "") {
   if (!task) throw new HttpError(404, "Task not found");
 
   const now = new Date();
-  return prisma.$transaction(async (tx) => {
+  const stoppedIds: string[] = [];
+  const created = await prisma.$transaction(async (tx) => {
     const running = await tx.timeEntry.findMany({ where: { endedAt: null } });
     for (const entry of running) {
       await tx.timeEntry.update({
         where: { id: entry.id },
         data: { endedAt: now, durationMinutes: minutesBetween(entry.startedAt, now) },
       });
+      stoppedIds.push(entry.id);
     }
     await tx.task.updateMany({ where: { id: taskId, status: "TODO" }, data: { status: "IN_PROGRESS" } });
     return tx.timeEntry.create({ data: { taskId, startedAt: now, note }, include: entryInclude });
   });
+  for (const id of stoppedIds) await syncDraftsForEntry(id);
+  return created;
 }
 
 export async function stopTimer(note?: string) {
   const running = await prisma.timeEntry.findFirst({ where: { endedAt: null } });
   if (!running) throw new HttpError(409, "No timer is running");
   const now = new Date();
-  return prisma.timeEntry.update({
+  const entry = await prisma.timeEntry.update({
     where: { id: running.id },
     data: {
       endedAt: now,
@@ -47,6 +52,8 @@ export async function stopTimer(note?: string) {
     },
     include: entryInclude,
   });
+  await syncDraftsForEntry(entry.id);
+  return entry;
 }
 
 export function listEntries({ from, to, clientId }: { from: Date; to: Date; clientId?: string }) {

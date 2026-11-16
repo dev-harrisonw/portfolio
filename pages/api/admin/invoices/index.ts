@@ -31,9 +31,9 @@ export default adminRoute({
     const client = await prisma.client.findUnique({ where: { id: body.clientId }, select: { periodStartDay: true } });
     if (!client) throw new HttpError(404, "Client not found");
     const period = shiftPeriod(client.periodStartDay, new Date(), body.periodOffset ?? -1);
-    const { invoice, created, updated, locked } = await generatePeriodInvoice(body.clientId, period, { refresh: true });
+    const { invoice, created, locked } = await generatePeriodInvoice(body.clientId, period);
     if (locked) throw new HttpError(409, "This period already has an invoice");
-    if (!invoice) throw new HttpError(409, "Nothing to invoice for that period");
-    res.status(created ? 201 : 200).json({ invoice, created, updated });
+    if (!created) throw new HttpError(409, invoice ? "This period already has a draft" : "Nothing to invoice for that period");
+    res.status(201).json({ invoice, created: true });
   },
 });

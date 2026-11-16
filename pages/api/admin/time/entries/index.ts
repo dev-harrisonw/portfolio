@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { adminRoute, parseBody } from "@/lib/api";
+import { syncDraftsForEntry } from "@/lib/invoicing/syncDraft";
 import { entryInclude, listEntries } from "@/lib/time";
 import { entrySchema, rangeSchema } from "@/lib/validation/time";
 
@@ -23,6 +24,7 @@ export default adminRoute({
       },
       include: entryInclude,
     });
+    await syncDraftsForEntry(entry.id);
     res.status(201).json({ entry });
   },
 });

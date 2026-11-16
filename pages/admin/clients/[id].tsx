@@ -7,6 +7,7 @@ import { requireAdminPage } from "@/lib/requireAdminPage";
 import { api } from "@/lib/fetcher";
 import { formatMinutes, formatMoney, shiftPeriod } from "@/lib/billing";
 import { priceUsage } from "@/lib/invoicing/calc";
+import { syncClientDrafts } from "@/lib/invoicing/syncDraft";
 import { getClientUsage, type ClientUsage } from "@/lib/usage";
 import { dueLabel, invoiceStatusTone, portalStatus, portalStatusLabel } from "@/lib/clients";
 import InvoiceActions from "@/components/admin/InvoiceActions";
@@ -50,6 +51,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const auth = await requireAdminPage(ctx);
   if ("redirect" in auth) return auth;
   const id = String(ctx.params?.id);
+  await syncClientDrafts(id);
   const [record, usage, invoices, periodInvoices] = await Promise.all([
     prisma.client.findUnique({
       where: { id },
@@ -383,20 +385,27 @@ function PeriodDraftButton({
   setNotice: (value: string | null) => void;
 }) {
   const state = periodState(offset, client.periodStartDay, invoices);
-  const text = state === "locked" ? `${label[0].toUpperCase()}${label.slice(1)} sent` : state === "draft" ? `Update ${label}` : `Draft ${label}`;
+  const name = `${label[0].toUpperCase()}${label.slice(1)}`;
+  const text = state === "locked" ? `${name} sent` : state === "draft" ? `${name} drafted` : `Draft ${label}`;
   return (
     <Button
       variant="ghost"
-      disabled={drafting != null || state === "locked"}
-      title={state === "locked" ? `This ${label} already has an invoice that has been sent.` : undefined}
+      disabled={drafting != null || state !== "open"}
+      title={
+        state === "locked"
+          ? `This ${label} already has an invoice that has been sent.`
+          : state === "draft"
+            ? `This ${label} already has a draft. It updates as time is logged.`
+            : undefined
+      }
       onClick={() =>
         run(async () => {
           setDrafting(offset);
           try {
-            const result = await api<{ updated?: boolean }>("/api/admin/invoices", {
+            await api("/api/admin/invoices", {
               body: { kind: "PERIOD", clientId: client.id, periodOffset: offset },
             });
-            setNotice(result.updated ? `Updated the ${label} draft with new time.` : `Drafted ${label}.`);
+            setNotice(`Drafted ${label}.`);
           } finally {
             setDrafting(null);
           }

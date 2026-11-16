@@ -7,6 +7,7 @@ import { requireAdminPage } from "@/lib/requireAdminPage";
 import { formatMoney } from "@/lib/billing";
 import { getClientUsage } from "@/lib/usage";
 import { priceUsage } from "@/lib/invoicing/calc";
+import { syncClientDrafts } from "@/lib/invoicing/syncDraft";
 import { dueLabel, invoiceStatusTone } from "@/lib/clients";
 import AdminShell from "@/components/admin/AdminShell";
 import InvoiceActions, { type InvoiceActionStatus } from "@/components/admin/InvoiceActions";
@@ -47,6 +48,9 @@ const fmt = (iso: string | null) =>
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const auth = await requireAdminPage(ctx);
   if ("redirect" in auth) return auth;
+  const invoiceId = String(ctx.params?.id);
+  const head = await prisma.invoice.findUnique({ where: { id: invoiceId }, select: { clientId: true, status: true, kind: true } });
+  if (head?.status === "DRAFT" && head.kind === "PERIOD") await syncClientDrafts(head.clientId);
   const invoice = await prisma.invoice.findUnique({
     where: { id: String(ctx.params?.id) },
     include: {
@@ -60,6 +64,19 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     },
   });
   if (!invoice) return { notFound: true };
+  const withheld =
+    invoice.kind === "PERIOD" && invoice.periodStart && invoice.periodEnd
+      ? await prisma.timeEntry.findMany({
+          where: {
+            withheld: true,
+            endedAt: { not: null },
+            startedAt: { gte: invoice.periodStart, lt: invoice.periodEnd },
+            task: { project: { clientId: invoice.clientId, billingType: "TIME" } },
+          },
+          orderBy: { startedAt: "asc" },
+          select: { id: true, durationMinutes: true, amount: true, note: true, startedAt: true, task: { select: { title: true } } },
+        })
+      : [];
   let overageMinutes = 0;
   let overageAmount = 0;
   if (invoice.kind === "PERIOD" && invoice.periodStart && invoice.periodEnd) {
@@ -80,17 +97,19 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     select: { id: true, name: true, tasks: { orderBy: { title: "asc" }, select: { id: true, title: true, status: true } } },
   });
   const picker: PickerClient[] = [{ id: invoice.client.id, name: invoice.client.name, projects }];
-  return { props: JSON.parse(JSON.stringify({ invoice, picker, overageMinutes, overageAmount })) };
+  return { props: JSON.parse(JSON.stringify({ invoice, picker, withheld, overageMinutes, overageAmount })) };
 };
 
 export default function InvoiceDetailPage({
   invoice,
   picker,
+  withheld,
   overageMinutes,
   overageAmount,
 }: {
   invoice: InvoiceDetail;
   picker: PickerClient[];
+  withheld: InvoiceDetail["entries"];
   overageMinutes: number;
   overageAmount: number;
 }) {
@@ -207,6 +226,7 @@ export default function InvoiceDetailPage({
           periodStart={invoice.periodStart}
           periodEnd={invoice.periodEnd}
           entries={invoice.entries}
+          withheld={withheld}
           clients={picker}
           onChange={() => {
             setError(null);
