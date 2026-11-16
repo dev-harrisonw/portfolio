@@ -5,7 +5,7 @@ import type { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
 import { requireAdminPage } from "@/lib/requireAdminPage";
 import { api } from "@/lib/fetcher";
-import { formatMinutes, formatMoney } from "@/lib/billing";
+import { formatMinutes, formatMoney, shiftPeriod } from "@/lib/billing";
 import { priceUsage } from "@/lib/invoicing/calc";
 import { getClientUsage, type ClientUsage } from "@/lib/usage";
 import { dueLabel, invoiceStatusTone, portalStatus, portalStatusLabel } from "@/lib/clients";
@@ -25,6 +25,7 @@ type InvoiceRow = {
   total: number;
   currency: string;
   dueAt: string | null;
+  periodStart: string | null;
   checkoutUrl: string | null;
   createdAt: string;
 };
@@ -40,6 +41,7 @@ type Props = {
   usage: ClientUsage | null;
   estimateTotal: number;
   invoices: InvoiceRow[];
+  periodInvoices: { status: "DRAFT" | "SENT" | "PAID" | "VOID"; periodStart: string }[];
   siteUrl: string;
 };
 
@@ -47,7 +49,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const auth = await requireAdminPage(ctx);
   if ("redirect" in auth) return auth;
   const id = String(ctx.params?.id);
-  const [record, usage, invoices] = await Promise.all([
+  const [record, usage, invoices, periodInvoices] = await Promise.all([
     prisma.client.findUnique({
       where: { id },
       include: {
@@ -66,7 +68,11 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
       where: { clientId: id, status: { not: "VOID" } },
       orderBy: { createdAt: "desc" },
       take: 8,
-      select: { id: true, number: true, kind: true, status: true, total: true, currency: true, dueAt: true, checkoutUrl: true, createdAt: true },
+      select: { id: true, number: true, kind: true, status: true, total: true, currency: true, dueAt: true, periodStart: true, checkoutUrl: true, createdAt: true },
+    }),
+    prisma.invoice.findMany({
+      where: { clientId: id, kind: "PERIOD", status: { not: "VOID" } },
+      select: { status: true, periodStart: true },
     }),
   ]);
   if (!record) return { notFound: true };
@@ -77,6 +83,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
         usage,
         estimateTotal: usage ? priceUsage(usage).total : 0,
         invoices,
+        periodInvoices,
         siteUrl: siteUrl(),
       })
     ),
@@ -93,7 +100,7 @@ function Stat({ label, value, sub, clip }: { label: string; value: string; sub?:
   );
 }
 
-export default function ClientDetailPage({ client, usage, estimateTotal, invoices, siteUrl: origin }: Props) {
+export default function ClientDetailPage({ client, usage, estimateTotal, invoices, periodInvoices, siteUrl: origin }: Props) {
   const router = useRouter();
   const refresh = () => router.replace(router.asPath, undefined, { scroll: false });
   const [users, setUsers] = useState(client.users);
@@ -101,7 +108,7 @@ export default function ClientDetailPage({ client, usage, estimateTotal, invoice
   const [notice, setNotice] = useState<string | null>(null);
   const [exportMonth, setExportMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [error, setError] = useState<string | null>(null);
-  const [drafting, setDrafting] = useState(false);
+  const [drafting, setDrafting] = useState<-1 | 0 | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
@@ -235,40 +242,8 @@ export default function ClientDetailPage({ client, usage, estimateTotal, invoice
             </ul>
           )}
           <div className="mt-3 sm:mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-            <Button
-              variant="ghost"
-              disabled={drafting}
-              onClick={() =>
-                run(async () => {
-                  setDrafting(true);
-                  try {
-                    await api("/api/admin/invoices", { body: { kind: "PERIOD", clientId: client.id, periodOffset: -1 } });
-                    setNotice("Drafted last period.");
-                  } finally {
-                    setDrafting(false);
-                  }
-                })
-              }
-            >
-              {drafting ? "Drafting…" : "Draft last period"}
-            </Button>
-            <Button
-              variant="ghost"
-              disabled={drafting}
-              onClick={() =>
-                run(async () => {
-                  setDrafting(true);
-                  try {
-                    await api("/api/admin/invoices", { body: { kind: "PERIOD", clientId: client.id, periodOffset: 0 } });
-                    setNotice("Drafted this period.");
-                  } finally {
-                    setDrafting(false);
-                  }
-                })
-              }
-            >
-              Draft this period
-            </Button>
+            <PeriodDraftButton offset={-1} label="last period" client={client} invoices={periodInvoices} drafting={drafting} setDrafting={setDrafting} run={run} setNotice={setNotice} />
+            <PeriodDraftButton offset={0} label="this period" client={client} invoices={periodInvoices} drafting={drafting} setDrafting={setDrafting} run={run} setNotice={setNotice} />
           </div>
         </section>
       </div>
@@ -375,5 +350,61 @@ export default function ClientDetailPage({ client, usage, estimateTotal, invoice
         )}
       </section>
     </AdminShell>
+  );
+}
+
+function periodState(
+  offset: number,
+  startDay: number,
+  invoices: { status: "DRAFT" | "SENT" | "PAID" | "VOID"; periodStart: string | null }[]
+) {
+  const period = shiftPeriod(startDay, new Date(), offset);
+  const match = invoices.find((invoice) => invoice.periodStart && new Date(invoice.periodStart).getTime() === period.start.getTime());
+  if (!match) return "open" as const;
+  return match.status === "DRAFT" ? ("draft" as const) : ("locked" as const);
+}
+
+function PeriodDraftButton({
+  offset,
+  label,
+  client,
+  invoices,
+  drafting,
+  setDrafting,
+  run,
+  setNotice,
+}: {
+  offset: -1 | 0;
+  label: string;
+  client: { id: string; periodStartDay: number };
+  invoices: { status: "DRAFT" | "SENT" | "PAID" | "VOID"; periodStart: string | null }[];
+  drafting: -1 | 0 | null;
+  setDrafting: (value: -1 | 0 | null) => void;
+  run: (fn: () => Promise<unknown>) => Promise<void>;
+  setNotice: (value: string | null) => void;
+}) {
+  const state = periodState(offset, client.periodStartDay, invoices);
+  const text = state === "locked" ? `${label[0].toUpperCase()}${label.slice(1)} sent` : state === "draft" ? `Update ${label}` : `Draft ${label}`;
+  return (
+    <Button
+      variant="ghost"
+      disabled={drafting != null || state === "locked"}
+      title={state === "locked" ? `This ${label} already has an invoice that has been sent.` : undefined}
+      onClick={() =>
+        run(async () => {
+          setDrafting(offset);
+          try {
+            const result = await api<{ updated?: boolean }>("/api/admin/invoices", {
+              body: { kind: "PERIOD", clientId: client.id, periodOffset: offset },
+            });
+            setNotice(result.updated ? `Updated the ${label} draft with new time.` : `Drafted ${label}.`);
+          } finally {
+            setDrafting(null);
+          }
+        })
+      }
+    >
+      {drafting === offset ? "Working…" : text}
+    </Button>
   );
 }

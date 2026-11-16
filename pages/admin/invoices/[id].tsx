@@ -4,12 +4,14 @@ import { useState } from "react";
 import type { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
 import { requireAdminPage } from "@/lib/requireAdminPage";
-import { formatMinutes, formatMoney } from "@/lib/billing";
+import { formatMoney } from "@/lib/billing";
 import { dueLabel, invoiceStatusTone } from "@/lib/clients";
 import AdminShell from "@/components/admin/AdminShell";
 import InvoiceActions, { type InvoiceActionStatus } from "@/components/admin/InvoiceActions";
 import InvoiceLines from "@/components/admin/InvoiceLines";
+import InvoiceTime from "@/components/admin/InvoiceTime";
 import { Card } from "@/components/admin/Form";
+import type { PickerClient } from "@/components/admin/time/TaskPicker";
 
 type InvoiceDetail = {
   id: string;
@@ -53,10 +55,16 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     },
   });
   if (!invoice) return { notFound: true };
-  return { props: JSON.parse(JSON.stringify({ invoice })) };
+  const projects = await prisma.project.findMany({
+    where: { clientId: invoice.clientId, status: { not: "ARCHIVED" } },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, tasks: { orderBy: { title: "asc" }, select: { id: true, title: true, status: true } } },
+  });
+  const picker: PickerClient[] = [{ id: invoice.client.id, name: invoice.client.name, projects }];
+  return { props: JSON.parse(JSON.stringify({ invoice, picker })) };
 };
 
-export default function InvoiceDetailPage({ invoice }: { invoice: InvoiceDetail }) {
+export default function InvoiceDetailPage({ invoice, picker }: { invoice: InvoiceDetail; picker: PickerClient[] }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const due = dueLabel(invoice.dueAt, invoice.status);
@@ -138,26 +146,21 @@ export default function InvoiceDetailPage({ invoice }: { invoice: InvoiceDetail 
         />
       </section>
 
-      {invoice.entries.length > 0 && (
-        <section>
-          <h2 className="text-xl font-bold mb-4">Time on this invoice</h2>
-          <Card>
-            <ul className="divide-y divide-fun-gray-darker">
-              {invoice.entries.map((entry) => (
-                <li key={entry.id} className="flex items-start gap-3 py-2.5 text-sm">
-                  <span className="w-20 shrink-0 text-xs text-fun-gray-medium">{fmt(entry.startedAt)}</span>
-                  <span className="flex-1 min-w-0">
-                    {entry.task.title}
-                    {entry.note && <span className="text-fun-gray-light"> — {entry.note}</span>}
-                  </span>
-                  <span className="font-monospace text-xs shrink-0">
-                    {entry.amount != null ? formatMoney(entry.amount, invoice.currency) : formatMinutes(entry.durationMinutes)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        </section>
+      {(invoice.kind === "PERIOD" || invoice.entries.length > 0) && (
+        <InvoiceTime
+          invoiceId={invoice.id}
+          currency={invoice.currency}
+          editable={invoice.status === "DRAFT"}
+          periodStart={invoice.periodStart}
+          periodEnd={invoice.periodEnd}
+          entries={invoice.entries}
+          clients={picker}
+          onChange={() => {
+            setError(null);
+            router.replace(router.asPath, undefined, { scroll: false });
+          }}
+          onError={setError}
+        />
       )}
     </AdminShell>
   );

@@ -5,7 +5,7 @@ import type { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
 import { requireAdminPage } from "@/lib/requireAdminPage";
 import { api } from "@/lib/fetcher";
-import { formatMoney } from "@/lib/billing";
+import { formatMoney, shiftPeriod } from "@/lib/billing";
 import { dueLabel, invoiceStatusTone } from "@/lib/clients";
 import AdminShell from "@/components/admin/AdminShell";
 import InvoiceActions, { type InvoiceActionStatus } from "@/components/admin/InvoiceActions";
@@ -45,7 +45,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       take: 100,
       include: { client: { select: { id: true, name: true } }, lines: { orderBy: { sortOrder: "asc" }, select: { description: true, amount: true } } },
     }),
-    prisma.client.findMany({ where: { archived: false }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    prisma.client.findMany({ where: { archived: false }, orderBy: { name: "asc" }, select: { id: true, name: true, periodStartDay: true } }),
   ]);
   const raw = typeof ctx.query.filter === "string" ? ctx.query.filter : "all";
   const filter = (filters.some((f) => f.id === raw) ? raw : "all") as (typeof filters)[number]["id"];
@@ -58,7 +58,7 @@ export default function InvoicesPage({
   filter: initialFilter,
 }: {
   invoices: InvoiceRow[];
-  clients: { id: string; name: string }[];
+  clients: { id: string; name: string; periodStartDay: number }[];
   filter: (typeof filters)[number]["id"];
 }) {
   const router = useRouter();
@@ -77,6 +77,24 @@ export default function InvoicesPage({
       return true;
     });
   }, [invoices, filter, viewClient]);
+
+  const selected = clients.find((client) => client.id === clientId);
+  const periodState = (offset: -1 | 0) => {
+    if (!selected) return "open" as const;
+    const period = shiftPeriod(selected.periodStartDay, new Date(), offset);
+    const match = invoices.find(
+      (invoice) =>
+        invoice.client.id === selected.id &&
+        invoice.kind === "PERIOD" &&
+        invoice.status !== "VOID" &&
+        invoice.periodStart &&
+        new Date(invoice.periodStart).getTime() === period.start.getTime()
+    );
+    if (!match) return "open" as const;
+    return match.status === "DRAFT" ? ("draft" as const) : ("locked" as const);
+  };
+  const currentState = periodState(0);
+  const lastState = periodState(-1);
 
   const generate = async (periodOffset: -1 | 0) => {
     setBusy(periodOffset === 0 ? "current" : "last");
@@ -110,11 +128,11 @@ export default function InvoicesPage({
                 </option>
               ))}
             </select>
-            <Button onClick={() => generate(-1)} disabled={!!busy || !clientId}>
-              {busy === "last" ? "Generating…" : "Draft last period"}
+            <Button onClick={() => generate(-1)} disabled={!!busy || !clientId || lastState === "locked"} title={lastState === "locked" ? "Last period already has an invoice that has been sent." : undefined}>
+              {busy === "last" ? "Working…" : lastState === "locked" ? "Last period sent" : lastState === "draft" ? "Update last period" : "Draft last period"}
             </Button>
-            <Button variant="ghost" onClick={() => generate(0)} disabled={!!busy || !clientId}>
-              {busy === "current" ? "Generating…" : "Draft this period"}
+            <Button variant="ghost" onClick={() => generate(0)} disabled={!!busy || !clientId || currentState === "locked"} title={currentState === "locked" ? "This period already has an invoice that has been sent." : undefined}>
+              {busy === "current" ? "Working…" : currentState === "locked" ? "This period sent" : currentState === "draft" ? "Update this period" : "Draft this period"}
             </Button>
           </div>
         )

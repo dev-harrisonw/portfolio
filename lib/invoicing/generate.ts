@@ -62,19 +62,90 @@ export async function snapshotCarry(clientId: string, period: BillingPeriod) {
 }
 
 /**
- * Build (or return) the period invoice for a client. Idempotent: a non-void invoice for the same
- * window is reused. Retainer clients are billed even with no hours; PAYG needs unbilled entries.
+ * Rebuild a draft's generated lines from the time on it.
+ * `pullUnbilled` also attaches billable time in the period that is not on an invoice yet.
+ * Lines added by hand are kept.
+ */
+export async function refreshPeriodInvoice(invoiceId: string, opts: { pullUnbilled?: boolean } = {}) {
+  const invoice = await prisma.invoice.findUnique({ where: { id: invoiceId } });
+  if (!invoice) throw new HttpError(404, "Invoice not found");
+  if (invoice.status !== "DRAFT") throw new HttpError(409, "Only a draft invoice can be changed");
+  if (!invoice.periodStart || !invoice.periodEnd) throw new HttpError(422, "This invoice is not for a period");
+
+  const period = { start: invoice.periodStart, end: invoice.periodEnd };
+  const usage = await getClientUsage(invoice.clientId, period, new Date(period.end.getTime() - 1));
+  if (!usage) throw new HttpError(404, "Client not found");
+
+  const periodEntries = await prisma.timeEntry.findMany({
+    where: {
+      task: { project: { clientId: invoice.clientId, billingType: "TIME" } },
+      startedAt: { gte: period.start, lt: period.end },
+      endedAt: { not: null },
+    },
+    select: { id: true, invoiceId: true, billable: true },
+  });
+  const include = new Set(periodEntries.filter((entry) => entry.invoiceId === invoice.id).map((entry) => entry.id));
+  if (opts.pullUnbilled) {
+    for (const entry of periodEntries) {
+      if (entry.billable && entry.invoiceId == null) include.add(entry.id);
+    }
+  }
+
+  const draft = priceUsage({ ...usage, entries: usage.entries.filter((entry) => include.has(entry.id)) });
+  const manual = await prisma.invoiceLine.findMany({
+    where: { invoiceId, manual: true },
+    orderBy: { sortOrder: "asc" },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    await tx.invoiceLine.deleteMany({ where: { invoiceId, manual: false } });
+    if (draft.lines.length) await tx.invoiceLine.createMany({ data: lineRows(invoiceId, draft.lines) });
+    for (let i = 0; i < manual.length; i++) {
+      await tx.invoiceLine.update({
+        where: { id: manual[i].id },
+        data: { sortOrder: draft.lines.length + i },
+      });
+    }
+    if (include.size) {
+      await tx.timeEntry.updateMany({
+        where: { id: { in: [...include] } },
+        data: { invoiceId },
+      });
+    }
+    const lines = await tx.invoiceLine.findMany({ where: { invoiceId } });
+    const subtotal = lines.reduce((sum, line) => sum + line.amount, 0);
+    const vat = Math.round((subtotal * invoice.vatRateBps) / 10000);
+    await tx.invoice.update({
+      where: { id: invoiceId },
+      data: { subtotal, vat, total: subtotal + vat },
+    });
+  });
+
+  await snapshotCarry(invoice.clientId, period);
+  const updated = await prisma.invoice.findUnique({ where: { id: invoiceId } });
+  if (!updated) throw new HttpError(404, "Invoice not found");
+  return updated;
+}
+
+/**
+ * Build (or return) the period invoice for a client. A sent or paid invoice is left as it is.
+ * Pass `refresh` to pull new time onto an existing draft. Retainer clients are billed even with
+ * no hours; pay-as-you-go needs unbilled entries.
  */
 export async function generatePeriodInvoice(
   clientId: string,
-  period: BillingPeriod
-): Promise<{ invoice: Invoice | null; created: boolean }> {
+  period: BillingPeriod,
+  opts: { refresh?: boolean } = {}
+): Promise<{ invoice: Invoice | null; created: boolean; updated: boolean; locked: boolean }> {
   const existing = await prisma.invoice.findFirst({
     where: { clientId, kind: "PERIOD", periodStart: period.start, status: { not: "VOID" } },
   });
   if (existing) {
+    if (existing.status === "DRAFT" && opts.refresh) {
+      return { invoice: await refreshPeriodInvoice(existing.id, { pullUnbilled: true }), created: false, updated: true, locked: false };
+    }
     await snapshotCarry(clientId, period);
-    return { invoice: existing, created: false };
+    return { invoice: existing, created: false, updated: false, locked: existing.status !== "DRAFT" };
   }
 
   const usage = await getClientUsage(clientId, period, new Date(period.end.getTime() - 1));
@@ -88,7 +159,7 @@ export async function generatePeriodInvoice(
     select: { id: true },
   });
   const isRetainer = usage.allowances.some((a) => a.allowanceMinutes != null);
-  if (!isRetainer && unbilled.length === 0) return { invoice: null, created: false };
+  if (!isRetainer && unbilled.length === 0) return { invoice: null, created: false, updated: false, locked: false };
 
   const draft = priceUsage(usage);
   const number = await nextInvoiceNumber();
@@ -122,7 +193,7 @@ export async function generatePeriodInvoice(
   });
 
   await snapshotCarry(clientId, period);
-  return { invoice, created: true };
+  return { invoice, created: true, updated: false, locked: false };
 }
 
 /** Invoice a fixed-price stage that's been marked reached. One invoice per stage. */

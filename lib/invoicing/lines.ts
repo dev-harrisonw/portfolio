@@ -77,6 +77,7 @@ export async function addInvoiceLine(invoiceId: string, input: z.infer<typeof in
       rate: 0,
       amount: input.amount,
       sortOrder: (last._max.sortOrder ?? -1) + 1,
+      manual: true,
     },
   });
   return recalcInvoice(invoiceId);

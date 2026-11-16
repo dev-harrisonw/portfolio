@@ -302,6 +302,8 @@ model InvoiceLine {
   rate        Int     @default(0)
   amount      Int
   sortOrder   Int     @default(0)
+  /// Added by hand on the invoice. A refresh from time keeps these and replaces the rest.
+  manual      Boolean @default(false)
 
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
