@@ -109,13 +109,15 @@ function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
 
 type Props = {
   title: string;
+  /** Replaces the page heading when the title itself can be edited. */
+  heading?: ReactNode;
   eyebrow?: string;
   actions?: ReactNode;
   children: ReactNode;
   wide?: boolean;
 };
 
-export default function AdminShell({ title, eyebrow = "Admin", actions, children, wide }: Props) {
+export default function AdminShell({ title, heading, eyebrow = "Admin", actions, children, wide }: Props) {
   const { pathname, asPath } = useRouter();
   const isActive = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
   const max = wide ? "max-w-[1400px]" : "max-w-5xl";
@@ -186,7 +188,7 @@ export default function AdminShell({ title, eyebrow = "Admin", actions, children
             {/* Phones show the page title here instead of a separate heading row. */}
             <div className="sm:hidden min-w-0 leading-tight">
               {eyebrow !== "Admin" && <p className="text-[10px] uppercase tracking-wider text-fun-gray-medium">{eyebrow}</p>}
-              <p className="text-[15px] font-bold truncate">{title}</p>
+              {heading ? <div className="text-[15px] font-bold min-w-0">{heading}</div> : <p className="text-[15px] font-bold truncate">{title}</p>}
             </div>
             <div className="hidden sm:flex items-center gap-1.5 text-xs text-fun-gray-medium min-w-0">
               <span>{eyebrow}</span>
@@ -201,7 +203,7 @@ export default function AdminShell({ title, eyebrow = "Admin", actions, children
 
         <main className={`${max} mx-auto px-3 sm:px-6 pt-3 sm:py-8 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-8`}>
           <div className={`flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-3 mb-3 sm:mb-6 ${actions ? "flex" : "hidden sm:flex"}`}>
-            <h1 className="hidden sm:block text-2xl font-bold tracking-tight truncate min-w-0">{title}</h1>
+            <h1 className={`hidden sm:flex items-center text-2xl font-bold tracking-tight min-w-0 ${heading ? "" : "truncate"}`}>{heading ?? title}</h1>
             {actions && (
               <div className="flex gap-2 shrink-0 overflow-x-auto scroll-hide -mx-3 px-3 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible [&>*]:shrink-0">
                 {actions}

@@ -9,6 +9,7 @@ import { dueLabel, invoiceStatusTone } from "@/lib/clients";
 import AdminShell from "@/components/admin/AdminShell";
 import InvoiceActions, { type InvoiceActionStatus } from "@/components/admin/InvoiceActions";
 import InvoiceLines from "@/components/admin/InvoiceLines";
+import InvoiceName from "@/components/admin/InvoiceName";
 import InvoiceTime from "@/components/admin/InvoiceTime";
 import { Card } from "@/components/admin/Form";
 import type { PickerClient } from "@/components/admin/time/TaskPicker";
@@ -79,6 +80,14 @@ export default function InvoiceDetailPage({ invoice, picker }: { invoice: Invoic
     <AdminShell
       eyebrow="Invoice"
       title={invoice.number}
+      heading={
+        <InvoiceName
+          id={invoice.id}
+          number={invoice.number}
+          onSaved={() => router.replace(router.asPath, undefined, { scroll: false })}
+          onError={setError}
+        />
+      }
       wide
       actions={
         <InvoiceActions

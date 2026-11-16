@@ -9,6 +9,7 @@ import { formatMoney, shiftPeriod } from "@/lib/billing";
 import { dueLabel, invoiceStatusTone } from "@/lib/clients";
 import AdminShell from "@/components/admin/AdminShell";
 import InvoiceActions, { type InvoiceActionStatus } from "@/components/admin/InvoiceActions";
+import InvoiceName from "@/components/admin/InvoiceName";
 import { Button, Card } from "@/components/admin/Form";
 
 type InvoiceRow = {
@@ -185,9 +186,7 @@ export default function InvoicesPage({
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-bold">
-                      <Link href={`/admin/invoices/${inv.id}`} className="hover:text-fun-pink">
-                        {inv.number}
-                      </Link>
+                      <InvoiceName id={inv.id} number={inv.number} href={`/admin/invoices/${inv.id}`} onSaved={refresh} onError={setError} />
                       <span className="ml-2 text-xs font-normal text-fun-gray-medium">{inv.kind === "STAGE" ? "Build stage" : "Period"}</span>
                     </p>
                     <Link href={`/admin/clients/${inv.client.id}`} className="text-sm text-fun-pink hover:underline">

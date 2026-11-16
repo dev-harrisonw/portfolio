@@ -10,6 +10,7 @@ import { priceUsage } from "@/lib/invoicing/calc";
 import { getClientUsage, type ClientUsage } from "@/lib/usage";
 import { dueLabel, invoiceStatusTone, portalStatus, portalStatusLabel } from "@/lib/clients";
 import InvoiceActions from "@/components/admin/InvoiceActions";
+import InvoiceName from "@/components/admin/InvoiceName";
 import { siteUrl } from "@/lib/site";
 import AdminShell from "@/components/admin/AdminShell";
 import ClientForm, { type ClientFormValues } from "@/components/admin/ClientForm";
@@ -220,9 +221,7 @@ export default function ClientDetailPage({ client, usage, estimateTotal, invoice
                   <li key={inv.id} className="py-3">
                     <div className="flex items-center justify-between gap-3 text-sm">
                       <span className="min-w-0">
-                        <Link href={`/admin/invoices/${inv.id}`} className="font-bold hover:text-fun-pink">
-                          {inv.number}
-                        </Link>
+                        <InvoiceName id={inv.id} number={inv.number} href={`/admin/invoices/${inv.id}`} onSaved={refresh} onError={(message) => setError(message)} />
                         <span className="text-fun-gray-medium"> · {inv.kind === "STAGE" ? "Build" : "Period"}</span>
                         {due && <span className={`block text-[11px] ${due.overdue ? "text-red-300" : "text-fun-gray-medium"}`}>{due.text}</span>}
                       </span>
