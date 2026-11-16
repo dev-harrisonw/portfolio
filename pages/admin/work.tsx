@@ -8,6 +8,7 @@ import type { WorkDashboard } from "@/lib/work";
 import AdminShell from "@/components/admin/AdminShell";
 import { Button, Card, Input, Select } from "@/components/admin/Form";
 import RunningTimer, { type RunningEntry } from "@/components/admin/time/RunningTimer";
+import TaskModal from "@/components/admin/TaskModal";
 import { MotionItem, MotionSection } from "@/components/utility/Motion";
 
 type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE";
@@ -43,6 +44,7 @@ export default function WorkPage({ data }: Props) {
   const [title, setTitle] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const client = data.pickerTree.find((c) => c.id === clientId);
   const projects = client?.projects ?? [];
@@ -241,16 +243,22 @@ export default function WorkPage({ data }: Props) {
                 <li className="text-xs text-fun-gray-medium rounded-xl border border-dashed border-fun-gray-darker px-3 py-6 text-center">Empty</li>
               ) : (
                 grouped[col.id].map((t) => (
-                  <li key={t.id} className="rounded-xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3 sm:p-4">
+                  <li
+                    key={t.id}
+                    onClick={() => setOpenId(t.id)}
+                    className="rounded-xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3 sm:p-4 cursor-pointer"
+                  >
                     <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
+                      <button type="button" onClick={() => setOpenId(t.id)} className="min-w-0 flex-1 text-left">
                         <p className="font-bold">{t.title}</p>
-                        <Link href={`/admin/clients/${t.project.client.id}`} className="text-xs text-fun-gray hover:text-fun-pink">
+                        <p className="text-xs text-fun-gray">
                           {t.project.client.name} · {t.project.name}
-                        </Link>
-                      </div>
+                          {t._count.entries > 0 ? ` · ${t._count.entries} logged` : ""}
+                        </p>
+                      </button>
                       <select
                         value={t.status}
+                        onClick={(e) => e.stopPropagation()}
                         onChange={(e) => setStatus(t.id, e.target.value as TaskStatus)}
                         className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-wider outline-none border-0 cursor-pointer ${statusTone[t.status as TaskStatus]}`}
                         aria-label="Task status"
@@ -263,7 +271,14 @@ export default function WorkPage({ data }: Props) {
                       </select>
                     </div>
                     {t.status !== "DONE" && (
-                      <button type="button" onClick={() => start(t.id)} className="mt-2 sm:mt-3 text-xs text-fun-pink hover:underline">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          start(t.id);
+                        }}
+                        className="mt-2 sm:mt-3 text-xs text-fun-pink hover:underline"
+                      >
                         ▶ Start timer
                       </button>
                     )}
@@ -274,6 +289,20 @@ export default function WorkPage({ data }: Props) {
           </section>
         ))}
       </div>
+
+      {openId && (
+        <TaskModal
+          taskId={openId}
+          onClose={() => setOpenId(null)}
+          onStatus={setStatus}
+          onStart={start}
+          onDeleted={(id) => {
+            setTasks((rows) => rows.filter((t) => t.id !== id));
+            setOpenId(null);
+            refresh();
+          }}
+        />
+      )}
     </AdminShell>
   );
 }

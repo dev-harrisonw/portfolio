@@ -3,6 +3,29 @@ import { adminRoute, HttpError, parseBody, queryId } from "@/lib/api";
 import { taskUpdateSchema } from "@/lib/validation/time";
 
 export default adminRoute({
+  GET: async (req, res) => {
+    const id = queryId(req);
+    const task = await prisma.task.findUnique({
+      where: { id },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            dueDate: true,
+            billingType: true,
+            client: { select: { id: true, name: true, currency: true } },
+          },
+        },
+        entries: {
+          orderBy: { startedAt: "desc" },
+          select: { id: true, startedAt: true, endedAt: true, durationMinutes: true, amount: true, note: true, billable: true },
+        },
+      },
+    });
+    if (!task) throw new HttpError(404, "Not found");
+    res.status(200).json({ task });
+  },
   PUT: async (req, res) => {
     const id = queryId(req);
     const data = parseBody(taskUpdateSchema, req);
