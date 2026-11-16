@@ -56,6 +56,7 @@ const invoiceSelect = {
   paidAt: true,
   periodStart: true,
   periodEnd: true,
+  lines: { orderBy: { sortOrder: "asc" }, select: { description: true, detail: true, amount: true } },
 } as const;
 
 const iso = (d: Date | null) => (d ? d.toISOString() : null);
@@ -71,6 +72,7 @@ function toPortalInvoice(inv: {
   paidAt: Date | null;
   periodStart: Date | null;
   periodEnd: Date | null;
+  lines: { description: string; detail: string; amount: number }[];
 }): PortalInvoice {
   return {
     ...inv,
@@ -256,6 +258,16 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
                     {invoicePeriodLabel(inv)}
                     {invoiceDateNote(inv) ? ` · ${invoiceDateNote(inv)}` : ""}
                   </span>
+                  {inv.lines.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                      {inv.lines.map((line, index) => (
+                        <li key={index} className="text-xs text-fun-gray-light">
+                          <span>{line.description}</span>
+                          {line.detail && <span className="block text-fun-gray-medium">{line.detail}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </span>
                 <span className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 sm:gap-4 shrink-0">
                 <span className="font-monospace sm:w-24 text-right">{formatMoney(inv.total, usage.client.currency)}</span>

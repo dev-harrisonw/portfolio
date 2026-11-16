@@ -6,6 +6,7 @@ import { Button, Card, Input, toMinor, fromMinor } from "@/components/admin/Form
 export type InvoiceLineRow = {
   id: string;
   description: string;
+  detail: string;
   minutes: number;
   rate: number;
   amount: number;
@@ -66,7 +67,8 @@ export default function InvoiceLines({
           ) : (
             <li key={line.id} className="flex items-start justify-between gap-3 py-2.5 text-sm">
               <span className="min-w-0">
-                {line.description}
+                <span className="block">{line.description}</span>
+                {line.detail && <span className="block text-xs text-fun-gray-medium mt-0.5">{line.detail}</span>}
                 {line.minutes > 0 && <span className="text-fun-gray-medium"> · {formatMinutes(line.minutes)}</span>}
               </span>
               <span className="flex items-center gap-3 shrink-0">
@@ -130,13 +132,14 @@ function LineForm({
   line: InvoiceLineRow;
   currency: string;
   onCancel: () => void;
-  onSave: (body: { description: string; mode: "time" | "price"; amount?: number }) => Promise<void>;
+  onSave: (body: { description: string; detail: string; mode: "time" | "price"; amount?: number }) => Promise<void>;
   onDelete: () => Promise<void>;
   onError: (message: string) => void;
 }) {
   const timed = canBillTime(line);
   const [mode, setMode] = useState<"time" | "price">(timed ? "time" : "price");
   const [description, setDescription] = useState(line.description);
+  const [detail, setDetail] = useState(line.detail);
   const [amount, setAmount] = useState(fromMinor(line.amount));
   const [busy, setBusy] = useState(false);
 
@@ -146,9 +149,9 @@ function LineForm({
       if (mode === "price") {
         const minor = toMinor(amount);
         if (minor == null || minor < 1 || Number.isNaN(minor)) return onError("Enter a price");
-        await onSave({ description, mode, amount: minor });
+        await onSave({ description, detail: detail.trim(), mode, amount: minor });
       } else {
-        await onSave({ description, mode });
+        await onSave({ description, detail: detail.trim(), mode });
       }
     } catch (error) {
       onError((error as Error).message);
@@ -174,7 +177,7 @@ function LineForm({
         </div>
       )}
       <div className="flex flex-col sm:flex-row gap-2">
-        <Input value={description} onChange={(e) => setDescription(e.target.value)} aria-label="Description" className="flex-1 min-w-0" />
+        <Input value={description} onChange={(e) => setDescription(e.target.value)} aria-label="Line" placeholder="Line" className="flex-1 min-w-0" />
         {mode === "price" ? (
           <Input value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Price" placeholder="150.00" inputMode="decimal" className="sm:w-32" />
         ) : (
@@ -183,6 +186,7 @@ function LineForm({
           </span>
         )}
       </div>
+      <Input value={detail} onChange={(e) => setDetail(e.target.value)} aria-label="Description" placeholder="Description, shown to the client" />
       <div className="flex gap-2">
         <Button onClick={save} disabled={busy}>
           Save
@@ -216,19 +220,21 @@ function AddLine({
   onError,
 }: {
   onCancel: () => void;
-  onSave: (body: { description: string; amount: number }) => Promise<void>;
+  onSave: (body: { description: string; detail: string; amount: number }) => Promise<void>;
   onError: (message: string) => void;
 }) {
   const [description, setDescription] = useState("");
+  const [detail, setDetail] = useState("");
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
 
   return (
     <div className="mt-3 pt-3 border-t border-fun-gray-darker space-y-2">
       <div className="flex flex-col sm:flex-row gap-2">
-        <Input value={description} onChange={(e) => setDescription(e.target.value)} aria-label="Description" placeholder="What was this" className="flex-1 min-w-0" />
+        <Input value={description} onChange={(e) => setDescription(e.target.value)} aria-label="Line" placeholder="What was this" className="flex-1 min-w-0" />
         <Input value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Price" placeholder="150.00" inputMode="decimal" className="sm:w-32" />
       </div>
+      <Input value={detail} onChange={(e) => setDetail(e.target.value)} aria-label="Description" placeholder="Description, shown to the client" />
       <div className="flex gap-2">
         <Button
           disabled={busy}
@@ -238,7 +244,7 @@ function AddLine({
             if (minor == null || minor < 1 || Number.isNaN(minor)) return onError("Enter a price");
             setBusy(true);
             try {
-              await onSave({ description: description.trim(), amount: minor });
+              await onSave({ description: description.trim(), detail: detail.trim(), amount: minor });
             } catch (error) {
               onError((error as Error).message);
               setBusy(false);

@@ -7,6 +7,7 @@ const amountFor = (minutes: number, rate: number) => Math.round((minutes * rate)
 export const invoiceLineUpdateSchema = z
   .object({
     description: z.string().trim().min(1, "Add a description").max(500),
+    detail: z.string().trim().max(1000).optional(),
     mode: z.enum(["time", "price"]),
     amount: z.number().int().min(1, "Enter a price").optional(),
   })
@@ -18,6 +19,7 @@ export const invoiceLineUpdateSchema = z
 
 export const invoiceLineCreateSchema = z.object({
   description: z.string().trim().min(1, "Add a description").max(500),
+  detail: z.string().trim().max(1000).optional(),
   amount: z.number().int().min(1, "Enter a price"),
 });
 
@@ -55,12 +57,12 @@ export async function updateInvoiceLine(
     if (line.minutes <= 0 || line.rate <= 0) throw new HttpError(422, "This line has no hours to bill");
     await prisma.invoiceLine.update({
       where: { id: line.id },
-      data: { description: input.description, amount: amountFor(line.minutes, line.rate) },
+      data: { description: input.description, detail: input.detail ?? "", amount: amountFor(line.minutes, line.rate) },
     });
   } else {
     await prisma.invoiceLine.update({
       where: { id: line.id },
-      data: { description: input.description, minutes: 0, rate: 0, amount: input.amount },
+      data: { description: input.description, detail: input.detail ?? "", minutes: 0, rate: 0, amount: input.amount },
     });
   }
   return recalcInvoice(invoiceId);
@@ -73,6 +75,7 @@ export async function addInvoiceLine(invoiceId: string, input: z.infer<typeof in
     data: {
       invoiceId,
       description: input.description,
+      detail: input.detail ?? "",
       minutes: 0,
       rate: 0,
       amount: input.amount,

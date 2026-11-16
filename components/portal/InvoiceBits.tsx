@@ -13,6 +13,7 @@ export type PortalInvoice = {
   paidAt: string | null;
   periodStart: string | null;
   periodEnd: string | null;
+  lines: { description: string; detail: string; amount: number }[];
 };
 
 const DAY_MS = 86400000;

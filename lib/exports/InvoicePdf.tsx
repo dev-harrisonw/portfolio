@@ -52,7 +52,7 @@ export type InvoicePdfData = {
     monthlyHours?: number | null;
     billOverages?: boolean;
   };
-  lines: { description: string; minutes: number; rate?: number; amount: number }[];
+  lines: { description: string; minutes: number; rate?: number; amount: number; detail?: string }[];
 };
 
 type Detail = { note: string; minutes: number };
@@ -206,7 +206,10 @@ function Cover({ invoice }: { invoice: InvoicePdfData }) {
       </View>
       {invoice.lines.map((row, i) => (
         <View key={i} style={s.row} wrap={false}>
-          <Text style={{ flex: 1 }}>{row.description}</Text>
+          <View style={{ flex: 1 }}>
+            <Text>{row.description}</Text>
+            {row.detail ? <Text style={[s.muted, { marginTop: 2 }]}>{row.detail}</Text> : null}
+          </View>
           <Text style={[s.right, { width: 70 }]}>{row.minutes ? formatMinutes(row.minutes) : "—"}</Text>
           <Text style={[s.right, { width: 60 }]}>{row.rate ? formatMoney(row.rate, invoice.currency) : "—"}</Text>
           <Text style={[s.right, { width: 70 }]}>{formatMoney(row.amount, invoice.currency)}</Text>

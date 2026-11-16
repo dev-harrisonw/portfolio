@@ -92,14 +92,17 @@ export async function refreshPeriodInvoice(invoiceId: string, opts: { pullUnbill
   }
 
   const draft = priceUsage({ ...usage, entries: usage.entries.filter((entry) => include.has(entry.id)) });
-  const manual = await prisma.invoiceLine.findMany({
-    where: { invoiceId, manual: true },
-    orderBy: { sortOrder: "asc" },
-  });
+  const existingLines = await prisma.invoiceLine.findMany({ where: { invoiceId }, orderBy: { sortOrder: "asc" } });
+  const manual = existingLines.filter((line) => line.manual);
+  const carriedDetail = new Map(existingLines.filter((line) => line.detail).map((line) => [line.description, line.detail]));
 
   await prisma.$transaction(async (tx) => {
     await tx.invoiceLine.deleteMany({ where: { invoiceId, manual: false } });
-    if (draft.lines.length) await tx.invoiceLine.createMany({ data: lineRows(invoiceId, draft.lines) });
+    if (draft.lines.length) {
+      await tx.invoiceLine.createMany({
+        data: lineRows(invoiceId, draft.lines).map((row) => ({ ...row, detail: carriedDetail.get(row.description) ?? "" })),
+      });
+    }
     for (let i = 0; i < manual.length; i++) {
       await tx.invoiceLine.update({
         where: { id: manual[i].id },

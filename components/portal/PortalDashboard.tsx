@@ -153,6 +153,16 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
               {formatMoney(periodInvoice.total, currency)}
             </p>
             <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-1">{invoiceDateNote(periodInvoice)}</p>
+            {periodInvoice.lines.length > 0 && (
+              <ul className="mt-3 space-y-1.5">
+                {periodInvoice.lines.map((line, index) => (
+                  <li key={index} className="text-xs text-fun-gray-light">
+                    <span>{line.description}</span>
+                    {line.detail && <span className="block text-fun-gray-medium">{line.detail}</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className="mt-auto pt-3 flex items-center gap-3">
               {periodInvoice.status === "SENT" && <PayButton invoiceId={periodInvoice.id} clientId={clientId} />}
               {periodInvoice.status !== "DRAFT" && (

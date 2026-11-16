@@ -33,7 +33,7 @@ type InvoiceDetail = {
   createdAt: string;
   client: { id: string; name: string; billingEmail: string };
   project: { id: string; name: string } | null;
-  lines: { id: string; description: string; minutes: number; rate: number; amount: number }[];
+  lines: { id: string; description: string; detail: string; minutes: number; rate: number; amount: number }[];
   entries: { id: string; durationMinutes: number; amount: number | null; note: string; startedAt: string; task: { title: string } }[];
 };
 

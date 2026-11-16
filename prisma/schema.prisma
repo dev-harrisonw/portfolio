@@ -302,6 +302,8 @@ model InvoiceLine {
   rate        Int     @default(0)
   amount      Int
   sortOrder   Int     @default(0)
+  /// Extra note under the line, shown on the invoice the client sees.
+  detail      String  @default("")
   /// Added by hand on the invoice. A refresh from time keeps these and replaces the rest.
   manual      Boolean @default(false)
 
