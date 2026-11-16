@@ -151,7 +151,7 @@ function RunningHeader({ invoice }: { invoice: InvoicePdfData }) {
   );
 }
 
-function Cover({ invoice, rate }: { invoice: InvoicePdfData; rate: number }) {
+function Cover({ invoice }: { invoice: InvoicePdfData }) {
   const period = periodLabel(invoice);
   const address = (invoice.client.billingAddress || "").split("\n").map((l) => l.trim()).filter(Boolean);
   const days = dueInDays(invoice);
@@ -208,7 +208,7 @@ function Cover({ invoice, rate }: { invoice: InvoicePdfData; rate: number }) {
         <View key={i} style={s.row} wrap={false}>
           <Text style={{ flex: 1 }}>{row.description}</Text>
           <Text style={[s.right, { width: 70 }]}>{row.minutes ? formatMinutes(row.minutes) : "—"}</Text>
-          <Text style={[s.right, { width: 60 }]}>{row.rate || rate ? formatMoney(row.rate || rate, invoice.currency) : "—"}</Text>
+          <Text style={[s.right, { width: 60 }]}>{row.rate ? formatMoney(row.rate, invoice.currency) : "—"}</Text>
           <Text style={[s.right, { width: 70 }]}>{formatMoney(row.amount, invoice.currency)}</Text>
         </View>
       ))}
@@ -345,13 +345,12 @@ function Quote({ invoice, areas }: { invoice: InvoicePdfData; areas: Area[] }) {
 }
 
 function InvoiceDoc({ invoice, areas }: { invoice: InvoicePdfData; areas: Area[] }) {
-  const rate = invoice.client.hourlyRate ?? 0;
   const worked = areas.reduce((sum, a) => sum + a.minutes, 0);
   const quoted = (invoice.client.monthlyHours ?? 0) * 60;
   const showQuote = quoted > 0 && worked > quoted && invoice.client.billOverages === false;
   return (
     <Document title={`${invoice.number} · ${invoice.client.name}`} author="Harrison Warburton">
-      <Cover invoice={invoice} rate={rate} />
+      <Cover invoice={invoice} />
       {areas.length > 0 && <Breakdown invoice={invoice} areas={areas} />}
       {showQuote && <Quote invoice={invoice} areas={areas} />}
     </Document>

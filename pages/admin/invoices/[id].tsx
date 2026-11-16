@@ -8,6 +8,7 @@ import { formatMinutes, formatMoney } from "@/lib/billing";
 import { dueLabel, invoiceStatusTone } from "@/lib/clients";
 import AdminShell from "@/components/admin/AdminShell";
 import InvoiceActions, { type InvoiceActionStatus } from "@/components/admin/InvoiceActions";
+import InvoiceLines from "@/components/admin/InvoiceLines";
 import { Card } from "@/components/admin/Form";
 
 type InvoiceDetail = {
@@ -29,7 +30,7 @@ type InvoiceDetail = {
   createdAt: string;
   client: { id: string; name: string; billingEmail: string };
   project: { id: string; name: string } | null;
-  lines: { id: string; description: string; minutes: number; amount: number }[];
+  lines: { id: string; description: string; minutes: number; rate: number; amount: number }[];
   entries: { id: string; durationMinutes: number; amount: number | null; note: string; startedAt: string; task: { title: string } }[];
 };
 
@@ -117,35 +118,24 @@ export default function InvoiceDetailPage({ invoice }: { invoice: InvoiceDetail 
 
       <section className="mb-6 sm:mb-10">
         <h2 className="text-xl font-bold mb-4">Lines</h2>
-        <Card>
-          <ul className="divide-y divide-fun-gray-darker">
-            {invoice.lines.map((line) => (
-              <li key={line.id} className="flex items-start justify-between gap-3 py-2.5 text-sm">
-                <span className="min-w-0">
-                  {line.description}
-                  {line.minutes > 0 && <span className="text-fun-gray-medium"> · {formatMinutes(line.minutes)}</span>}
-                </span>
-                <span className="font-monospace shrink-0">{formatMoney(line.amount, invoice.currency)}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 pt-4 border-t border-fun-gray-darker space-y-1 text-sm">
-            <p className="flex justify-between text-fun-gray-medium">
-              <span>Subtotal</span>
-              <span className="font-monospace">{formatMoney(invoice.subtotal, invoice.currency)}</span>
-            </p>
-            {invoice.vat > 0 && (
-              <p className="flex justify-between text-fun-gray-medium">
-                <span>VAT ({(invoice.vatRateBps / 100).toFixed(1)}%)</span>
-                <span className="font-monospace">{formatMoney(invoice.vat, invoice.currency)}</span>
-              </p>
-            )}
-            <p className="flex justify-between font-bold">
-              <span>Total</span>
-              <span className="font-monospace">{formatMoney(invoice.total, invoice.currency)}</span>
-            </p>
-          </div>
-        </Card>
+        {invoice.status !== "DRAFT" && (
+          <p className="text-xs text-fun-gray-medium mb-3">Lines can be changed while the invoice is still a draft.</p>
+        )}
+        <InvoiceLines
+          invoiceId={invoice.id}
+          currency={invoice.currency}
+          lines={invoice.lines}
+          subtotal={invoice.subtotal}
+          vat={invoice.vat}
+          vatRateBps={invoice.vatRateBps}
+          total={invoice.total}
+          editable={invoice.status === "DRAFT"}
+          onChange={() => {
+            setError(null);
+            router.replace(router.asPath, undefined, { scroll: false });
+          }}
+          onError={setError}
+        />
       </section>
 
       {invoice.entries.length > 0 && (
