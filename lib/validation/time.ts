@@ -77,14 +77,13 @@ const entryFields = z.object({
   taskId: z.string().min(1, "Pick a task"),
   startedAt: z.coerce.date(),
   durationMinutes: z.number().int().min(0).max(24 * 60).optional(),
-  /** Minor units. Set this, and leave duration empty, to bill a fixed price instead of time. */
+  /** Minor units. Only an existing fixed-price row can keep one; a new entry is always time. */
   amount: z.number().int().min(1, "Enter a price").nullable().optional(),
   note: z.string().max(2000).default(""),
   billable: z.boolean().default(true),
 });
 
 export const entrySchema = entryFields.superRefine((value, ctx) => {
-  if (value.amount != null) return;
   if (value.durationMinutes == null || value.durationMinutes < 1) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Duration must be at least a minute", path: ["durationMinutes"] });
   }

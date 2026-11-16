@@ -5,7 +5,7 @@ import { requireAdminPage } from "@/lib/requireAdminPage";
 import { api } from "@/lib/fetcher";
 import { formatMinutes, formatMoney, parseDuration, startOfWeek } from "@/lib/billing";
 import AdminShell from "@/components/admin/AdminShell";
-import { Button, Card, Input, Select, toMinor } from "@/components/admin/Form";
+import { Button, Card, Input, Select } from "@/components/admin/Form";
 import RunningTimer, { type RunningEntry } from "@/components/admin/time/RunningTimer";
 import TaskPicker, { type PickerClient, type PickerTask } from "@/components/admin/time/TaskPicker";
 import EntryRow, { type EntryRowData } from "@/components/admin/time/EntryRow";
@@ -238,29 +238,22 @@ function ManualEntry({
   onTaskCreated: (task: PickerTask, projectId: string) => void;
   onSaved: () => void;
 }) {
-  const [mode, setMode] = useState<"time" | "price">("time");
   const [taskId, setTaskId] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [start, setStart] = useState("09:00");
   const [duration, setDuration] = useState("1:00");
-  const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [billable, setBillable] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const priced = mode === "price";
 
   const save = async () => {
     setError(null);
     const minutes = parseDuration(duration);
-    const minor = toMinor(amount);
-    if (!priced && !minutes) return setError("Try 1:30, 1h 30m or 90m");
-    if (priced && (minor == null || minor < 1 || Number.isNaN(minor))) return setError("Enter a price");
-    const startedAt = new Date(`${date}T${priced ? "12:00" : start}:00`).toISOString();
+    if (!minutes) return setError("Try 1:30, 1h 30m or 90m");
+    const startedAt = new Date(`${date}T${start}:00`).toISOString();
     try {
       await api("/api/admin/time/entries", {
-        body: priced
-          ? { taskId, startedAt, amount: minor, note, billable }
-          : { taskId, startedAt, durationMinutes: minutes, note, billable },
+        body: { taskId, startedAt, durationMinutes: minutes, note, billable },
       });
       onSaved();
     } catch (e) {
@@ -270,46 +263,18 @@ function ManualEntry({
 
   return (
     <Card className="mt-4 space-y-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex rounded-full border border-fun-gray-darker p-1 text-sm" role="group" aria-label="Entry type">
-          {(["time", "price"] as const).map((value) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setMode(value)}
-              className={`rounded-full px-3 py-1.5 min-h-[36px] capitalize ${mode === value ? "bg-fun-pink-dark" : "text-fun-gray-light"}`}
-            >
-              {value}
-            </button>
-          ))}
-        </div>
-        <p className="text-xs text-fun-gray-medium">
-          {priced ? "Billed as this amount. It does not use hours or the allowance." : "Billed from the time and the hourly rate."}
-        </p>
-      </div>
       <TaskPicker clients={clients} value={taskId} onChange={setTaskId} defaultClientId={defaultClientId} onTaskCreated={onTaskCreated} />
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="col-span-1" aria-label="Date" />
-        {priced ? (
-          <Input value={amount} onChange={(e) => setAmount(e.target.value)} className="col-span-1" aria-label="Price" placeholder="150.00" inputMode="decimal" />
-        ) : (
-          <>
-            <Input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="col-span-1" aria-label="Start time" />
-            <Input value={duration} onChange={(e) => setDuration(e.target.value)} className="col-span-1" aria-label="Duration" placeholder="1:30" />
-          </>
-        )}
+        <Input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="col-span-1" aria-label="Start time" />
+        <Input value={duration} onChange={(e) => setDuration(e.target.value)} className="col-span-1" aria-label="Duration" placeholder="1:30" />
         <label className="flex items-center gap-2 text-sm text-fun-gray-light col-span-1">
           <input type="checkbox" checked={billable} onChange={(e) => setBillable(e.target.checked)} />
           Billable
         </label>
-        <Input
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder={priced ? "What was this" : "Note"}
-          className="col-span-2 sm:col-span-3 min-w-0"
-        />
+        <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note" className="col-span-2 sm:col-span-3 min-w-0" />
         <Button onClick={save} disabled={!taskId} className="col-span-2 sm:col-span-1">
-          {priced ? "Save item" : "Save entry"}
+          Save entry
         </Button>
       </div>
       {error && <p className="text-sm text-red-400">{error}</p>}
