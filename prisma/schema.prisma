@@ -272,6 +272,8 @@ model Invoice {
   vatRateBps              Int
   vat                     Int
   total                   Int
+  /// Charge hours over the allowance on this invoice. Starts as the client's setting.
+  billOverages            Boolean       @default(true)
   dueAt                   DateTime?
   sentAt                  DateTime?
   paidAt                  DateTime?

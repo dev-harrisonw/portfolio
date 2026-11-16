@@ -44,6 +44,8 @@ export type InvoicePdfData = {
   periodStart: string | Date | null;
   periodEnd: string | Date | null;
   createdAt: string | Date;
+  /** When set, this invoice decides whether hours over the allowance are charged. */
+  billOverages?: boolean;
   client: {
     name: string;
     billingEmail: string;
@@ -350,7 +352,8 @@ function Quote({ invoice, areas }: { invoice: InvoicePdfData; areas: Area[] }) {
 function InvoiceDoc({ invoice, areas }: { invoice: InvoicePdfData; areas: Area[] }) {
   const worked = areas.reduce((sum, a) => sum + a.minutes, 0);
   const quoted = (invoice.client.monthlyHours ?? 0) * 60;
-  const showQuote = quoted > 0 && worked > quoted && invoice.client.billOverages === false;
+  const chargeOverage = invoice.billOverages ?? invoice.client.billOverages !== false;
+  const showQuote = quoted > 0 && worked > quoted && !chargeOverage;
   return (
     <Document title={`${invoice.number} · ${invoice.client.name}`} author="Harrison Warburton">
       <Cover invoice={invoice} />

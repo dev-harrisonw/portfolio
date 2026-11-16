@@ -17,6 +17,10 @@ export type InvoiceDraft = {
   vat: number;
   total: number;
   entryIds: string[];
+  /** Hours past the allowance, whether or not this draft charges them. */
+  overageMinutes: number;
+  /** What those hours would add, in minor units, if charged. */
+  overageAmount: number;
 };
 
 const amountFor = (minutes: number, rate: number) => Math.round((minutes * rate) / 60);
@@ -26,8 +30,9 @@ const amountFor = (minutes: number, rate: number) => Math.round((minutes * rate)
  * at the hourly rate; pay-as-you-go projects bill hours × rate. Rounding applies per entry.
  * `scale` projects minutes forward (e.g. total days ÷ elapsed days) for dashboard estimates.
  */
-export function priceUsage(usage: ClientUsage, opts: { scale?: number } = {}): InvoiceDraft {
+export function priceUsage(usage: ClientUsage, opts: { scale?: number; billOverages?: boolean } = {}): InvoiceDraft {
   const scale = opts.scale ?? 1;
+  const billOverages = opts.billOverages ?? usage.client.billOverages;
   const { client } = usage;
   const projectById = new Map(usage.projects.map((p) => [p.id, p]));
   const rateFor = (projectId: string) => projectById.get(projectId)?.hourlyRate ?? client.hourlyRate;
@@ -43,6 +48,8 @@ export function priceUsage(usage: ClientUsage, opts: { scale?: number } = {}): I
   const scaled = (m: number) => Math.round(m * scale);
 
   const lines: DraftLine[] = [];
+  let overageMinutes = 0;
+  let overageAmount = 0;
 
   for (const allowance of usage.allowances) {
     const projectIds =
@@ -76,15 +83,20 @@ export function priceUsage(usage: ClientUsage, opts: { scale?: number } = {}): I
 
     const available = allowance.allowanceMinutes + allowance.carriedInMinutes;
     const overage = Math.max(0, used - available);
-    // Clients can opt out of charging overage. The hours are still tracked and shown as over the allowance.
-    if (overage > 0 && client.billOverages) {
-      lines.push({
-        projectId: allowance.projectId,
-        description: `Additional hours${allowance.scope === "project" ? ` (${allowance.label})` : ""} — ${formatMinutes(overage)}`,
-        minutes: overage,
-        rate,
-        amount: amountFor(overage, rate),
-      });
+    // The hours are always tracked. Charging them is a choice on the invoice.
+    if (overage > 0) {
+      const amount = amountFor(overage, rate);
+      overageMinutes += overage;
+      overageAmount += amount;
+      if (billOverages) {
+        lines.push({
+          projectId: allowance.projectId,
+          description: `Additional hours${allowance.scope === "project" ? ` (${allowance.label})` : ""} — ${formatMinutes(overage)}`,
+          minutes: overage,
+          rate,
+          amount,
+        });
+      }
     }
   }
 
@@ -100,7 +112,16 @@ export function priceUsage(usage: ClientUsage, opts: { scale?: number } = {}): I
 
   const subtotal = lines.reduce((s, l) => s + l.amount, 0);
   const vat = Math.round((subtotal * client.vatRateBps) / 10000);
-  return { lines, subtotal, vatRateBps: client.vatRateBps, vat, total: subtotal + vat, entryIds: [...timed, ...priced].map((e) => e.id) };
+  return {
+    lines,
+    subtotal,
+    vatRateBps: client.vatRateBps,
+    vat,
+    total: subtotal + vat,
+    entryIds: [...timed, ...priced].map((e) => e.id),
+    overageMinutes,
+    overageAmount,
+  };
 }
 
 /** Scale factor that projects current-period usage to the end of the period. */

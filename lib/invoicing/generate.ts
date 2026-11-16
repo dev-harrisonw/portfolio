@@ -66,7 +66,7 @@ export async function snapshotCarry(clientId: string, period: BillingPeriod) {
  * `pullUnbilled` also attaches billable time in the period that is not on an invoice yet.
  * Lines added by hand are kept.
  */
-export async function refreshPeriodInvoice(invoiceId: string, opts: { pullUnbilled?: boolean } = {}) {
+export async function refreshPeriodInvoice(invoiceId: string, opts: { pullUnbilled?: boolean; billOverages?: boolean } = {}) {
   const invoice = await prisma.invoice.findUnique({ where: { id: invoiceId } });
   if (!invoice) throw new HttpError(404, "Invoice not found");
   if (invoice.status !== "DRAFT") throw new HttpError(409, "Only a draft invoice can be changed");
@@ -91,7 +91,11 @@ export async function refreshPeriodInvoice(invoiceId: string, opts: { pullUnbill
     }
   }
 
-  const draft = priceUsage({ ...usage, entries: usage.entries.filter((entry) => include.has(entry.id)) });
+  const billOverages = opts.billOverages ?? invoice.billOverages;
+  const draft = priceUsage(
+    { ...usage, entries: usage.entries.filter((entry) => include.has(entry.id)) },
+    { billOverages }
+  );
   const existingLines = await prisma.invoiceLine.findMany({ where: { invoiceId }, orderBy: { sortOrder: "asc" } });
   const manual = existingLines.filter((line) => line.manual);
   const carriedDetail = new Map(existingLines.filter((line) => line.detail).map((line) => [line.description, line.detail]));
@@ -120,7 +124,7 @@ export async function refreshPeriodInvoice(invoiceId: string, opts: { pullUnbill
     const vat = Math.round((subtotal * invoice.vatRateBps) / 10000);
     await tx.invoice.update({
       where: { id: invoiceId },
-      data: { subtotal, vat, total: subtotal + vat },
+      data: { billOverages, subtotal, vat, total: subtotal + vat },
     });
   });
 
@@ -178,6 +182,7 @@ export async function generatePeriodInvoice(
         periodStart: period.start,
         periodEnd: period.end,
         currency: usage.client.currency,
+        billOverages: usage.client.billOverages,
         subtotal: draft.subtotal,
         vatRateBps: draft.vatRateBps,
         vat: draft.vat,

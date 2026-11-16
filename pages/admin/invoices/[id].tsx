@@ -5,11 +5,14 @@ import type { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
 import { requireAdminPage } from "@/lib/requireAdminPage";
 import { formatMoney } from "@/lib/billing";
+import { getClientUsage } from "@/lib/usage";
+import { priceUsage } from "@/lib/invoicing/calc";
 import { dueLabel, invoiceStatusTone } from "@/lib/clients";
 import AdminShell from "@/components/admin/AdminShell";
 import InvoiceActions, { type InvoiceActionStatus } from "@/components/admin/InvoiceActions";
 import InvoiceLines from "@/components/admin/InvoiceLines";
 import InvoiceName from "@/components/admin/InvoiceName";
+import InvoiceOverage from "@/components/admin/InvoiceOverage";
 import InvoiceTime from "@/components/admin/InvoiceTime";
 import { Card } from "@/components/admin/Form";
 import type { PickerClient } from "@/components/admin/time/TaskPicker";
@@ -24,6 +27,7 @@ type InvoiceDetail = {
   vatRateBps: number;
   vat: number;
   total: number;
+  billOverages: boolean;
   dueAt: string | null;
   sentAt: string | null;
   paidAt: string | null;
@@ -56,16 +60,40 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     },
   });
   if (!invoice) return { notFound: true };
+  let overageMinutes = 0;
+  let overageAmount = 0;
+  if (invoice.kind === "PERIOD" && invoice.periodStart && invoice.periodEnd) {
+    const usage = await getClientUsage(invoice.clientId, { start: invoice.periodStart, end: invoice.periodEnd }, new Date(invoice.periodEnd.getTime() - 1));
+    if (usage) {
+      const onInvoice = new Set(invoice.entries.map((entry) => entry.id));
+      const priced = priceUsage(
+        { ...usage, entries: usage.entries.filter((entry) => onInvoice.has(entry.id)) },
+        { billOverages: true }
+      );
+      overageMinutes = priced.overageMinutes;
+      overageAmount = priced.overageAmount;
+    }
+  }
   const projects = await prisma.project.findMany({
     where: { clientId: invoice.clientId, status: { not: "ARCHIVED" } },
     orderBy: { name: "asc" },
     select: { id: true, name: true, tasks: { orderBy: { title: "asc" }, select: { id: true, title: true, status: true } } },
   });
   const picker: PickerClient[] = [{ id: invoice.client.id, name: invoice.client.name, projects }];
-  return { props: JSON.parse(JSON.stringify({ invoice, picker })) };
+  return { props: JSON.parse(JSON.stringify({ invoice, picker, overageMinutes, overageAmount })) };
 };
 
-export default function InvoiceDetailPage({ invoice, picker }: { invoice: InvoiceDetail; picker: PickerClient[] }) {
+export default function InvoiceDetailPage({
+  invoice,
+  picker,
+  overageMinutes,
+  overageAmount,
+}: {
+  invoice: InvoiceDetail;
+  picker: PickerClient[];
+  overageMinutes: number;
+  overageAmount: number;
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const due = dueLabel(invoice.dueAt, invoice.status);
@@ -132,6 +160,22 @@ export default function InvoiceDetailPage({ invoice, picker }: { invoice: Invoic
           )}
         </Card>
       </div>
+
+      {overageMinutes > 0 && (
+        <InvoiceOverage
+          invoiceId={invoice.id}
+          currency={invoice.currency}
+          billOverages={invoice.billOverages}
+          overageMinutes={overageMinutes}
+          overageAmount={overageAmount}
+          editable={invoice.status === "DRAFT"}
+          onChange={() => {
+            setError(null);
+            router.replace(router.asPath, undefined, { scroll: false });
+          }}
+          onError={setError}
+        />
+      )}
 
       <section className="mb-6 sm:mb-10">
         <h2 className="text-xl font-bold mb-4">Lines</h2>
