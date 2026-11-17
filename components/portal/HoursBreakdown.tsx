@@ -10,10 +10,11 @@ export function AllowanceSummary({ usage }: { usage: ClientUsage }) {
     <div className="grid gap-4 md:grid-cols-2">
       {usage.allowances
         .filter((a) => a.availableMinutes != null || a.scope === "client")
-        .map((a) => {
+        .map((a, i, shown) => {
+          const wide = shown.length % 2 === 1 && i === shown.length - 1;
           const pct = a.availableMinutes ? Math.min(100, Math.round((a.usedMinutes / a.availableMinutes) * 100)) : 0;
           return (
-            <div key={a.projectId ?? "client"} className={card}>
+            <div key={a.projectId ?? "client"} className={`${card} ${wide ? "md:col-span-2" : ""}`}>
               <p className="text-xs uppercase tracking-wider text-fun-gray-light">
                 {a.scope === "project" ? `${a.label} allowance` : "Hours this period"}
               </p>

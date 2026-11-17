@@ -17,11 +17,18 @@ export default function BuildProgress({ builds, currency }: { builds: Build[]; c
   if (builds.length === 0) return null;
   return (
     <MotionSection className="grid gap-3 sm:gap-4 md:grid-cols-2 mb-8 sm:mb-10">
-      {builds.map((b) => {
+      {builds.map((b, i) => {
+        // A build with no neighbour takes the full row and lays its sections out side by side.
+        const wide = builds.length % 2 === 1 && i === builds.length - 1;
+        const side = wide ? "lg:mt-0 lg:border-t-0 lg:pt-0 lg:border-l lg:border-fun-gray-darker lg:pl-6" : "";
         const due = b.dueDate ? new Date(b.dueDate) : null;
         const daysToDue = due ? Math.ceil((due.getTime() - Date.now()) / 86400000) : null;
         return (
-          <MotionItem key={b.id} className="rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3.5 sm:p-5 min-w-0">
+          <MotionItem
+            key={b.id}
+            className={`rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3.5 sm:p-5 min-w-0 ${wide ? "md:col-span-2 lg:grid lg:grid-cols-3 lg:gap-6" : ""}`}
+          >
+            <div className="min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-pink">Project build</p>
@@ -46,9 +53,10 @@ export default function BuildProgress({ builds, currency }: { builds: Build[]; c
             <div className="mt-3 h-2.5 rounded-full bg-fun-gray-darker overflow-hidden">
               <div className="h-full rounded-full bg-fun-pink transition-[width] duration-700" style={{ width: `${Math.min(100, b.progress.percent)}%` }} />
             </div>
+            </div>
 
             {b.upcomingTasks.length > 0 && (
-              <div className="mt-4">
+              <div className={`mt-4 min-w-0 ${side}`}>
                 <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-gray-light mb-2">Up next</p>
                 <ul className="space-y-1.5 text-sm">
                   {b.upcomingTasks.map((t) => (
@@ -63,7 +71,7 @@ export default function BuildProgress({ builds, currency }: { builds: Build[]; c
             )}
 
             {b.stages.length > 0 && b.fixedPrice != null && (
-              <div className="mt-4 border-t border-fun-gray-darker pt-3">
+              <div className={`mt-4 min-w-0 border-t border-fun-gray-darker pt-3 ${side}`}>
                 <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-gray-light mb-2">
                   Payments · {formatMoney(b.fixedPrice, currency)} total
                 </p>
