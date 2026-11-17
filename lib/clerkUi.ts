@@ -42,6 +42,8 @@ export const clerkAppearance: Appearance = {
       border: `1px solid ${border}`,
       color: white,
     },
+    // Apple's mark ships black, which disappears on the dark card.
+    socialButtonsProviderIcon__apple: { filter: "invert(1)" },
     dividerLine: { backgroundColor: border },
     dividerText: { color: muted },
     formFieldLabel: { color: text },
