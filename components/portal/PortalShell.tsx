@@ -13,7 +13,7 @@ export default function PortalShell({ clientName, adminPreview, children }: Prop
     <div className="theme-dd min-h-screen overflow-x-clip">
       {adminPreview && (
         <div className="bg-fun-pink-darkest/80 border-b border-fun-pink-darker text-sm">
-          <div className="max-w-6xl mx-auto px-3 sm:px-6 py-1.5 sm:py-2 flex items-center gap-2 sm:gap-3">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 py-1.5 sm:py-2 flex items-center gap-2 sm:gap-3">
             <span className="text-fun-pink-light font-bold shrink-0">
               <span className="sm:hidden">Preview</span>
               <span className="hidden sm:inline">Admin preview</span>
@@ -39,7 +39,7 @@ export default function PortalShell({ clientName, adminPreview, children }: Prop
         </div>
       )}
       <header className="dd-topbar sticky top-0 z-20">
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-12 sm:h-14 flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 h-12 sm:h-14 flex items-center gap-3">
           <img src="/static/logos/logo_no_text.svg" width={28} height={28} alt="" className="shrink-0" style={{ width: 28, height: 28 }} />
           <div className="min-w-0 leading-tight">
             <p className="font-semibold truncate">{clientName}</p>
@@ -50,8 +50,8 @@ export default function PortalShell({ clientName, adminPreview, children }: Prop
           </div>
         </div>
       </header>
-      <main className="max-w-6xl mx-auto px-3 sm:px-6 py-3 sm:py-8">{children}</main>
-      <footer className="max-w-6xl mx-auto px-3 sm:px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:pb-10 text-xs text-fun-gray-medium leading-relaxed">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-8">{children}</main>
+      <footer className="max-w-7xl mx-auto px-3 sm:px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:pb-10 text-xs text-fun-gray-medium leading-relaxed">
         Questions about your hours or an invoice? Reply to any summary email or contact Harrison directly.
       </footer>
     </div>

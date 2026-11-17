@@ -220,11 +220,11 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
       {hasTime ? (
         <>
           <div className="grid gap-6 sm:gap-8 lg:grid-cols-5">
-            <section className="lg:col-span-3">
+            <section className="lg:col-span-3 flex flex-col min-w-0">
               <h2 className="text-xl font-bold mb-3 sm:mb-4">Where the time went</h2>
               <ProjectBreakdown usage={usage} />
             </section>
-            <section className="lg:col-span-2">
+            <section className="lg:col-span-2 flex flex-col min-w-0">
               <h2 className="text-xl font-bold mb-3 sm:mb-4">Work completed</h2>
               <CompletedTasks usage={usage} />
             </section>
@@ -273,7 +273,22 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
                     </span>
                   </span>
                 </div>
-                <PortalLineList lines={inv.lines} currency={usage.client.currency} />
+                {/* Unpaid invoices show what they're for; settled ones fold away so the list stays scannable. */}
+                {inv.status === "SENT" || inv.status === "DRAFT" ? (
+                  <PortalLineList lines={inv.lines} currency={usage.client.currency} />
+                ) : (
+                  inv.lines.length > 0 && (
+                    <details className="group mt-1.5">
+                      <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs text-fun-gray-medium hover:text-white [&::-webkit-details-marker]:hidden">
+                        <svg viewBox="0 0 20 20" className="h-3 w-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
+                          <path d="M7.5 4.5 13 10l-5.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        {inv.lines.length} {inv.lines.length === 1 ? "line" : "lines"}
+                      </summary>
+                      <PortalLineList lines={inv.lines} currency={usage.client.currency} />
+                    </details>
+                  )
+                )}
               </li>
             ))}
           </ul>

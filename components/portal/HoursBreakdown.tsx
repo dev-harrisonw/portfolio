@@ -10,10 +10,11 @@ export function AllowanceSummary({ usage }: { usage: ClientUsage }) {
     <div className="grid gap-4 md:grid-cols-2">
       {usage.allowances
         .filter((a) => a.availableMinutes != null || a.scope === "client")
-        .map((a) => {
+        .map((a, i, shown) => {
+          const wide = shown.length % 2 === 1 && i === shown.length - 1;
           const pct = a.availableMinutes ? Math.min(100, Math.round((a.usedMinutes / a.availableMinutes) * 100)) : 0;
           return (
-            <div key={a.projectId ?? "client"} className={card}>
+            <div key={a.projectId ?? "client"} className={`${card} ${wide ? "md:col-span-2" : ""}`}>
               <p className="text-xs uppercase tracking-wider text-fun-gray-light">
                 {a.scope === "project" ? `${a.label} allowance` : "Hours this period"}
               </p>
@@ -54,27 +55,36 @@ export function AllowanceSummary({ usage }: { usage: ClientUsage }) {
 }
 
 export function ProjectBreakdown({ usage }: { usage: ClientUsage }) {
-  if (usage.byProject.length === 0) return <div className={`${card} text-fun-gray-light`}>No time logged in this period yet.</div>;
+  if (usage.byProject.length === 0) return <div className={`${card} flex-1 text-fun-gray-light`}>No time logged in this period yet.</div>;
   return (
-    <div className={card}>
+    <div className={`${card} flex-1`}>
       <ul className="space-y-4 sm:space-y-5">
         {usage.byProject.map((project) => (
           <li key={project.projectId}>
-            <div className="flex items-center justify-between">
-              <p className="font-bold">{project.name}</p>
-              <p className="font-monospace text-sm">{formatMinutes(project.minutes)}</p>
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="font-bold min-w-0 break-words">{project.name}</p>
+              <p className="shrink-0 text-right">
+                <span className="font-monospace text-sm">{formatMinutes(project.minutes)}</span>
+                {usage.byProject.length > 1 && usage.totals.minutes > 0 && (
+                  <span className="ml-2 text-xs text-fun-gray-medium">{Math.round((project.minutes / usage.totals.minutes) * 100)}%</span>
+                )}
+              </p>
             </div>
+            {project.billableMinutes < project.minutes && (
+              <p className="text-xs text-fun-gray-medium">Includes {formatMinutes(project.minutes - project.billableMinutes)} not billed</p>
+            )}
             <div className="mt-2 h-1.5 rounded-full bg-fun-gray-darker overflow-hidden">
               <div className="h-full bg-fun-pink" style={{ width: `${Math.round((project.minutes / usage.totals.minutes) * 100)}%` }} />
             </div>
             <ul className="mt-2 space-y-1">
-              {project.tasks.map((task) => (
-                <li key={task.taskId} className="flex items-center justify-between text-sm text-fun-gray-light">
-                  <span className="truncate">
-                    {task.status === "DONE" && <span className="text-fun-pink mr-1">✓</span>}
-                    {task.title}
+              {[...project.tasks].sort((x, y) => y.minutes - x.minutes).map((task) => (
+                <li key={task.taskId} className="flex items-baseline gap-2 text-sm text-fun-gray-light">
+                  {/* Fixed-width marker column keeps titles aligned whether or not the task is done. */}
+                  <span className="w-3 shrink-0 text-center text-xs" aria-label={task.status === "DONE" ? "Done" : undefined}>
+                    {task.status === "DONE" ? <span className="text-fun-pink">✓</span> : <span className="text-fun-gray-darker">•</span>}
                   </span>
-                  <span className="font-monospace text-xs">{formatMinutes(task.minutes)}</span>
+                  <span className="min-w-0 flex-1 break-words">{task.title}</span>
+                  <span className="font-monospace text-xs shrink-0">{formatMinutes(task.minutes)}</span>
                 </li>
               ))}
             </ul>
@@ -93,7 +103,7 @@ export function CompletedTasks({ usage }: { usage: ClientUsage }) {
   const showProject = usage.byProject.length > 1;
 
   return (
-    <div className={card}>
+    <div className={`${card} flex-1`}>
       {usage.completedTasks.length === 0 ? (
         <p className="text-fun-gray-light text-sm">Nothing marked complete in this period yet.</p>
       ) : (
@@ -150,12 +160,14 @@ export function EntryLog({ usage }: { usage: ClientUsage }) {
   const periodEnd = new Date(usage.period.end).getTime();
   const showProject = usage.byProject.length > 1;
 
-  const weeks = new Map<number, { from: number; minutes: number; amount: number; entries: ClientUsage["entries"] }>();
+  const weeks = new Map<number, { from: number; minutes: number; unbilled: number; amount: number; entries: ClientUsage["entries"] }>();
   for (const e of usage.entries) {
     const index = Math.max(0, Math.floor((new Date(e.startedAt).getTime() - start) / WEEK_MS));
-    const week = weeks.get(index) ?? { from: start + index * WEEK_MS, minutes: 0, amount: 0, entries: [] };
-    if (e.amount == null) week.minutes += e.durationMinutes;
-    else week.amount += e.amount;
+    const week = weeks.get(index) ?? { from: start + index * WEEK_MS, minutes: 0, unbilled: 0, amount: 0, entries: [] };
+    if (e.amount == null) {
+      week.minutes += e.durationMinutes;
+      if (!e.billable) week.unbilled += e.durationMinutes;
+    } else week.amount += e.amount;
     week.entries.push(e);
     weeks.set(index, week);
   }
@@ -172,6 +184,7 @@ export function EntryLog({ usage }: { usage: ClientUsage }) {
             <span className="text-sm font-semibold">{weekRange(week.from, periodEnd)}</span>
             <span className="text-xs text-fun-gray-medium">
               {week.entries.length} {week.entries.length === 1 ? "entry" : "entries"}
+              {week.unbilled > 0 && <span className="hidden sm:inline"> · {formatMinutes(week.unbilled)} not billed</span>}
             </span>
             <span className="ml-auto font-monospace text-sm">
               {[

@@ -17,11 +17,18 @@ export default function BuildProgress({ builds, currency }: { builds: Build[]; c
   if (builds.length === 0) return null;
   return (
     <MotionSection className="grid gap-3 sm:gap-4 md:grid-cols-2 mb-8 sm:mb-10">
-      {builds.map((b) => {
+      {builds.map((b, i) => {
+        // A build with no neighbour takes the full row and lays its sections out side by side.
+        const wide = builds.length % 2 === 1 && i === builds.length - 1;
+        const side = wide ? "lg:mt-0 lg:border-t-0 lg:pt-0 lg:border-l lg:border-fun-gray-darker lg:pl-6" : "";
         const due = b.dueDate ? new Date(b.dueDate) : null;
         const daysToDue = due ? Math.ceil((due.getTime() - Date.now()) / 86400000) : null;
         return (
-          <MotionItem key={b.id} className="rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3.5 sm:p-5 min-w-0">
+          <MotionItem
+            key={b.id}
+            className={`rounded-2xl border border-fun-gray-darker bg-fun-gray-darkest/60 p-3.5 sm:p-5 min-w-0 ${wide ? "md:col-span-2 lg:grid lg:grid-cols-3 lg:gap-6" : ""}`}
+          >
+            <div className="min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-pink">Project build</p>
@@ -38,7 +45,11 @@ export default function BuildProgress({ builds, currency }: { builds: Build[]; c
                 {b.progress.total > 0 && <span className="block">{b.progress.done} of {b.progress.total} tasks done</span>}
                 {daysToDue != null && (
                   <span className={`block ${daysToDue < 0 ? "text-red-300" : ""}`}>
-                    {daysToDue < 0 ? `Target passed · ${fmt(b.dueDate)}` : `Target ${fmt(b.dueDate)} · ${daysToDue}d`}
+                    {daysToDue < 0
+                      ? `Target was ${fmt(b.dueDate)} · ${-daysToDue} ${daysToDue === -1 ? "day" : "days"} ago`
+                      : daysToDue === 0
+                      ? `Target ${fmt(b.dueDate)} · today`
+                      : `Target ${fmt(b.dueDate)} · ${daysToDue} ${daysToDue === 1 ? "day" : "days"} left`}
                   </span>
                 )}
               </p>
@@ -46,16 +57,17 @@ export default function BuildProgress({ builds, currency }: { builds: Build[]; c
             <div className="mt-3 h-2.5 rounded-full bg-fun-gray-darker overflow-hidden">
               <div className="h-full rounded-full bg-fun-pink transition-[width] duration-700" style={{ width: `${Math.min(100, b.progress.percent)}%` }} />
             </div>
+            </div>
 
             {b.upcomingTasks.length > 0 && (
-              <div className="mt-4">
+              <div className={`mt-4 min-w-0 ${side}`}>
                 <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-gray-light mb-2">Up next</p>
                 <ul className="space-y-1.5 text-sm">
                   {b.upcomingTasks.map((t) => (
-                    <li key={t.id} className="flex items-center gap-2 min-w-0">
-                      <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${t.status === "IN_PROGRESS" ? "bg-yellow-300" : "bg-fun-gray-medium"}`} />
-                      <span className="truncate">{t.title}</span>
-                      {t.status === "IN_PROGRESS" && <span className="text-xs text-fun-gray-medium shrink-0">in progress</span>}
+                    <li key={t.id} className="flex items-start gap-2 min-w-0">
+                      <span className={`mt-2 h-1.5 w-1.5 rounded-full shrink-0 ${t.status === "IN_PROGRESS" ? "bg-yellow-300" : "bg-fun-gray-medium"}`} />
+                      <span className="min-w-0 break-words">{t.title}</span>
+                      {t.status === "IN_PROGRESS" && <span className="mt-0.5 text-xs text-fun-gray-medium shrink-0">in progress</span>}
                     </li>
                   ))}
                 </ul>
@@ -63,14 +75,28 @@ export default function BuildProgress({ builds, currency }: { builds: Build[]; c
             )}
 
             {b.stages.length > 0 && b.fixedPrice != null && (
-              <div className="mt-4 border-t border-fun-gray-darker pt-3">
+              <div className={`mt-4 min-w-0 border-t border-fun-gray-darker pt-3 ${side}`}>
                 <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-gray-light mb-2">
                   Payments · {formatMoney(b.fixedPrice, currency)} total
                 </p>
+                {(() => {
+                  const paid = b.stages.filter((st) => st.status === "PAID").reduce((sum, st) => sum + st.amount, 0);
+                  const pct = b.fixedPrice ? Math.min(100, Math.round((paid / b.fixedPrice) * 100)) : 0;
+                  return (
+                    <div className="mb-3">
+                      <div className="h-1.5 rounded-full bg-fun-gray-darker overflow-hidden">
+                        <div className="h-full rounded-full bg-fun-pink-darker" style={{ width: `${pct}%` }} />
+                      </div>
+                      <p className="mt-1 text-[11px] text-fun-gray-medium">
+                        {formatMoney(paid, currency)} paid · {formatMoney(b.fixedPrice - paid, currency)} to go
+                      </p>
+                    </div>
+                  );
+                })()}
                 <ul className="space-y-2 text-sm">
                   {b.stages.map((s) => (
                     <li key={s.id} className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-0.5 items-baseline">
-                      <span className="min-w-0 truncate">
+                      <span className="min-w-0 break-words">
                         {s.label}
                         <span className="text-fun-gray-medium"> · {s.percent}%</span>
                       </span>

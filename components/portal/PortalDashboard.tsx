@@ -32,6 +32,8 @@ function weeklyBars(usage: ClientUsage, available: number | null) {
       primary: 0,
       secondary: 0,
       over: 0,
+      highlight: usage.period.isCurrent && Math.floor((usage.period.days.elapsed - 1) / 7) === i,
+      future: usage.period.isCurrent && i * 7 >= usage.period.days.elapsed,
     };
   });
   let used = 0;
@@ -87,6 +89,8 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
   const tone = paceTone[main.overageMinutes > 0 ? "over" : main.pace.status];
   const currency = usage.client.currency;
   const bars = weeklyBars(usage, main.availableMinutes);
+  // Even spread of the allowance across the period, so each week reads as ahead of or behind pace.
+  const weeklyPace = main.availableMinutes ? Math.round((main.availableMinutes * 7) / usage.period.days.total) : null;
   const hasOver = bars.some((b) => b.over > 0);
   const hasUnbilled = bars.some((b) => b.secondary > 0);
   const overNote = usage.client.billOverages ? "billed at the hourly rate" : "not billed";
@@ -121,15 +125,18 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
   );
 
   return (
-    <MotionSection className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-10">
-      <MotionItem className={`${card} col-span-2 lg:col-span-1 flex flex-col sm:flex-row lg:flex-col sm:items-center lg:justify-center gap-3 sm:gap-5`}>
-        <div className="flex items-center gap-4">
+    <MotionSection className="grid gap-2 sm:gap-4 lg:grid-cols-12 mb-6 sm:mb-10">
+      {/* Ring and hours table share one card at every size, so neither leaves an empty half. */}
+      <MotionItem className={`${card} lg:col-span-5 flex flex-col justify-center gap-3 sm:gap-4 min-w-0`}>
+        <div className="flex items-center gap-4 sm:gap-6">
           <HoursRing used={main.usedMinutes} available={main.availableMinutes} />
-          {/* Phones fold the hours table in beside the ring instead of giving it its own card. */}
-          <div className="sm:hidden min-w-0 flex-1 divide-y divide-fun-gray-darker">{hoursRows}</div>
+          <div className="min-w-0 flex-1">
+            <p className={`${label} hidden sm:block`}>Hours</p>
+            <div className="sm:mt-1 divide-y divide-fun-gray-darker">{hoursRows}</div>
+          </div>
         </div>
-        <div className="min-w-0 sm:flex-1 lg:flex-none text-left lg:text-center">
-          <p className={`rounded-lg sm:rounded-full px-3 py-1.5 sm:py-1 text-xs inline-block max-w-full ${tone}`}>
+        <div>
+          <p className={`rounded-lg px-3 py-1.5 text-xs leading-snug ${tone}`}>
             {paceText(main, "client", { closed, billOverages: usage.client.billOverages })}
           </p>
           {main.carriedInMinutes > 0 && (
@@ -138,12 +145,7 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
         </div>
       </MotionItem>
 
-      <MotionItem className={`${card} hidden sm:block sm:col-span-2 lg:col-span-2`}>
-        <p className={label}>Hours</p>
-        <div className="mt-2 divide-y divide-fun-gray-darker">{hoursRows}</div>
-      </MotionItem>
-
-      <MotionItem className={`${card} col-span-2 lg:col-span-3 flex flex-col`}>
+      <MotionItem className={`${card} lg:col-span-7 flex flex-col min-w-0`}>
         {periodInvoice ? (
           <>
             <div className="flex items-center justify-between gap-2">
@@ -155,7 +157,7 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
             </p>
             <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-1">{invoiceDateNote(periodInvoice)}</p>
             <PortalLineList lines={periodInvoice.lines} currency={currency} />
-            <div className="mt-auto pt-3 flex items-center gap-3">
+            <div className="mt-auto pt-3 flex flex-wrap items-center gap-3">
               {periodInvoice.status === "SENT" && <PayButton invoiceId={periodInvoice.id} clientId={clientId} />}
               {periodInvoice.status !== "DRAFT" && (
                 <a href={invoicePdfHref(periodInvoice.id, clientId)} className="text-sm text-fun-pink-light hover:underline">
@@ -166,35 +168,56 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
           </>
         ) : (
           <>
-            <p className={label}>{closed ? "Not invoiced yet" : "Estimated invoice"}</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className={label}>{closed ? "Not invoiced yet" : "Estimated invoice"}</p>
+              {!closed && <span className="text-[11px] text-fun-gray-medium">So far this period</span>}
+            </div>
             <p className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 font-monospace leading-tight break-all">
               {formatMoney(estimate.total, currency)}
             </p>
             {!closed && projected.total !== estimate.total && (
-              <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-2 leading-snug">
+              <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-1 leading-snug">
                 About {formatMoney(projected.total, currency)} by period end at the current pace
               </p>
             )}
-            {estimate.vat > 0 && (
-              <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-1">Includes VAT {formatMoney(estimate.vat, currency)}</p>
-            )}
-            {main.overageMinutes > 0 && !usage.client.billOverages && (
-              <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-1">Hours over the allowance aren't charged</p>
-            )}
+            <PortalLineList
+              lines={[
+                ...estimate.lines.map((l) => ({ description: l.description, detail: "", amount: l.amount })),
+                ...(estimate.vat > 0 ? [{ description: `VAT ${estimate.vatRateBps / 100}%`, detail: "", amount: estimate.vat }] : []),
+              ]}
+              currency={currency}
+            />
+            <p className="mt-auto pt-3 text-[11px] sm:text-xs text-fun-gray-medium leading-relaxed">
+              {formatMoney(usage.client.hourlyRate, currency)}/h
+              {usage.client.roundingMinutes > 1 ? ` · time rounded to ${usage.client.roundingMinutes}m per entry` : ""}
+              {main.availableMinutes != null ? ` · hours over the allowance ${overNote}` : ""}
+            </p>
           </>
         )}
       </MotionItem>
 
-      <MotionItem className={`${card} col-span-2 lg:col-span-3`}>
+      <MotionItem className={`${card} lg:col-span-12 min-w-0`}>
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <p className={label}>Hours per week</p>
           <div className="flex flex-wrap gap-3 text-[11px] text-fun-gray-medium">
             <Legend swatch="bg-fun-pink" text={main.availableMinutes != null ? "Within allowance" : "Billable"} />
             {hasOver && <Legend swatch="bg-red-400/80" text={`Over allowance${usage.client.billOverages ? "" : " (not billed)"}`} />}
             {hasUnbilled && <Legend swatch="bg-fun-gray-medium/50" text="Not billed" />}
+            {weeklyPace != null && (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-3 border-t border-dashed border-white/50" />
+                Even pace
+              </span>
+            )}
           </div>
         </div>
-        <BarChart bars={bars} height={96} />
+        <BarChart
+          bars={bars}
+          height={112}
+          showValues
+          target={weeklyPace}
+          targetLabel={weeklyPace ? `${formatMinutes(weeklyPace)}/wk pace` : undefined}
+        />
       </MotionItem>
     </MotionSection>
   );
