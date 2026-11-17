@@ -55,9 +55,9 @@ export function AllowanceSummary({ usage }: { usage: ClientUsage }) {
 }
 
 export function ProjectBreakdown({ usage }: { usage: ClientUsage }) {
-  if (usage.byProject.length === 0) return <div className={`${card} text-fun-gray-light`}>No time logged in this period yet.</div>;
+  if (usage.byProject.length === 0) return <div className={`${card} flex-1 text-fun-gray-light`}>No time logged in this period yet.</div>;
   return (
-    <div className={card}>
+    <div className={`${card} flex-1`}>
       <ul className="space-y-4 sm:space-y-5">
         {usage.byProject.map((project) => (
           <li key={project.projectId}>
@@ -94,7 +94,7 @@ export function CompletedTasks({ usage }: { usage: ClientUsage }) {
   const showProject = usage.byProject.length > 1;
 
   return (
-    <div className={card}>
+    <div className={`${card} flex-1`}>
       {usage.completedTasks.length === 0 ? (
         <p className="text-fun-gray-light text-sm">Nothing marked complete in this period yet.</p>
       ) : (

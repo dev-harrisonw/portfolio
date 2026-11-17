@@ -220,11 +220,11 @@ export default function PortalPage({ usage, estimate, projected, periods, adminP
       {hasTime ? (
         <>
           <div className="grid gap-6 sm:gap-8 lg:grid-cols-5">
-            <section className="lg:col-span-3">
+            <section className="lg:col-span-3 flex flex-col min-w-0">
               <h2 className="text-xl font-bold mb-3 sm:mb-4">Where the time went</h2>
               <ProjectBreakdown usage={usage} />
             </section>
-            <section className="lg:col-span-2">
+            <section className="lg:col-span-2 flex flex-col min-w-0">
               <h2 className="text-xl font-bold mb-3 sm:mb-4">Work completed</h2>
               <CompletedTasks usage={usage} />
             </section>
