@@ -82,10 +82,9 @@ export default function PeriodHeader({ periods, current, isCurrent, days, export
           value={current}
           onChange={(e) => router.push({ pathname: "/portal", query: { ...router.query, period: e.target.value } })}
         >
-          {periods.map((p, i) => (
+          {periods.map((p) => (
             <option key={p.value} value={p.value}>
               {p.label}
-              {i === 0 ? " (current)" : ""}
             </option>
           ))}
         </select>
