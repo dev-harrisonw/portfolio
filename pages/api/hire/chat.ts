@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { services } from "@/data/content/services";
 
+const MAX_MESSAGE = 2000;
+const MAX_ANSWERS = 2000;
+
 /**
  * Optional streaming-ish AI reply for /hire.
  * Falls back to a scripted response when OPENAI_API_KEY is missing.
@@ -15,15 +18,17 @@ export default async function handler(
   }
 
   const { message, answers } = req.body || {};
+  // Public endpoint that spends OpenAI credit: cap what a single request can send.
   const userMessage =
     typeof message === "string" && message.trim()
-      ? message.trim()
+      ? message.trim().slice(0, MAX_MESSAGE)
       : "Help me start a website project.";
 
   const serviceList = services.map((s) => `- ${s.title}: ${s.blurb}`).join("\n");
-  const context = answers
-    ? `Known answers so far: ${JSON.stringify(answers)}`
-    : "No structured answers yet.";
+  const context =
+    answers && typeof answers === "object"
+      ? `Known answers so far: ${JSON.stringify(answers).slice(0, MAX_ANSWERS)}`
+      : "No structured answers yet.";
 
   if (!process.env.OPENAI_API_KEY) {
     return res.status(200).json({
@@ -42,6 +47,7 @@ export default async function handler(
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || "gpt-4o-mini",
         temperature: 0.6,
+        max_tokens: 400,
         messages: [
           {
             role: "system",
@@ -56,8 +62,8 @@ export default async function handler(
     });
 
     if (!response.ok) {
-      const text = await response.text();
-      return res.status(502).json({ error: "Upstream AI error", detail: text });
+      console.error("hire chat: OpenAI error", response.status, await response.text());
+      return res.status(502).json({ error: "The assistant is unavailable right now" });
     }
 
     const data = await response.json();
