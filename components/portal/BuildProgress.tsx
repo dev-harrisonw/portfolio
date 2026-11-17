@@ -60,10 +60,10 @@ export default function BuildProgress({ builds, currency }: { builds: Build[]; c
                 <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-gray-light mb-2">Up next</p>
                 <ul className="space-y-1.5 text-sm">
                   {b.upcomingTasks.map((t) => (
-                    <li key={t.id} className="flex items-center gap-2 min-w-0">
-                      <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${t.status === "IN_PROGRESS" ? "bg-yellow-300" : "bg-fun-gray-medium"}`} />
-                      <span className="truncate">{t.title}</span>
-                      {t.status === "IN_PROGRESS" && <span className="text-xs text-fun-gray-medium shrink-0">in progress</span>}
+                    <li key={t.id} className="flex items-start gap-2 min-w-0">
+                      <span className={`mt-2 h-1.5 w-1.5 rounded-full shrink-0 ${t.status === "IN_PROGRESS" ? "bg-yellow-300" : "bg-fun-gray-medium"}`} />
+                      <span className="min-w-0 break-words">{t.title}</span>
+                      {t.status === "IN_PROGRESS" && <span className="mt-0.5 text-xs text-fun-gray-medium shrink-0">in progress</span>}
                     </li>
                   ))}
                 </ul>
@@ -78,7 +78,7 @@ export default function BuildProgress({ builds, currency }: { builds: Build[]; c
                 <ul className="space-y-2 text-sm">
                   {b.stages.map((s) => (
                     <li key={s.id} className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-0.5 items-baseline">
-                      <span className="min-w-0 truncate">
+                      <span className="min-w-0 break-words">
                         {s.label}
                         <span className="text-fun-gray-medium"> · {s.percent}%</span>
                       </span>

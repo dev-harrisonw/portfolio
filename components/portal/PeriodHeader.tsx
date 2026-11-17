@@ -52,7 +52,7 @@ export default function PeriodHeader({ periods, current, isCurrent, days, export
       <div className="flex items-center gap-3 min-w-0">
         <Arrow dir="prev" value={older} />
         <div className="min-w-0 flex-1 text-center lg:text-left">
-          <h1 className="text-xl sm:text-2xl font-bold leading-tight truncate">{period.label}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight break-words">{period.label}</h1>
           <p className="text-xs text-fun-gray-medium mt-0.5">
             {period.range}
             {isCurrent ? " · current period" : " · closed"}
