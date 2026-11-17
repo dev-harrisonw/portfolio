@@ -32,6 +32,8 @@ function weeklyBars(usage: ClientUsage, available: number | null) {
       primary: 0,
       secondary: 0,
       over: 0,
+      highlight: usage.period.isCurrent && Math.floor((usage.period.days.elapsed - 1) / 7) === i,
+      future: usage.period.isCurrent && i * 7 >= usage.period.days.elapsed,
     };
   });
   let used = 0;
@@ -87,6 +89,8 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
   const tone = paceTone[main.overageMinutes > 0 ? "over" : main.pace.status];
   const currency = usage.client.currency;
   const bars = weeklyBars(usage, main.availableMinutes);
+  // Even spread of the allowance across the period, so each week reads as ahead of or behind pace.
+  const weeklyPace = main.availableMinutes ? Math.round((main.availableMinutes * 7) / usage.period.days.total) : null;
   const hasOver = bars.some((b) => b.over > 0);
   const hasUnbilled = bars.some((b) => b.secondary > 0);
   const overNote = usage.client.billOverages ? "billed at the hourly rate" : "not billed";
@@ -199,9 +203,21 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
             <Legend swatch="bg-fun-pink" text={main.availableMinutes != null ? "Within allowance" : "Billable"} />
             {hasOver && <Legend swatch="bg-red-400/80" text={`Over allowance${usage.client.billOverages ? "" : " (not billed)"}`} />}
             {hasUnbilled && <Legend swatch="bg-fun-gray-medium/50" text="Not billed" />}
+            {weeklyPace != null && (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-3 border-t border-dashed border-white/50" />
+                Even pace
+              </span>
+            )}
           </div>
         </div>
-        <BarChart bars={bars} height={96} />
+        <BarChart
+          bars={bars}
+          height={112}
+          showValues
+          target={weeklyPace}
+          targetLabel={weeklyPace ? `${formatMinutes(weeklyPace)}/wk pace` : undefined}
+        />
       </MotionItem>
     </MotionSection>
   );
