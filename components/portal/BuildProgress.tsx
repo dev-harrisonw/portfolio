@@ -45,7 +45,11 @@ export default function BuildProgress({ builds, currency }: { builds: Build[]; c
                 {b.progress.total > 0 && <span className="block">{b.progress.done} of {b.progress.total} tasks done</span>}
                 {daysToDue != null && (
                   <span className={`block ${daysToDue < 0 ? "text-red-300" : ""}`}>
-                    {daysToDue < 0 ? `Target passed · ${fmt(b.dueDate)}` : `Target ${fmt(b.dueDate)} · ${daysToDue}d`}
+                    {daysToDue < 0
+                      ? `Target was ${fmt(b.dueDate)} · ${-daysToDue} ${daysToDue === -1 ? "day" : "days"} ago`
+                      : daysToDue === 0
+                      ? `Target ${fmt(b.dueDate)} · today`
+                      : `Target ${fmt(b.dueDate)} · ${daysToDue} ${daysToDue === 1 ? "day" : "days"} left`}
                   </span>
                 )}
               </p>
@@ -75,6 +79,20 @@ export default function BuildProgress({ builds, currency }: { builds: Build[]; c
                 <p className="text-[10px] sm:text-xs uppercase tracking-wider text-fun-gray-light mb-2">
                   Payments · {formatMoney(b.fixedPrice, currency)} total
                 </p>
+                {(() => {
+                  const paid = b.stages.filter((st) => st.status === "PAID").reduce((sum, st) => sum + st.amount, 0);
+                  const pct = b.fixedPrice ? Math.min(100, Math.round((paid / b.fixedPrice) * 100)) : 0;
+                  return (
+                    <div className="mb-3">
+                      <div className="h-1.5 rounded-full bg-fun-gray-darker overflow-hidden">
+                        <div className="h-full rounded-full bg-fun-pink-darker" style={{ width: `${pct}%` }} />
+                      </div>
+                      <p className="mt-1 text-[11px] text-fun-gray-medium">
+                        {formatMoney(paid, currency)} paid · {formatMoney(b.fixedPrice - paid, currency)} to go
+                      </p>
+                    </div>
+                  );
+                })()}
                 <ul className="space-y-2 text-sm">
                   {b.stages.map((s) => (
                     <li key={s.id} className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-0.5 items-baseline">
