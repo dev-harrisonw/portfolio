@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { patchSchema } from "@/lib/validation/patch";
 
 export const expenseSchema = z.object({
   date: z.coerce.date(),
@@ -10,4 +11,4 @@ export const expenseSchema = z.object({
   clientId: z.string().min(1).nullable().optional(),
 });
 
-export const expenseUpdateSchema = expenseSchema.partial();
+export const expenseUpdateSchema = patchSchema(expenseSchema);

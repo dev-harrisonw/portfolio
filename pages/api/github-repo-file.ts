@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { isPublicRepo, isSafeRepoPath } from "@/lib/githubRepos";
 
 const GITHUB_API = "https://api.github.com";
 
@@ -17,11 +18,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const repo = req.query.repo as string;
-  const path = req.query.path as string;
+  const repo = req.query.repo;
+  const path = req.query.path;
 
-  if (!repo || !path) {
-    return res.status(400).json({ error: "repo and path are required" });
+  if (!isPublicRepo(repo)) {
+    return res.status(404).json({ error: "Repo not found" });
+  }
+  if (!isSafeRepoPath(path)) {
+    return res.status(400).json({ error: "A valid file path is required" });
   }
 
   try {

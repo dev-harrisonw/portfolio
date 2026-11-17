@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { isPublicRepo } from "@/lib/githubRepos";
 
 const GITHUB_API = "https://api.github.com";
 
@@ -17,9 +18,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const repo = req.query.repo as string;
-  if (!repo || !repo.includes("/")) {
-    return res.status(400).json({ error: "repo must be owner/name" });
+  const repo = req.query.repo;
+  if (!isPublicRepo(repo)) {
+    return res.status(404).json({ error: "Repo not found" });
   }
 
   try {

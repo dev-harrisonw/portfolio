@@ -13,7 +13,7 @@ export const invoiceLineUpdateSchema = z
   })
   .superRefine((value, ctx) => {
     if (value.mode === "price" && value.amount == null) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Enter a price", path: ["amount"] });
+      ctx.addIssue({ code: "custom", message: "Enter a price", path: ["amount"] });
     }
   });
 

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { patchSchema } from "@/lib/validation/patch";
 
 const minor = z.number().int().min(0);
 const optionalMinor = minor.nullable().optional();
@@ -22,7 +23,7 @@ export const clientSchema = z.object({
   archived: z.boolean().optional(),
 });
 
-export const clientUpdateSchema = clientSchema.partial();
+export const clientUpdateSchema = patchSchema(clientSchema);
 
 export const projectSchema = z.object({
   clientId: z.string().min(1),
@@ -54,7 +55,7 @@ export const paymentTermsSchema = z
 
 export const stageUpdateSchema = z.object({ status: z.enum(["PENDING", "DUE"]) });
 
-export const projectUpdateSchema = projectSchema.omit({ clientId: true }).partial();
+export const projectUpdateSchema = patchSchema(projectSchema.omit({ clientId: true }));
 
 export const taskSchema = z.object({
   projectId: z.string().min(1),
@@ -62,7 +63,7 @@ export const taskSchema = z.object({
   status: z.enum(["TODO", "IN_PROGRESS", "DONE"]).default("TODO"),
 });
 
-export const taskUpdateSchema = taskSchema.omit({ projectId: true }).partial();
+export const taskUpdateSchema = patchSchema(taskSchema.omit({ projectId: true }));
 
 export const timerStartSchema = z.object({
   taskId: z.string().min(1, "Pick a task"),
@@ -85,11 +86,11 @@ const entryFields = z.object({
 
 export const entrySchema = entryFields.superRefine((value, ctx) => {
   if (value.durationMinutes == null || value.durationMinutes < 1) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Duration must be at least a minute", path: ["durationMinutes"] });
+    ctx.addIssue({ code: "custom", message: "Duration must be at least a minute", path: ["durationMinutes"] });
   }
 });
 
-export const entryUpdateSchema = entryFields.partial();
+export const entryUpdateSchema = patchSchema(entryFields);
 
 export const rangeSchema = z.object({
   from: z.coerce.date(),
