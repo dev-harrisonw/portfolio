@@ -40,8 +40,5 @@ prisma/dev.db-journal
 # vercel
 .vercel
 
-
-# Contentlayer
-.contentlayer
 tsconfig.tsbuildinfo
 .env.local
