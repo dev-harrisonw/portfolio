@@ -121,15 +121,18 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
   );
 
   return (
-    <MotionSection className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-10">
-      <MotionItem className={`${card} col-span-2 lg:col-span-1 flex flex-col sm:flex-row lg:flex-col sm:items-center lg:justify-center gap-3 sm:gap-5`}>
-        <div className="flex items-center gap-4">
+    <MotionSection className="grid gap-2 sm:gap-4 lg:grid-cols-12 mb-6 sm:mb-10">
+      {/* Ring and hours table share one card at every size, so neither leaves an empty half. */}
+      <MotionItem className={`${card} lg:col-span-5 flex flex-col justify-center gap-3 sm:gap-4 min-w-0`}>
+        <div className="flex items-center gap-4 sm:gap-6">
           <HoursRing used={main.usedMinutes} available={main.availableMinutes} />
-          {/* Phones fold the hours table in beside the ring instead of giving it its own card. */}
-          <div className="sm:hidden min-w-0 flex-1 divide-y divide-fun-gray-darker">{hoursRows}</div>
+          <div className="min-w-0 flex-1">
+            <p className={`${label} hidden sm:block`}>Hours</p>
+            <div className="sm:mt-1 divide-y divide-fun-gray-darker">{hoursRows}</div>
+          </div>
         </div>
-        <div className="min-w-0 sm:flex-1 lg:flex-none text-left lg:text-center">
-          <p className={`rounded-lg sm:rounded-full px-3 py-1.5 sm:py-1 text-xs inline-block max-w-full ${tone}`}>
+        <div>
+          <p className={`rounded-lg px-3 py-1.5 text-xs leading-snug ${tone}`}>
             {paceText(main, "client", { closed, billOverages: usage.client.billOverages })}
           </p>
           {main.carriedInMinutes > 0 && (
@@ -138,12 +141,7 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
         </div>
       </MotionItem>
 
-      <MotionItem className={`${card} hidden sm:block sm:col-span-2 lg:col-span-2`}>
-        <p className={label}>Hours</p>
-        <div className="mt-2 divide-y divide-fun-gray-darker">{hoursRows}</div>
-      </MotionItem>
-
-      <MotionItem className={`${card} col-span-2 lg:col-span-3 flex flex-col`}>
+      <MotionItem className={`${card} lg:col-span-7 flex flex-col min-w-0`}>
         {periodInvoice ? (
           <>
             <div className="flex items-center justify-between gap-2">
@@ -155,7 +153,7 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
             </p>
             <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-1">{invoiceDateNote(periodInvoice)}</p>
             <PortalLineList lines={periodInvoice.lines} currency={currency} />
-            <div className="mt-auto pt-3 flex items-center gap-3">
+            <div className="mt-auto pt-3 flex flex-wrap items-center gap-3">
               {periodInvoice.status === "SENT" && <PayButton invoiceId={periodInvoice.id} clientId={clientId} />}
               {periodInvoice.status !== "DRAFT" && (
                 <a href={invoicePdfHref(periodInvoice.id, clientId)} className="text-sm text-fun-pink-light hover:underline">
@@ -185,7 +183,7 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
         )}
       </MotionItem>
 
-      <MotionItem className={`${card} col-span-2 lg:col-span-3`}>
+      <MotionItem className={`${card} lg:col-span-12 min-w-0`}>
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <p className={label}>Hours per week</p>
           <div className="flex flex-wrap gap-3 text-[11px] text-fun-gray-medium">
