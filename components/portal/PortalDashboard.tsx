@@ -164,21 +164,30 @@ export default function PortalDashboard({ usage, estimate, projected, periodInvo
           </>
         ) : (
           <>
-            <p className={label}>{closed ? "Not invoiced yet" : "Estimated invoice"}</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className={label}>{closed ? "Not invoiced yet" : "Estimated invoice"}</p>
+              {!closed && <span className="text-[11px] text-fun-gray-medium">So far this period</span>}
+            </div>
             <p className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 font-monospace leading-tight break-all">
               {formatMoney(estimate.total, currency)}
             </p>
             {!closed && projected.total !== estimate.total && (
-              <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-2 leading-snug">
+              <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-1 leading-snug">
                 About {formatMoney(projected.total, currency)} by period end at the current pace
               </p>
             )}
-            {estimate.vat > 0 && (
-              <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-1">Includes VAT {formatMoney(estimate.vat, currency)}</p>
-            )}
-            {main.overageMinutes > 0 && !usage.client.billOverages && (
-              <p className="text-[11px] sm:text-xs text-fun-gray-medium mt-1">Hours over the allowance aren't charged</p>
-            )}
+            <PortalLineList
+              lines={[
+                ...estimate.lines.map((l) => ({ description: l.description, detail: "", amount: l.amount })),
+                ...(estimate.vat > 0 ? [{ description: `VAT ${estimate.vatRateBps / 100}%`, detail: "", amount: estimate.vat }] : []),
+              ]}
+              currency={currency}
+            />
+            <p className="mt-auto pt-3 text-[11px] sm:text-xs text-fun-gray-medium leading-relaxed">
+              {formatMoney(usage.client.hourlyRate, currency)}/h
+              {usage.client.roundingMinutes > 1 ? ` · time rounded to ${usage.client.roundingMinutes}m per entry` : ""}
+              {main.availableMinutes != null ? ` · hours over the allowance ${overNote}` : ""}
+            </p>
           </>
         )}
       </MotionItem>
